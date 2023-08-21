@@ -19,7 +19,8 @@ namespace SoftRenderingApp3D {
             // Avoid division with zero
             if(vertices[I0] == Vector3.Zero && vertices[I1] == Vector3.Zero && vertices[I2] == Vector3.Zero)
                 return Vector3.Zero;
-            return Vector3.Normalize(Vector3.Cross(vertices[I1] - vertices[I0], vertices[I2] - vertices[I0]));
+            var result = Vector3.Normalize(Vector3.Cross(vertices[I1] - vertices[I0], vertices[I2] - vertices[I0]));
+            return (float.IsNaN(result.X) || float.IsNaN(result.Y) || float.IsNaN(result.Z)) ? Vector3.Zero : result;
         }
 
         public bool Contains(Vector3 vertex, Vector3[] vertices) => vertices[I0] == vertex || vertices[I1] == vertex || vertices[I2] == vertex;
