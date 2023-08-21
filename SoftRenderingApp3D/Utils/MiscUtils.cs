@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace SoftRenderingApp3D {
-    static class MiscUtils {
+    public static class MiscUtils {
 
         public static void Fill<T>(this T[] destinationArray, params T[] value) {
             Array.Copy(value, destinationArray, value.Length);
@@ -17,7 +17,7 @@ namespace SoftRenderingApp3D {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void Swap<T>(ref T a, ref T b) {
+        public static void Swap<T>(ref T a, ref T b) {
             var temp = b; b = a; a = temp;
         }
 
