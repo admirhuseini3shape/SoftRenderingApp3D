@@ -20,6 +20,7 @@ namespace SoftRenderingApp3D {
             get => rendererSettings;
             set {
                 if(PropertyChangedHelper.ChangeValue(ref rendererSettings, value)) {
+                    rendererSettings.ShowTriangleNormals = true;
                     renderContext.RendererSettings = value;
                     rendererSettings = value;
                 }

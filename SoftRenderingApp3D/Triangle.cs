@@ -15,7 +15,12 @@ namespace SoftRenderingApp3D {
 
         public Vector3 CalculateCentroid(Vector3[] vertices) => (vertices[I0] + vertices[I1] + vertices[I2]) / 3;
 
-        public Vector3 CalculateNormal(Vector3[] vertices) => Vector3.Normalize(Vector3.Cross(vertices[I1] - vertices[I0], vertices[I2] - vertices[I0]));
+        public Vector3 CalculateNormal(Vector3[] vertices) {
+            // Avoid division with zero
+            if(vertices[I0] == Vector3.Zero && vertices[I1] == Vector3.Zero && vertices[I2] == Vector3.Zero)
+                return Vector3.Zero;
+            return Vector3.Normalize(Vector3.Cross(vertices[I1] - vertices[I0], vertices[I2] - vertices[I0]));
+        }
 
         public bool Contains(Vector3 vertex, Vector3[] vertices) => vertices[I0] == vertex || vertices[I1] == vertex || vertices[I2] == vertex;
 
