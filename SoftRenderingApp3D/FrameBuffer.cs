@@ -55,6 +55,8 @@ namespace SoftRenderingApp3D {
             }
 #endif
             var index = x + y * Width;
+
+            // Check if there is a point closer to the camer than z
             if(z > zBuffer[index]) {
                 renderContext.Stats.BehindZPixelCount++;
                 return;
@@ -62,8 +64,10 @@ namespace SoftRenderingApp3D {
 
             renderContext.Stats.DrawnPixelCount++;
 
+            // Current z is at front
             zBuffer[index] = z;
 
+            // Current color is at front
             Screen[index] = color.Color;
         }
 
@@ -82,6 +86,10 @@ namespace SoftRenderingApp3D {
             var dmax = Math.Max(dx, dy);
 
             int i = 0;
+
+            // Increases the position along each axis accordingly
+            // The position on the axis on which the difference between the positions of the two vertices is the largest
+            // gets changed each iteration. The others get changed according to the slope on those axes.
             while(i++ < dmax) {
                 ex += dx; if(ex >= dmax) { ex -= dmax; x0 += sx; PutPixel(x0, y0, z0, color); }
                 ey += dy; if(ey >= dmax) { ey -= dmax; y0 += sy; PutPixel(x0, y0, z0, color); }

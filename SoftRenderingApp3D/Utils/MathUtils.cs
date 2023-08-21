@@ -21,7 +21,10 @@ namespace SoftRenderingApp3D {
         // min is the starting point, max the ending point
         // and gradient the % between the 2 points
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static float Lerp(float start, float end, float amount) {
+        public static float Lerp(float start, float end, float amount) {
+            if(amount > 1 || amount < 0)
+                throw new ArgumentException("Amount must be between 0 and 1!", nameof(amount));
+
             return start + (end - start) * amount;
         }
 

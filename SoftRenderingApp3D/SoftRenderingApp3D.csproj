@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{CA416486-6809-4152-A2A4-791BA0D4E409}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>WinForms3D</RootNamespace>
-    <AssemblyName>WinForms3D</AssemblyName>
+    <RootNamespace>SoftRenderingApp3D</RootNamespace>
+    <AssemblyName>SoftRenderingApp3D</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
