@@ -31,13 +31,17 @@ namespace SoftRenderingApp3D {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         // Compute the cosine of the angle between the light vector and the normal vector
         // Returns a value between 0 and 1
-        internal static float ComputeNDotL(Vector3 vertexCenter, Vector3 normal, Vector3 lightPosition) => 
+        public static float ComputeNDotL(Vector3 vertexCenter, Vector3 normal, Vector3 lightPosition) => 
             Math.Max(0, Vector3.Dot(
                 Vector3.Normalize(normal),
                 Vector3.Normalize(lightPosition - vertexCenter)));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         // Clamping values to keep them between 0 and 1
-        public static float Clamp(this float value, float min = 0, float max = 1) => Math.Max(min, Math.Min(value, max));
+        public static float Clamp(this float value, float min = 0, float max = 1) {
+            if(min > max)
+                throw new ArgumentException("Min argument must be less than max argument!");
+            return Math.Max(min, Math.Min(value, max));
+        }
     }
 }
