@@ -57,13 +57,19 @@ namespace SoftRenderingApp3D {
                     getSource(vertices, "POSITION", out var vertices_position_id, out _);
                     getSource(vertices, "NORMAL", out var vertices_normal_id, out _);
 
+                    // Get the texture coordinates location
+                    getSource(vertices, "TEXCOORD", out var texture_coordinates_id, out _);
+
+
                     var vertices_position = getArraySource<Vector3>(mesh, vertices_position_id);
                     var vertices_normal = getArraySource<Vector3>(mesh, vertices_normal_id);
+                    var texture_coordinates = getArraySource<Vector2>(mesh, texture_coordinates_id);
 
                     yield return new Volume(
                         vertices_position.ToArray(),
                         polylist_p.ToArray().BuildTriangleIndices().ToArray(),
                         vertices_normal.ToArray(),
+                        texture_coordinates.ToArray(),
                         null);
                 }
 
@@ -123,6 +129,12 @@ namespace SoftRenderingApp3D {
                 for(var i = 0; i < floats.Length; i += 3)
                     yield return (T)(object)new Vector3(floats[i], floats[i + 1], floats[i + 2]);
             }
+
+            if(typeof(T) == typeof(Vector2)) {
+                for(var i = 0; i < floats.Length; i += 2)
+                    yield return (T)(object)new Vector2(floats[i], floats[i + 1]);
+            }
+
         }
     }
 }

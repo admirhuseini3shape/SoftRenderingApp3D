@@ -3,17 +3,20 @@ using System.Numerics;
 
 namespace SoftRenderingApp3D {
     public class Volume : IVolume {
-        public Volume(Vector3[] vertices, Triangle[] triangleIndices, Vector3[] vertexNormals = null, ColorRGB[] triangleColors = null) {
+        public Volume(Vector3[] vertices, Triangle[] triangleIndices, Vector3[] vertexNormals = null, Vector2[] textureCoordinates = null, ColorRGB[] triangleColors = null) {
             Vertices = vertices;
             Triangles = triangleIndices;
 
             NormVertices = vertexNormals ?? this.CalculateVertexNormals().ToArray();
+            TexCoordinates = textureCoordinates;
             TriangleColors = triangleColors ?? Enumerable.Repeat(ColorRGB.Gray, Triangles.Length).ToArray();
 
             Scale = Vector3.One;
         }
 
         public Vector3[] Vertices { get; }
+
+        public Vector2[] TexCoordinates { get; }
 
         public ColorRGB[] TriangleColors { get; }
 

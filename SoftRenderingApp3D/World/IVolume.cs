@@ -10,6 +10,7 @@ namespace SoftRenderingApp3D {
         Triangle[] Triangles { get; }
         Vector3[] Vertices { get; }
         Vector3[] NormVertices { get; }
+        Vector2[] TexCoordinates { get;  }
 
         Matrix4x4 WorldMatrix();
     }
