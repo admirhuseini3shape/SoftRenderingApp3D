@@ -67,6 +67,7 @@ namespace SoftRenderingApp3D {
             Screen[index] = color.Color;
         }
 
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DrawLine(Vector3 p0, Vector3 p1, ColorRGB color) {
 

@@ -51,6 +51,7 @@
             this.rdbSimpleRendererLogic = new System.Windows.Forms.RadioButton();
             this.btnBench = new System.Windows.Forms.Button();
             this.lblSw = new System.Windows.Forms.Label();
+            this.chkShowTexture = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -142,6 +143,7 @@
             // groupBox2
             // 
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.chkShowTexture);
             this.groupBox2.Controls.Add(this.chkShowAxes);
             this.groupBox2.Controls.Add(this.chkShowXZGrid);
             this.groupBox2.Controls.Add(this.chkShowBackFacesCulling);
@@ -230,7 +232,7 @@
             // 
             // groupBox5
             // 
-            this.groupBox5.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            this.groupBox5.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left)));
             this.groupBox5.Controls.Add(this.lstDemos);
             this.groupBox5.Location = new System.Drawing.Point(12, 12);
@@ -247,8 +249,8 @@
             // 
             // groupBox6
             // 
-            this.groupBox6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.groupBox6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox6.Controls.Add(this.arcBallCamControl1);
             this.groupBox6.Controls.Add(this.panel3D1);
@@ -273,8 +275,8 @@
             // 
             // panel3D1
             // 
-            this.panel3D1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.panel3D1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel3D1.BackColor = System.Drawing.Color.WhiteSmoke;
             this.panel3D1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
@@ -285,8 +287,8 @@
             // 
             // groupBox7
             // 
-            this.groupBox7.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.groupBox7.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox7.Controls.Add(this.panel3D2);
             this.groupBox7.Location = new System.Drawing.Point(0, 297);
@@ -300,8 +302,8 @@
             // 
             // panel3D2
             // 
-            this.panel3D2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.panel3D2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel3D2.BackColor = System.Drawing.Color.WhiteSmoke;
             this.panel3D2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
@@ -312,8 +314,8 @@
             // 
             // tableLayoutPanel1
             // 
-            this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-            | System.Windows.Forms.AnchorStyles.Left)
+            this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.ColumnCount = 1;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
@@ -368,6 +370,16 @@
             this.lblSw.Size = new System.Drawing.Size(0, 13);
             this.lblSw.TabIndex = 15;
             this.lblSw.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            // 
+            // chkShowTexture
+            // 
+            this.chkShowTexture.AutoSize = true;
+            this.chkShowTexture.Location = new System.Drawing.Point(15, 157);
+            this.chkShowTexture.Name = "chkShowTexture";
+            this.chkShowTexture.Size = new System.Drawing.Size(62, 17);
+            this.chkShowTexture.TabIndex = 9;
+            this.chkShowTexture.Text = "Texture";
+            this.chkShowTexture.UseVisualStyleBackColor = true;
             // 
             // Form2
             // 
@@ -431,5 +443,6 @@
         private System.Windows.Forms.CheckBox chkShowAxes;
         private System.Windows.Forms.Button btnBench;
         private System.Windows.Forms.Label lblSw;
+        private System.Windows.Forms.CheckBox chkShowTexture;
     }
 }

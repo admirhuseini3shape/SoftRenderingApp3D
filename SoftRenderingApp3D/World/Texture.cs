@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SoftRenderingApp3D;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -6,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace WinForms3D.World {
-    class Texture {
+    public class Texture {
         public Vector3[] imageData { get; private set; }
 
         public int width { get; private set; }
@@ -27,11 +28,13 @@ namespace WinForms3D.World {
         /// <param name="u">Float representing the X texture coordinate for a vertex.</param>
         /// <param name="v">Float representing the Y texture coordinate for a vertex.</param>
         /// <returns></returns>
-        public Vector3 GetPixelColorNearestFiltering(float u, float v) {
+        public ColorRGB GetPixelColorNearestFiltering(float u, float v) {
             int pixel_x = (int)(u * width);
             int pixel_y = (int)(v * height);
 
-            return imageData[pixel_y * width + pixel_x];
+            var color = imageData[pixel_y * width + pixel_x];
+
+            return new ColorRGB((byte)color.X, (byte)color.Y, (byte)color.Z);
         }
         /// <summary>
         /// Returns a linearly interpolated color value of the pixels around the texture coordinates provided.
@@ -39,7 +42,7 @@ namespace WinForms3D.World {
         /// <param name="u">Float representing the X texture coordinate for a vertex.</param>
         /// <param name="v">Float representing the Y texture coordinate for a vertex.</param>
         /// <returns></returns>
-        public Vector3 GetPixelColorLinearFiltering(float u, float v) {
+        public ColorRGB GetPixelColorLinearFiltering(float u, float v) {
             float pixelCoordinateX = u * width;
             float pixelCoordinateY = v * height;
 
@@ -47,7 +50,7 @@ namespace WinForms3D.World {
             float xCoordinateRatio = pixelCoordinateX - (int)(pixelCoordinateX);
             float yCoordinateRatio = pixelCoordinateY - (int)(pixelCoordinateY);
 
-            var pixel_color =
+            var color =
                     // Interpolate between upper two pixels
                     (1 - yCoordinateRatio) *
                         ((1 - xCoordinateRatio) * imageData[(int)pixelCoordinateY * width + (int)(pixelCoordinateX)] +
@@ -58,7 +61,7 @@ namespace WinForms3D.World {
                        ((1 - xCoordinateRatio) * imageData[((int)pixelCoordinateY + 1) * width + (int)(pixelCoordinateX)] +
                          (xCoordinateRatio) * imageData[((int)pixelCoordinateY + 1) * width + ((int)(pixelCoordinateX) + 1)]));
 
-            return pixel_color;
+            return new ColorRGB((byte)color.X, (byte)color.Y, (byte)color.Z);
         }
     }
 }

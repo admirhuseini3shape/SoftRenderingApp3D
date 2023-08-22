@@ -11,7 +11,7 @@
 
         long value;
 
-        ColorRGB(byte r, byte g, byte b) => value = (unchecked((uint)(r << ARGBRedShift | g << ARGBGreenShift | b << ARGBBlueShift | 255 << ARGBAlphaShift))) & 0xffffffff;
+        public ColorRGB(byte r, byte g, byte b) => value = (unchecked((uint)(r << ARGBRedShift | g << ARGBGreenShift | b << ARGBBlueShift | 255 << ARGBAlphaShift))) & 0xffffffff;
 
         public byte R { get => (byte)((value >> ARGBRedShift) & 0xFF); }
         public byte G { get => (byte)((value >> ARGBGreenShift) & 0xFF); }
