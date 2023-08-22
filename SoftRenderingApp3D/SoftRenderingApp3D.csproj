@@ -104,6 +104,7 @@
     <Compile Include="Camera\ICamera.cs" />
     <Compile Include="World\IcoSphere.cs" />
     <Compile Include="World\ILightSource.cs" />
+    <Compile Include="World\ITextureReader.cs" />
     <Compile Include="World\IVolume.cs" />
     <Compile Include="IWorld.cs" />
     <Compile Include="Panel3D.cs">
@@ -113,6 +114,8 @@
       <DependentUpon>Panel3D.cs</DependentUpon>
     </Compile>
     <Compile Include="Triangle.cs" />
+    <Compile Include="World\Texture.cs" />
+    <Compile Include="World\TextureReaderBMP.cs" />
     <Compile Include="World\VolumeEx.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rotation3D.cs" />
