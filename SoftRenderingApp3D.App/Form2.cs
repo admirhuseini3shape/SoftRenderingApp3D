@@ -54,6 +54,7 @@ namespace SoftRenderingApp3D.App {
             chkShowXZGrid.Checked = panel3D1.RendererSettings.ShowXZGrid;
             chkShowAxes.Checked = panel3D1.RendererSettings.ShowAxes;
             chkShowTexture.Checked = panel3D1.RendererSettings.ShowTextures;
+            chkLinearFiltering.Checked = panel3D1.RendererSettings.LiearTextureFiltering;
 
             chkShowTriangles.CheckedChanged += (s, e) => { panel3D1.RendererSettings.ShowTriangles = chkShowTriangles.Checked; panel3D1.Invalidate(); };
             chkShowBackFacesCulling.CheckedChanged += (s, e) => { panel3D1.RendererSettings.BackFaceCulling = chkShowBackFacesCulling.Checked; panel3D1.Invalidate(); };
@@ -61,6 +62,7 @@ namespace SoftRenderingApp3D.App {
             chkShowXZGrid.CheckedChanged += (s, e) => { panel3D1.RendererSettings.ShowXZGrid = chkShowXZGrid.Checked; panel3D1.Invalidate(); };
             chkShowAxes.CheckedChanged += (s, e) => { panel3D1.RendererSettings.ShowAxes = chkShowAxes.Checked; panel3D1.Invalidate(); };
             chkShowTexture.CheckedChanged += (s, e) => { panel3D1.RendererSettings.ShowTextures = chkShowTexture.Checked; panel3D1.Invalidate(); };
+            chkLinearFiltering.CheckedChanged += (s, e) => { panel3D1.RendererSettings.LiearTextureFiltering = chkLinearFiltering.Checked; panel3D1.Invalidate(); };
 
             btnBench.Click += (s, e) => {
                 var sw = Stopwatch.StartNew();
@@ -103,6 +105,7 @@ namespace SoftRenderingApp3D.App {
             ITextureReader textureReader = new TextureReaderBMP();
             world.Textures.Add(textureReader.ReadImage(@"textures\bone.bmp"));
             world.Textures.Add(textureReader.ReadImage(@"textures\glass_effect.bmp"));
+            world.Textures.Add(textureReader.ReadImage(@"textures\bone_high.bmp"));
 
 
             switch(id) {
@@ -219,6 +222,10 @@ namespace SoftRenderingApp3D.App {
                 // camObject.Position = ((ArcBallCam)cam).Position;
                 // this.panel3D2.Invalidate();
             }
+        }
+
+        private void btnChangeTexture_Click(object sender, EventArgs e) {
+            this.panel3D1.RendererSettings.changeActiveTexture();
         }
     }
 }

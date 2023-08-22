@@ -32,6 +32,7 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.rdbNoneShading = new System.Windows.Forms.RadioButton();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.chkShowTexture = new System.Windows.Forms.CheckBox();
             this.chkShowAxes = new System.Windows.Forms.CheckBox();
             this.chkShowXZGrid = new System.Windows.Forms.CheckBox();
             this.chkShowBackFacesCulling = new System.Windows.Forms.CheckBox();
@@ -42,16 +43,17 @@
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.groupBox6 = new System.Windows.Forms.GroupBox();
-            this.arcBallCamControl1 = new SoftRenderingApp3D.ArcBallCamControl();
-            this.panel3D1 = new SoftRenderingApp3D.Panel3D();
             this.groupBox7 = new System.Windows.Forms.GroupBox();
-            this.panel3D2 = new SoftRenderingApp3D.Panel3D();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.rdbSimpleRendererLogic = new System.Windows.Forms.RadioButton();
             this.btnBench = new System.Windows.Forms.Button();
             this.lblSw = new System.Windows.Forms.Label();
-            this.chkShowTexture = new System.Windows.Forms.CheckBox();
+            this.chkLinearFiltering = new System.Windows.Forms.CheckBox();
+            this.arcBallCamControl1 = new SoftRenderingApp3D.ArcBallCamControl();
+            this.panel3D1 = new SoftRenderingApp3D.Panel3D();
+            this.panel3D2 = new SoftRenderingApp3D.Panel3D();
+            this.btnChangeTexture = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -143,6 +145,7 @@
             // groupBox2
             // 
             this.groupBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox2.Controls.Add(this.chkLinearFiltering);
             this.groupBox2.Controls.Add(this.chkShowTexture);
             this.groupBox2.Controls.Add(this.chkShowAxes);
             this.groupBox2.Controls.Add(this.chkShowXZGrid);
@@ -156,6 +159,16 @@
             this.groupBox2.TabIndex = 5;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Display";
+            // 
+            // chkShowTexture
+            // 
+            this.chkShowTexture.AutoSize = true;
+            this.chkShowTexture.Location = new System.Drawing.Point(15, 157);
+            this.chkShowTexture.Name = "chkShowTexture";
+            this.chkShowTexture.Size = new System.Drawing.Size(62, 17);
+            this.chkShowTexture.TabIndex = 9;
+            this.chkShowTexture.Text = "Texture";
+            this.chkShowTexture.UseVisualStyleBackColor = true;
             // 
             // chkShowAxes
             // 
@@ -263,28 +276,6 @@
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Camera view";
             // 
-            // arcBallCamControl1
-            // 
-            this.arcBallCamControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.arcBallCamControl1.BackColor = System.Drawing.Color.Gainsboro;
-            this.arcBallCamControl1.Camera = null;
-            this.arcBallCamControl1.Location = new System.Drawing.Point(588, 16);
-            this.arcBallCamControl1.Name = "arcBallCamControl1";
-            this.arcBallCamControl1.Size = new System.Drawing.Size(139, 117);
-            this.arcBallCamControl1.TabIndex = 1;
-            // 
-            // panel3D1
-            // 
-            this.panel3D1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel3D1.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.panel3D1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.panel3D1.Location = new System.Drawing.Point(11, 16);
-            this.panel3D1.Name = "panel3D1";
-            this.panel3D1.Size = new System.Drawing.Size(571, 269);
-            this.panel3D1.TabIndex = 0;
-            // 
             // groupBox7
             // 
             this.groupBox7.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -299,18 +290,6 @@
             this.groupBox7.TabIndex = 11;
             this.groupBox7.TabStop = false;
             this.groupBox7.Text = "Control view";
-            // 
-            // panel3D2
-            // 
-            this.panel3D2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel3D2.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.panel3D2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.panel3D2.Location = new System.Drawing.Point(11, 16);
-            this.panel3D2.Name = "panel3D2";
-            this.panel3D2.Size = new System.Drawing.Size(571, 270);
-            this.panel3D2.TabIndex = 0;
             // 
             // tableLayoutPanel1
             // 
@@ -371,21 +350,67 @@
             this.lblSw.TabIndex = 15;
             this.lblSw.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
             // 
-            // chkShowTexture
+            // chkLinearFiltering
             // 
-            this.chkShowTexture.AutoSize = true;
-            this.chkShowTexture.Location = new System.Drawing.Point(15, 157);
-            this.chkShowTexture.Name = "chkShowTexture";
-            this.chkShowTexture.Size = new System.Drawing.Size(62, 17);
-            this.chkShowTexture.TabIndex = 9;
-            this.chkShowTexture.Text = "Texture";
-            this.chkShowTexture.UseVisualStyleBackColor = true;
+            this.chkLinearFiltering.AutoSize = true;
+            this.chkLinearFiltering.Location = new System.Drawing.Point(15, 178);
+            this.chkLinearFiltering.Name = "chkLinearFiltering";
+            this.chkLinearFiltering.Size = new System.Drawing.Size(91, 17);
+            this.chkLinearFiltering.TabIndex = 10;
+            this.chkLinearFiltering.Text = "Linear filtering";
+            this.chkLinearFiltering.UseVisualStyleBackColor = true;
+            // 
+            // arcBallCamControl1
+            // 
+            this.arcBallCamControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.arcBallCamControl1.BackColor = System.Drawing.Color.Gainsboro;
+            this.arcBallCamControl1.Camera = null;
+            this.arcBallCamControl1.Location = new System.Drawing.Point(588, 16);
+            this.arcBallCamControl1.Name = "arcBallCamControl1";
+            this.arcBallCamControl1.Size = new System.Drawing.Size(139, 117);
+            this.arcBallCamControl1.TabIndex = 1;
+            // 
+            // panel3D1
+            // 
+            this.panel3D1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel3D1.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.panel3D1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.panel3D1.Location = new System.Drawing.Point(11, 16);
+            this.panel3D1.Name = "panel3D1";
+            this.panel3D1.Size = new System.Drawing.Size(571, 269);
+            this.panel3D1.TabIndex = 0;
+            // 
+            // panel3D2
+            // 
+            this.panel3D2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel3D2.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.panel3D2.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.panel3D2.Location = new System.Drawing.Point(11, 16);
+            this.panel3D2.Name = "panel3D2";
+            this.panel3D2.Size = new System.Drawing.Size(571, 270);
+            this.panel3D2.TabIndex = 0;
+            // 
+            // btnChangeTexture
+            // 
+            this.btnChangeTexture.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnChangeTexture.Location = new System.Drawing.Point(918, 540);
+            this.btnChangeTexture.Name = "btnChangeTexture";
+            this.btnChangeTexture.Size = new System.Drawing.Size(135, 25);
+            this.btnChangeTexture.TabIndex = 16;
+            this.btnChangeTexture.Text = "Change Texture";
+            this.btnChangeTexture.UseVisualStyleBackColor = true;
+            this.btnChangeTexture.Click += new System.EventHandler(this.btnChangeTexture_Click);
             // 
             // Form2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1065, 618);
+            this.Controls.Add(this.btnChangeTexture);
             this.Controls.Add(this.lblSw);
             this.Controls.Add(this.btnBench);
             this.Controls.Add(this.groupBox3);
@@ -444,5 +469,7 @@
         private System.Windows.Forms.Button btnBench;
         private System.Windows.Forms.Label lblSw;
         private System.Windows.Forms.CheckBox chkShowTexture;
+        private System.Windows.Forms.CheckBox chkLinearFiltering;
+        private System.Windows.Forms.Button btnChangeTexture;
     }
 }

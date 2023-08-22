@@ -134,6 +134,9 @@
     <Content Include="Textures\bone.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Textures\bone_high.bmp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Textures\glass_effect.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

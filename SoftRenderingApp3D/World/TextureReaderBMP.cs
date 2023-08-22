@@ -33,7 +33,7 @@ namespace SoftRenderingApp3D {
             for (int i = 0; i < bmp.Height; i++) {
                 for(int j = 0; j < bmp.Width; j++) {
                     // Get color data for pixel
-                    var color = bmp.GetPixel(i, j);
+                    var color = bmp.GetPixel(j, i);
 
                     imageData[i * bmp.Width + j] = new Vector3(color.R, color.G, color.B);
                 }

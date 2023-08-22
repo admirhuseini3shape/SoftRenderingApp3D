@@ -47,9 +47,8 @@ namespace SoftRenderingApp3D {
             renderContext.WorldBuffer = worldBuffer;
 
             // This needs work, this is only for testing
-            // 0 for bone texture
-            // 1 for colorful texture
-            var texture = world.Textures[1];
+            var textureIndex = rendererSettings.activeTexture % world.Textures.Count;
+            var texture = world.Textures[textureIndex];
 
             var volumes = world.Volumes;
             var volumeCount = volumes.Count;
@@ -122,7 +121,7 @@ namespace SoftRenderingApp3D {
                         if(Painter.GetType() == typeof(GouraudPainter)) {
                             // Cast to GouraudPainter, this needs fixing because currently only the GouraudPainter has implemented the function for drawing textures
                             GouraudPainter painter = (GouraudPainter)Painter;
-                            painter.DrawTriangleTextured(texture, vbx, idxTriangle);
+                            painter.DrawTriangleTextured(texture, vbx, idxTriangle, rendererSettings.LiearTextureFiltering);
                         }
                     }
 

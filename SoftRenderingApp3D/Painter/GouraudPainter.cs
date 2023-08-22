@@ -12,7 +12,7 @@ namespace SoftRenderingApp3D {
             vbx.Volume.Triangles[triangleIndice].TransformWorld(vbx);
 
             var surface = RendererContext.Surface;
-            PainterUtils.SortTrianglePoints(vbx, surface, triangleIndice, out var v0, out var v1, out var v2);
+            PainterUtils.SortTrianglePoints(vbx, surface, triangleIndice, out var v0, out var v1, out var v2, out var index0, out var index1, out var index2);
 
             var p0 = v0.ScreenPoint; var p1 = v1.ScreenPoint; var p2 = v2.ScreenPoint;
 
@@ -93,15 +93,8 @@ namespace SoftRenderingApp3D {
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DrawTriangleTextured(Texture texture, VertexBuffer vbx, int triangleIndice) {
-            // Get the indices for the texture coordinates
-            int texIndex0 = vbx.Volume.Triangles[triangleIndice].I0;
-            int texIndex1 = vbx.Volume.Triangles[triangleIndice].I0;
-            int texIndex2 = vbx.Volume.Triangles[triangleIndice].I0;
-
-            var texCoord0 = vbx.Volume.TexCoordinates[texIndex0];
-            var texCoord1 = vbx.Volume.TexCoordinates[texIndex1];
-            var texCoord2 = vbx.Volume.TexCoordinates[texIndex2];
+        public void DrawTriangleTextured(Texture texture, VertexBuffer vbx, int triangleIndice, bool linearFiltering) {
+            
 
             vbx.Volume.Triangles[triangleIndice].TransformWorld(vbx);
 
@@ -109,6 +102,15 @@ namespace SoftRenderingApp3D {
             PainterUtils.SortTrianglePoints(vbx, surface, triangleIndice, out var v0, out var v1, out var v2, out var index0, out var index1, out var index2);
 
             var p0 = v0.ScreenPoint; var p1 = v1.ScreenPoint; var p2 = v2.ScreenPoint;
+
+            // Get the indices for the texture coordinates
+            int texIndex0 = index0;
+            int texIndex1 = index1;
+            int texIndex2 = index2;
+
+            var texCoord0 = vbx.Volume.TexCoordinates[texIndex0];
+            var texCoord1 = vbx.Volume.TexCoordinates[texIndex1];
+            var texCoord2 = vbx.Volume.TexCoordinates[texIndex2];
 
 
             var yStart = (int)Math.Max(p0.Y, 0);
@@ -118,6 +120,11 @@ namespace SoftRenderingApp3D {
             if(yStart > yEnd) return;
 
             var yMiddle = MathUtils.Clamp((int)p1.Y, yStart, yEnd);
+            
+            // Calculates the change to the y-coordinate of the texture coordinates for each next pixel
+            var yMiddleTexture = MathUtils.Clamp(texCoord1.Y, texCoord0.Y, texCoord2.Y);
+            var yTextureChange1 = (yMiddleTexture - texCoord0.Y) / (yStart - yEnd);
+            var yTextureChange2 = (texCoord2.Y - yMiddleTexture) / (yStart - yEnd);
 
             // This has to move elsewhere
             var lightPos = new Vector3(0, 10, 10);
@@ -133,21 +140,23 @@ namespace SoftRenderingApp3D {
                 // P0
                 //   P1
                 // P2
-                paintHalfTriangleTextured(yStart, (int)yMiddle - 1, texture, p0, p2, p0, p1, nl0, nl2, nl0, nl1, texCoord0, texCoord1, texCoord2);
-                paintHalfTriangleTextured((int)yMiddle, yEnd, texture, p0, p2, p1, p2, nl0, nl2, nl1, nl2, texCoord0, texCoord1, texCoord2);
+                paintHalfTriangleTextured(yStart, (int)yMiddle - 1, texture, p0, p2, p0, p1, nl0, nl2, nl0, nl1, texCoord0, texCoord1, texCoord2, yTextureChange1, linearFiltering);
+                paintHalfTriangleTextured((int)yMiddle, yEnd, texture, p0, p2, p1, p2, nl0, nl2, nl1, nl2, texCoord0, texCoord1, texCoord2, yTextureChange2, linearFiltering);
             }
             else {
                 //   P0
                 // P1 
                 //   P2
-                paintHalfTriangleTextured(yStart, (int)yMiddle - 1, texture, p0, p1, p0, p2, nl0, nl1, nl0, nl2, texCoord0, texCoord2, texCoord1);
-                paintHalfTriangleTextured((int)yMiddle, yEnd, texture, p1, p2, p0, p2, nl1, nl2, nl0, nl2, texCoord0, texCoord2, texCoord1);
+                paintHalfTriangleTextured(yStart, (int)yMiddle - 1, texture, p0, p1, p0, p2, nl0, nl1, nl0, nl2, texCoord0, texCoord2, texCoord1, yTextureChange1, linearFiltering);
+                paintHalfTriangleTextured((int)yMiddle, yEnd, texture, p1, p2, p0, p2, nl1, nl2, nl0, nl2, texCoord0, texCoord2, texCoord1, yTextureChange2, linearFiltering);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void paintHalfTriangleTextured(int yStart, int yEnd, Texture texture, Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd, float nla, float nlb, float nlc, float nld, Vector2 texCoord0, Vector2 texCoord1, Vector2 texCoord2) {
+        void paintHalfTriangleTextured(int yStart, int yEnd, Texture texture, Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd, float nla, float nlb, float nlc, float nld, Vector2 texCoord0, Vector2 texCoord1, Vector2 texCoord2, float yTexChange, bool linearFiltering) {
             var mg1 = pa.Y == pb.Y ? 1f : 1 / (pb.Y - pa.Y);
             var mg2 = pd.Y == pc.Y ? 1f : 1 / (pd.Y - pc.Y);
+
+            var textureY = texCoord0.Y;
 
             for(var y = yStart; y <= yEnd; y++) {
                 var gradient1 = ((y - pa.Y) * mg1).Clamp();
@@ -164,17 +173,18 @@ namespace SoftRenderingApp3D {
                 var startTextureX = MathUtils.Lerp(texCoord0.X, texCoord1.X, gradient1);
                 var endTextureX = MathUtils.Lerp(texCoord0.X, texCoord2.X, gradient2);
 
-                var textureY = MathUtils.Lerp(texCoord0.Y, texCoord1.Y, gradient1);
-
                 var sz = MathUtils.Lerp(pa.Z, pb.Z, gradient1);
                 var ez = MathUtils.Lerp(pc.Z, pd.Z, gradient2);
 
-                paintScanlineTextured(y, sx, ex, sz, ez, sl, el, texture, startTextureX, endTextureX, textureY);
+                paintScanlineTextured(y, sx, ex, sz, ez, sl, el, texture, startTextureX, endTextureX, textureY, linearFiltering);
+
+                // Increase the y texture coordinate in each iteration
+                textureY += yTexChange;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void paintScanlineTextured(float y, float sx, float ex, float sz, float ez, float sl, float el, Texture texture, float startTextureX, float endTextureX, float textureY) {
+        void paintScanlineTextured(float y, float sx, float ex, float sz, float ez, float sl, float el, Texture texture, float startTextureX, float endTextureX, float textureY, bool linearFiltering) {
             var surface = RendererContext.Surface;
 
             var minX = Math.Max(sx, 0);
@@ -182,18 +192,26 @@ namespace SoftRenderingApp3D {
 
             var mx = 1 / (ex - sx);
 
+            var xTextureChange = (endTextureX - startTextureX) / (ex - sx);
+
+            var textureX = startTextureX;
+
             for(var x = minX; x < maxX; x++) {
                 var gradient = (x - sx) * mx;
 
                 var z = MathUtils.Lerp(sz, ez, gradient);
                 var c = MathUtils.Lerp(sl, el, gradient);
 
+                if(linearFiltering) {
+                    var color = texture.GetPixelColorLinearFiltering(textureX, textureY);
+                    surface.PutPixel((int)x, (int)y, (int)z, c * color);
+                }
+                else {
+                    var color = texture.GetPixelColorNearestFiltering(textureX, textureY);
+                    surface.PutPixel((int)x, (int)y, (int)z, c * color);
+                }
 
-                var textureX = MathUtils.Lerp(startTextureX, endTextureX, gradient);
-
-                var color = texture.GetPixelColorLinearFiltering(textureX, textureY);
-
-                surface.PutPixel((int)x, (int)y, (int)z, c * color);
+                textureX += xTextureChange;
             }
         }
     }
