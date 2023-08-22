@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace WinForms3D.World {
     interface ITextureReader {
 
-        public void ReadImage(string path);
+        public Texture ReadImage(string path);
         
     }
 }
