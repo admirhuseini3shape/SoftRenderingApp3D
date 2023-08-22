@@ -102,6 +102,8 @@ namespace SoftRenderingApp3D.App {
 
             ITextureReader textureReader = new TextureReaderBMP();
             world.Textures.Add(textureReader.ReadImage(@"textures\bone.bmp"));
+            world.Textures.Add(textureReader.ReadImage(@"textures\glass_effect.bmp"));
+
 
             switch(id) {
                 case "skull":

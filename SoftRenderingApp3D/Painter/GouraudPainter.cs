@@ -106,7 +106,7 @@ namespace SoftRenderingApp3D {
             vbx.Volume.Triangles[triangleIndice].TransformWorld(vbx);
 
             var surface = RendererContext.Surface;
-            PainterUtils.SortTrianglePoints(vbx, surface, triangleIndice, out var v0, out var v1, out var v2);
+            PainterUtils.SortTrianglePoints(vbx, surface, triangleIndice, out var v0, out var v1, out var v2, out var index0, out var index1, out var index2);
 
             var p0 = v0.ScreenPoint; var p1 = v1.ScreenPoint; var p2 = v2.ScreenPoint;
 
@@ -164,7 +164,7 @@ namespace SoftRenderingApp3D {
                 var startTextureX = MathUtils.Lerp(texCoord0.X, texCoord1.X, gradient1);
                 var endTextureX = MathUtils.Lerp(texCoord0.X, texCoord2.X, gradient2);
 
-                var textureY = texCoord0.Y;
+                var textureY = MathUtils.Lerp(texCoord0.Y, texCoord1.Y, gradient1);
 
                 var sz = MathUtils.Lerp(pa.Z, pb.Z, gradient1);
                 var ez = MathUtils.Lerp(pc.Z, pd.Z, gradient2);
@@ -187,6 +187,7 @@ namespace SoftRenderingApp3D {
 
                 var z = MathUtils.Lerp(sz, ez, gradient);
                 var c = MathUtils.Lerp(sl, el, gradient);
+
 
                 var textureX = MathUtils.Lerp(startTextureX, endTextureX, gradient);
 

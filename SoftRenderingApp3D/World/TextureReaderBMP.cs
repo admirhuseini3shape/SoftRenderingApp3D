@@ -29,6 +29,7 @@ namespace SoftRenderingApp3D {
 
             // Create read image data
             Vector3[] imageData = new Vector3[bmp.Width * bmp.Height];
+
             for (int i = 0; i < bmp.Height; i++) {
                 for(int j = 0; j < bmp.Width; j++) {
                     // Get color data for pixel

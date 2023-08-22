@@ -47,7 +47,9 @@ namespace SoftRenderingApp3D {
             renderContext.WorldBuffer = worldBuffer;
 
             // This needs work, this is only for testing
-            var texture = world.Textures[0];
+            // 0 for bone texture
+            // 1 for colorful texture
+            var texture = world.Textures[1];
 
             var volumes = world.Volumes;
             var volumeCount = volumes.Count;

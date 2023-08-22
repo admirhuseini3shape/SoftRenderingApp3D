@@ -21,6 +21,8 @@ namespace SoftRenderingApp3D {
         /// <param name="height">The height of the texture image.</param>
         public Texture(Vector3[] imageData, int width, int height) {
             this.imageData = imageData;
+            this.width = width;
+            this.height = height;
         }
         /// <summary>
         /// Returns the color value of the pixel nearest to the texture coordinates provided.
