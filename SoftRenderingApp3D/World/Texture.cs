@@ -31,9 +31,9 @@ namespace SoftRenderingApp3D {
         /// <param name="v">Float representing the Y texture coordinate for a vertex.</param>
         /// <returns></returns>
         public ColorRGB GetPixelColorNearestFiltering(float u, float v) {
-            int pixel_x = (int)(u * width);
-            int pixel_y = (int)(v * height);
-
+            int pixel_x = (int)(MathUtils.Clamp((int)(u * width), 0, width - 1));
+            int pixel_y = (int)(MathUtils.Clamp((int)(v * height), 0, height - 1));
+           
             var color = imageData[pixel_y * width + pixel_x];
 
             return new ColorRGB((byte)color.X, (byte)color.Y, (byte)color.Z);
@@ -45,8 +45,8 @@ namespace SoftRenderingApp3D {
         /// <param name="v">Float representing the Y texture coordinate for a vertex.</param>
         /// <returns></returns>
         public ColorRGB GetPixelColorLinearFiltering(float u, float v) {
-            float pixelCoordinateX = u * width;
-            float pixelCoordinateY = v * height;
+            int pixelCoordinateX = (int)(MathUtils.Clamp((int)(u * width), 0, width - 1));
+            int pixelCoordinateY = (int)(MathUtils.Clamp((int)(v * height), 0, height - 1));
 
             // Get the ratio between neighbouring pixels
             float xCoordinateRatio = pixelCoordinateX - (int)(pixelCoordinateX);
@@ -56,12 +56,12 @@ namespace SoftRenderingApp3D {
                     // Interpolate between upper two pixels
                     (1 - yCoordinateRatio) *
                         ((1 - xCoordinateRatio) * imageData[(int)pixelCoordinateY * width + (int)(pixelCoordinateX)] +
-                         (xCoordinateRatio) * imageData[(int)pixelCoordinateY * width + ((int)(pixelCoordinateX) + 1)])
+                         (xCoordinateRatio) * imageData[(int)pixelCoordinateY * width + (int)(MathUtils.Clamp((int)(pixelCoordinateX) + 1, 0, width - 1))])
                     +
                     // Interpolate between lower two pixels
                     (yCoordinateRatio *
-                       ((1 - xCoordinateRatio) * imageData[((int)pixelCoordinateY + 1) * width + (int)(pixelCoordinateX)] +
-                         (xCoordinateRatio) * imageData[((int)pixelCoordinateY + 1) * width + ((int)(pixelCoordinateX) + 1)]));
+                       ((1 - xCoordinateRatio) * imageData[(int)(MathUtils.Clamp((int)(pixelCoordinateY) + 1, 0, height - 1)) * width + (int)(pixelCoordinateX)] +
+                         (xCoordinateRatio) * imageData[(int)(MathUtils.Clamp((int)(pixelCoordinateY) + 1, 0, height - 1)) * width + (int)(MathUtils.Clamp((int)(pixelCoordinateX) + 1, 0, width - 1))]));
 
             return new ColorRGB((byte)color.X, (byte)color.Y, (byte)color.Z);
         }

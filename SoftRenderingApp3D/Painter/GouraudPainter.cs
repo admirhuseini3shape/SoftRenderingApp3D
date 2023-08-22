@@ -94,8 +94,6 @@ namespace SoftRenderingApp3D {
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DrawTriangleTextured(Texture texture, VertexBuffer vbx, int triangleIndice, bool linearFiltering) {
-            
-
             vbx.Volume.Triangles[triangleIndice].TransformWorld(vbx);
 
             var surface = RendererContext.Surface;
@@ -120,11 +118,13 @@ namespace SoftRenderingApp3D {
             if(yStart > yEnd) return;
 
             var yMiddle = MathUtils.Clamp((int)p1.Y, yStart, yEnd);
-            
+
             // Calculates the change to the y-coordinate of the texture coordinates for each next pixel
-            var yMiddleTexture = MathUtils.Clamp(texCoord1.Y, texCoord0.Y, texCoord2.Y);
-            var yTextureChange1 = (yMiddleTexture - texCoord0.Y) / (yStart - yEnd);
-            var yTextureChange2 = (texCoord2.Y - yMiddleTexture) / (yStart - yEnd);
+            var yTexStart = texCoord0.Y;
+            var yTexEnd = texCoord2.Y;
+            var yTexMiddle = MathUtils.Clamp(texCoord1.Y, yTexStart, yTexEnd);
+            
+
 
             // This has to move elsewhere
             var lightPos = new Vector3(0, 10, 10);
@@ -140,27 +140,31 @@ namespace SoftRenderingApp3D {
                 // P0
                 //   P1
                 // P2
-                paintHalfTriangleTextured(yStart, (int)yMiddle - 1, texture, p0, p2, p0, p1, nl0, nl2, nl0, nl1, texCoord0, texCoord1, texCoord2, yTextureChange1, linearFiltering);
-                paintHalfTriangleTextured((int)yMiddle, yEnd, texture, p0, p2, p1, p2, nl0, nl2, nl1, nl2, texCoord0, texCoord1, texCoord2, yTextureChange2, linearFiltering);
+                paintHalfTriangleTextured(yStart, (int)yMiddle - 1, texture, p0, p2, p0, p1, nl0, nl2, nl0, nl1, texCoord0, texCoord2, texCoord0, texCoord1, yTexStart, yTexMiddle, linearFiltering);
+                paintHalfTriangleTextured((int)yMiddle, yEnd, texture, p0, p2, p1, p2, nl0, nl2, nl1, nl2, texCoord0, texCoord2, texCoord1, texCoord2, yTexMiddle, yTexEnd, linearFiltering);
             }
             else {
                 //   P0
                 // P1 
                 //   P2
-                paintHalfTriangleTextured(yStart, (int)yMiddle - 1, texture, p0, p1, p0, p2, nl0, nl1, nl0, nl2, texCoord0, texCoord2, texCoord1, yTextureChange1, linearFiltering);
-                paintHalfTriangleTextured((int)yMiddle, yEnd, texture, p1, p2, p0, p2, nl1, nl2, nl0, nl2, texCoord0, texCoord2, texCoord1, yTextureChange2, linearFiltering);
+                paintHalfTriangleTextured(yStart, (int)yMiddle - 1, texture, p0, p1, p0, p2, nl0, nl1, nl0, nl2, texCoord0, texCoord1, texCoord0, texCoord2, yTexStart, yTexMiddle, linearFiltering);
+                paintHalfTriangleTextured((int)yMiddle, yEnd, texture, p1, p2, p0, p2, nl1, nl2, nl0, nl2, texCoord1, texCoord2, texCoord0, texCoord2, yTexMiddle, yTexEnd, linearFiltering);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void paintHalfTriangleTextured(int yStart, int yEnd, Texture texture, Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd, float nla, float nlb, float nlc, float nld, Vector2 texCoord0, Vector2 texCoord1, Vector2 texCoord2, float yTexChange, bool linearFiltering) {
+        void paintHalfTriangleTextured(int yStart, int yEnd, Texture texture, Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd, float nla, float nlb, float nlc, float nld, Vector2 texCoordA, Vector2 texCoordB, Vector2 texCoordC, Vector2 texCoordD, float yTexStart, float yTexEnd, bool linearFiltering) {
             var mg1 = pa.Y == pb.Y ? 1f : 1 / (pb.Y - pa.Y);
             var mg2 = pd.Y == pc.Y ? 1f : 1 / (pd.Y - pc.Y);
 
-            var textureY = texCoord0.Y;
+            var yTexChange = yStart == yEnd ? 1 : (yTexStart - yTexEnd) / (yStart - yEnd);
+
+            var textureY = yTexStart;
 
             for(var y = yStart; y <= yEnd; y++) {
                 var gradient1 = ((y - pa.Y) * mg1).Clamp();
                 var gradient2 = ((y - pc.Y) * mg2).Clamp();
+
+                var yTexGradient = (y - yEnd) * yTexChange;
 
                 var sx = MathUtils.Lerp(pa.X, pb.X, gradient1);
                 var ex = MathUtils.Lerp(pc.X, pd.X, gradient2);
@@ -170,16 +174,17 @@ namespace SoftRenderingApp3D {
                 var sl = MathUtils.Lerp(nla, nlb, gradient1);
                 var el = MathUtils.Lerp(nlc, nld, gradient2);
 
-                var startTextureX = MathUtils.Lerp(texCoord0.X, texCoord1.X, gradient1);
-                var endTextureX = MathUtils.Lerp(texCoord0.X, texCoord2.X, gradient2);
+                var startTextureX = MathUtils.Lerp(texCoordA.X, texCoordB.X, gradient1);
+                var endTextureX = MathUtils.Lerp(texCoordC.X, texCoordD.X, gradient2);
 
                 var sz = MathUtils.Lerp(pa.Z, pb.Z, gradient1);
                 var ez = MathUtils.Lerp(pc.Z, pd.Z, gradient2);
 
+                textureY += yTexChange;
+
                 paintScanlineTextured(y, sx, ex, sz, ez, sl, el, texture, startTextureX, endTextureX, textureY, linearFiltering);
 
                 // Increase the y texture coordinate in each iteration
-                textureY += yTexChange;
             }
         }
 
@@ -192,9 +197,6 @@ namespace SoftRenderingApp3D {
 
             var mx = 1 / (ex - sx);
 
-            var xTextureChange = (endTextureX - startTextureX) / (ex - sx);
-
-            var textureX = startTextureX;
 
             for(var x = minX; x < maxX; x++) {
                 var gradient = (x - sx) * mx;
@@ -203,15 +205,17 @@ namespace SoftRenderingApp3D {
                 var c = MathUtils.Lerp(sl, el, gradient);
 
                 if(linearFiltering) {
+                    var textureX = MathUtils.Lerp(startTextureX, endTextureX, gradient);
                     var color = texture.GetPixelColorLinearFiltering(textureX, textureY);
                     surface.PutPixel((int)x, (int)y, (int)z, c * color);
                 }
                 else {
+                    var textureX = MathUtils.Lerp(startTextureX, endTextureX, gradient);
                     var color = texture.GetPixelColorNearestFiltering(textureX, textureY);
                     surface.PutPixel((int)x, (int)y, (int)z, c * color);
+
                 }
 
-                textureX += xTextureChange;
             }
         }
     }
