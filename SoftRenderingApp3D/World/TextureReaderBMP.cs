@@ -21,12 +21,12 @@ namespace WinForms3D.World {
 
             // Create read image data
             Vector3[] imageData = new Vector3[bmp.Width * bmp.Height];
-            for (int i = 0; i < bmp.Width; i++) {
-                for(int j = 0; j < bmp.Height; j++) {
+            for (int i = 0; i < bmp.Height; i++) {
+                for(int j = 0; j < bmp.Width; j++) {
                     // Get color data for pixel
                     var color = bmp.GetPixel(i, j);
 
-                    imageData[i] = new Vector3(color.R, color.G, color.B);
+                    imageData[i * bmp.Width + j] = new Vector3(color.R, color.G, color.B);
                 }
             }
 

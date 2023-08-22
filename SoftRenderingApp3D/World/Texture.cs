@@ -27,8 +27,11 @@ namespace WinForms3D.World {
         /// <param name="u">Float representing the X texture coordinate for a vertex.</param>
         /// <param name="v">Float representing the Y texture coordinate for a vertex.</param>
         /// <returns></returns>
-        public Vector3 GetRGBNearestFiltering(float u, float v) {
-            
+        public Vector3 GetPixelColorNearestFiltering(float u, float v) {
+            int pixel_x = (int)(u * width);
+            int pixel_y = (int)(v * height);
+
+            return imageData[pixel_y * width + pixel_x];
         }
         /// <summary>
         /// Returns a linearly interpolated color value of the pixels around the texture coordinates provided.
@@ -36,8 +39,26 @@ namespace WinForms3D.World {
         /// <param name="u">Float representing the X texture coordinate for a vertex.</param>
         /// <param name="v">Float representing the Y texture coordinate for a vertex.</param>
         /// <returns></returns>
-        public Vector3 GetRGBLinearFiltering(float u, float v) {
+        public Vector3 GetPixelColorLinearFiltering(float u, float v) {
+            float pixelCoordinateX = u * width;
+            float pixelCoordinateY = v * height;
 
+            // Get the ratio between neighbouring pixels
+            float xCoordinateRatio = pixelCoordinateX - (int)(pixelCoordinateX);
+            float yCoordinateRatio = pixelCoordinateY - (int)(pixelCoordinateY);
+
+            var pixel_color =
+                    // Interpolate between upper two pixels
+                    (1 - yCoordinateRatio) *
+                        ((1 - xCoordinateRatio) * imageData[(int)pixelCoordinateY * width + (int)(pixelCoordinateX)] +
+                         (xCoordinateRatio) * imageData[(int)pixelCoordinateY * width + ((int)(pixelCoordinateX) + 1)])
+                    +
+                    // Interpolate between lower two pixels
+                    (yCoordinateRatio *
+                       ((1 - xCoordinateRatio) * imageData[((int)pixelCoordinateY + 1) * width + (int)(pixelCoordinateX)] +
+                         (xCoordinateRatio) * imageData[((int)pixelCoordinateY + 1) * width + ((int)(pixelCoordinateX) + 1)]));
+
+            return pixel_color;
         }
     }
 }
