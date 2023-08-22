@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using WinForms3D.World;
 
 namespace SoftRenderingApp3D {
 

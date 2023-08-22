@@ -1,22 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WinForms3D.World {
-    class TextureReaderBMP : ITextureReader {
+namespace SoftRenderingApp3D {
+    public class TextureReaderBMP : ITextureReader {
 
         // Reads image data from .bmp file and creates a new texture
-        public Texture ReadImage(string path) {
+        public Texture ReadImage(string filepath) {
             // Load the file 
-            Bitmap bmp = new Bitmap(path);
+            Bitmap bmp;
+
+            using(Stream bmpStream = System.IO.File.Open(filepath, System.IO.FileMode.Open)) {
+                Image image = Image.FromStream(bmpStream);
+
+                bmp = new Bitmap(image);
+
+            }
 
             // Check if file is read sucessfully
             if(bmp == null) {
-                throw new Exception($"Error reading texture. File {path} not found!");
+                throw new Exception($"Error reading texture. File {filepath} not found!");
             }
 
             // Create read image data

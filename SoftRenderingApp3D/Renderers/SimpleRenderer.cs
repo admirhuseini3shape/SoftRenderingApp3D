@@ -46,6 +46,9 @@ namespace SoftRenderingApp3D {
             using var worldBuffer = new WorldBuffer(world);
             renderContext.WorldBuffer = worldBuffer;
 
+            // This needs work, this is only for testing
+            var texture = world.Textures[0];
+
             var volumes = world.Volumes;
             var volumeCount = volumes.Count;
             for(var idxVolume = 0; idxVolume < volumeCount; idxVolume++) {
@@ -111,7 +114,15 @@ namespace SoftRenderingApp3D {
                         wireFramePainter.DrawLine(surface, ColorRGB.Red, startPoint, endPoint);
                     }
 
-                    Painter?.DrawTriangle(color, vbx, idxTriangle);
+                    if (!rendererSettings.ShowTextures)
+                        Painter?.DrawTriangle(color, vbx, idxTriangle);
+                    else {
+                        if(Painter.GetType() == typeof(GouraudPainter)) {
+                            // Cast to GouraudPainter, this needs fixing because currently only the GouraudPainter has implemented the function for drawing textures
+                            GouraudPainter painter = (GouraudPainter)Painter;
+                            painter.DrawTriangleTextured(texture, vbx, idxTriangle);
+                        }
+                    }
 
                     stats.DrawnTriangleCount++;
 

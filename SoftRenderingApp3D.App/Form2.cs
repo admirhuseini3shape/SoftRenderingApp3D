@@ -53,12 +53,14 @@ namespace SoftRenderingApp3D.App {
             chkShowTrianglesNormals.Checked = panel3D1.RendererSettings.ShowTriangleNormals;
             chkShowXZGrid.Checked = panel3D1.RendererSettings.ShowXZGrid;
             chkShowAxes.Checked = panel3D1.RendererSettings.ShowAxes;
+            chkShowTexture.Checked = panel3D1.RendererSettings.ShowTextures;
 
             chkShowTriangles.CheckedChanged += (s, e) => { panel3D1.RendererSettings.ShowTriangles = chkShowTriangles.Checked; panel3D1.Invalidate(); };
             chkShowBackFacesCulling.CheckedChanged += (s, e) => { panel3D1.RendererSettings.BackFaceCulling = chkShowBackFacesCulling.Checked; panel3D1.Invalidate(); };
             chkShowTrianglesNormals.CheckedChanged += (s, e) => { panel3D1.RendererSettings.ShowTriangleNormals = chkShowTrianglesNormals.Checked; panel3D1.Invalidate(); };
             chkShowXZGrid.CheckedChanged += (s, e) => { panel3D1.RendererSettings.ShowXZGrid = chkShowXZGrid.Checked; panel3D1.Invalidate(); };
             chkShowAxes.CheckedChanged += (s, e) => { panel3D1.RendererSettings.ShowAxes = chkShowAxes.Checked; panel3D1.Invalidate(); };
+            chkShowTexture.CheckedChanged += (s, e) => { panel3D1.RendererSettings.ShowTextures = chkShowTexture.Checked; panel3D1.Invalidate(); };
 
             btnBench.Click += (s, e) => {
                 var sw = Stopwatch.StartNew();
@@ -97,6 +99,9 @@ namespace SoftRenderingApp3D.App {
 
         void prepareWorld(string id) {
             var world = new World();
+
+            ITextureReader textureReader = new TextureReaderBMP();
+            world.Textures.Add(textureReader.ReadImage(@"textures\bone.bmp"));
 
             switch(id) {
                 case "skull":

@@ -6,7 +6,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WinForms3D.World {
+namespace SoftRenderingApp3D {
     public class Texture {
         public Vector3[] imageData { get; private set; }
 
