@@ -12,7 +12,7 @@ namespace SoftRenderingApp3D {
             vbx.Volume.Triangles[triangleIndice].TransformWorld(vbx);
 
             var surface = RendererContext.Surface;
-            PainterUtils.SortTrianglePoints(vbx, surface, triangleIndice, out var v0, out var v1, out var v2);
+            PainterUtils.SortTrianglePoints(vbx, surface, triangleIndice, out var v0, out var v1, out var v2, out var index0, out var index1, out var index2);
 
             var p0 = v0.ScreenPoint; var p1 = v1.ScreenPoint; var p2 = v2.ScreenPoint;
 
