@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 namespace SoftRenderingApp3D {
     class PainterUtils {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SortTrianglePoints(VertexBuffer vbx, FrameBuffer frameBuffer, int triangleIndices, out PaintedVertex v0, out PaintedVertex v1, out PaintedVertex v2, out int index0, out int index1, out int index2) {
+        public static void SortTrianglePoints(VertexBuffer vbx, FrameBuffer frameBuffer, int triangleIndices, out PaintedVertex v0, out PaintedVertex v1, out PaintedVertex v2) {
             var t = vbx.Volume.Triangles[triangleIndices];
 
             var worldNormVertices = vbx.WorldNormVertices;
@@ -15,21 +15,14 @@ namespace SoftRenderingApp3D {
             v1 = new PaintedVertex(worldNormVertices[t.I1], frameBuffer.ToScreen3(projectionVertices[t.I1]), worldVertices[t.I1]);
             v2 = new PaintedVertex(worldNormVertices[t.I2], frameBuffer.ToScreen3(projectionVertices[t.I2]), worldVertices[t.I2]);
 
-            index0 = t.I0;
-            index1 = t.I1;
-            index2 = t.I2;
-
             if(v0.ScreenPoint.Y > v1.ScreenPoint.Y) {
                 MiscUtils.Swap(ref v0, ref v1);
-                MiscUtils.Swap(ref index0, ref index1);
             }
             if(v1.ScreenPoint.Y > v2.ScreenPoint.Y) {
                 MiscUtils.Swap(ref v1, ref v2);
-                MiscUtils.Swap(ref index1, ref index2);
             }
             if(v0.ScreenPoint.Y > v1.ScreenPoint.Y) {
                 MiscUtils.Swap(ref v0, ref v1);
-                MiscUtils.Swap(ref index0, ref index1);
             }
         }
 
