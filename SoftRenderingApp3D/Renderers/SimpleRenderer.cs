@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 
 namespace SoftRenderingApp3D {
 
@@ -60,6 +61,7 @@ namespace SoftRenderingApp3D {
                 var worldMatrix = volume.WorldMatrix();
                 var modelViewMatrix = worldMatrix * viewMatrix;
 
+
                 vbx.Volume = volume;
                 vbx.WorldMatrix = worldMatrix;
 
@@ -71,7 +73,7 @@ namespace SoftRenderingApp3D {
                 // Transform and store vertices to View
                 var vertexCount = vertices.Length;
                 for(var idxVertex = 0; idxVertex < vertexCount; idxVertex++) {
-                    viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex], modelViewMatrix);
+                    viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex], viewMatrix);
                 }
 
                 var triangleCount = volume.Triangles.Length;

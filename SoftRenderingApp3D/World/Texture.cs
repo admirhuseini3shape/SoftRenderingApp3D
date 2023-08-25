@@ -45,8 +45,8 @@ namespace SoftRenderingApp3D {
         /// <param name="v">Float representing the Y texture coordinate for a vertex.</param>
         /// <returns></returns>
         public ColorRGB GetPixelColorLinearFiltering(float u, float v) {
-            int pixelCoordinateX = (int)(MathUtils.Clamp((int)(u * width), 0, width - 1));
-            int pixelCoordinateY = (int)(MathUtils.Clamp((int)(v * height), 0, height - 1));
+            float pixelCoordinateX = (MathUtils.Clamp((u * width), 0, width - 1));
+            float pixelCoordinateY = (MathUtils.Clamp((v * height), 0, height - 1));
 
             // Get the ratio between neighbouring pixels
             float xCoordinateRatio = pixelCoordinateX - (int)(pixelCoordinateX);

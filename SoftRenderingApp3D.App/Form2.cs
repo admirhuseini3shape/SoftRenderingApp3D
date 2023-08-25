@@ -78,8 +78,8 @@ namespace SoftRenderingApp3D.App {
 
             var projection = new FovPerspectiveProjection(40f * (float)Math.PI / 180f, .01f, 500f);
 
-            arcBallCam = new ArcBallCam { Position = new Vector3(0, 0, -60) };
-            flyCam = new FlyCam { Position = new Vector3(0, 0, -60) };
+            arcBallCam = new ArcBallCam { Position = new Vector3(0, 0, -25) };
+            flyCam = new FlyCam { Position = new Vector3(0, 0, -25) };
 
             var arcBallCamHandler = new ArcBallCamHandler(this.panel3D1, arcBallCam);
             var flyCamHandler = new FlyCamHandler(this.panel3D2, flyCam);
