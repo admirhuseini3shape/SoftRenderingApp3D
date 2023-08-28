@@ -114,17 +114,20 @@ namespace SoftRenderingApp3D {
             if(worldVertices[I2] == Vector3.Zero)
                 worldVertices[I2] = Vector3.Transform(worldVertices[I2], worldMatrix);
 
-            if(textureCoordinates[I0] == Vector2.Zero) {
-                var temp = Vector3.Transform(new Vector3(textureCoordinates[I0].X, textureCoordinates[I0].Y, 1.0f), worldMatrix);
-                textureCoordinates[I0] = new Vector2(temp.X, temp.Y);
-            }
-            if(textureCoordinates[I1] == Vector2.Zero) {
-                var temp = Vector3.Transform(new Vector3(textureCoordinates[I1].X, textureCoordinates[I1].Y, 1.0f), worldMatrix);
-                textureCoordinates[I1] = new Vector2(temp.X, temp.Y);
-            }
-            if(textureCoordinates[I2] == Vector2.Zero) {
-                var temp = Vector3.Transform(new Vector3(textureCoordinates[I2].X, textureCoordinates[I2].Y, 1.0f), worldMatrix);
-                textureCoordinates[I2] = new Vector2(temp.X, temp.Y);
+            // Check if volume has texture data
+            if(vbx.Volume.TexCoordinates != null) {
+                if(textureCoordinates[I0] == Vector2.Zero) {
+                    var temp = Vector3.Transform(new Vector3(textureCoordinates[I0].X, textureCoordinates[I0].Y, 1.0f), worldMatrix);
+                    textureCoordinates[I0] = new Vector2(temp.X, temp.Y);
+                }
+                if(textureCoordinates[I1] == Vector2.Zero) {
+                    var temp = Vector3.Transform(new Vector3(textureCoordinates[I1].X, textureCoordinates[I1].Y, 1.0f), worldMatrix);
+                    textureCoordinates[I1] = new Vector2(temp.X, temp.Y);
+                }
+                if(textureCoordinates[I2] == Vector2.Zero) {
+                    var temp = Vector3.Transform(new Vector3(textureCoordinates[I2].X, textureCoordinates[I2].Y, 1.0f), worldMatrix);
+                    textureCoordinates[I2] = new Vector2(temp.X, temp.Y);
+                }
             }
 
 

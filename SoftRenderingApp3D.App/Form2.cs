@@ -27,6 +27,8 @@ namespace SoftRenderingApp3D.App {
                 new { display = "Cube", id = "cube" },
                 new { display = "Big cube", id = "bigcube" },
                 new { display = "Empty", id = "empty" },
+                new { display = "Planetary Toy STL", id = "stl-mesh-1"},
+                new { display = "Star Destroyer STL", id = "stl-mesh-2"}
             };
 
             lstDemos.ValueMember = "id";
@@ -102,6 +104,8 @@ namespace SoftRenderingApp3D.App {
         void prepareWorld(string id) {
             var world = new World();
 
+            ColladaReader colladaReader = new ColladaReader();
+            STLReader stlReader = new STLReader();
             ITextureReader textureReader = new TextureReaderBMP();
             world.Textures.Add(textureReader.ReadImage(@"textures\bone.bmp"));
             world.Textures.Add(textureReader.ReadImage(@"textures\glass_effect.bmp"));
@@ -109,13 +113,21 @@ namespace SoftRenderingApp3D.App {
 
 
             switch(id) {
+                case "stl-mesh-1":
+                    world.Volumes.AddRange(stlReader.ReadFile(@"models\Planetary_Toy_D80.stl"));
+                    arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
+                    break;
+                case "stl-mesh-2":
+                    world.Volumes.AddRange(stlReader.ReadFile(@"models\Star_Destroyer_Fixed.stl"));
+                    arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
+                    break;
                 case "skull":
-                    world.Volumes.AddRange(VolumeFactory.NewImportCollada(@"models\skull.dae"));
+                    world.Volumes.AddRange(colladaReader.ReadFile(@"models\skull.dae"));
                     arcBallCam.Position += new Vector3(0, 0,  -5 - arcBallCam.Position.Z);
                     break;
 
                 case "teapot":
-                    world.Volumes.AddRange(VolumeFactory.NewImportCollada(@"models\teapot.dae"));
+                    world.Volumes.AddRange(colladaReader.ReadFile(@"models\teapot.dae"));
                     break;
 
                 case "empty":
