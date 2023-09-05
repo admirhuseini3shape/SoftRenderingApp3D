@@ -131,6 +131,9 @@ namespace SoftRenderingApp3D {
 
                     stats.CalcTime();
                 }
+
+                // Only draw one volume, will remove later
+                break;
             }
 
             if(rendererSettings.ShowXZGrid)

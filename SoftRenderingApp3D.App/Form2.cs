@@ -28,7 +28,8 @@ namespace SoftRenderingApp3D.App {
                 new { display = "Big cube", id = "bigcube" },
                 new { display = "Empty", id = "empty" },
                 new { display = "Planetary Toy STL", id = "stl-mesh-1"},
-                new { display = "Star Destroyer STL", id = "stl-mesh-2"}
+                new { display = "Star Destroyer STL", id = "stl-mesh-2"},
+                new { display = "Jaw", id = "jaw"}
             };
 
             lstDemos.ValueMember = "id";
@@ -113,6 +114,11 @@ namespace SoftRenderingApp3D.App {
 
 
             switch(id) {
+                case "jaw":
+                    world.Volumes.AddRange(stlReader.ReadFile(@"models\original.stl"));
+                    world.Volumes.AddRange(stlReader.ReadFile(@"models\offset_2.stl"));
+                    arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
+                    break;
                 case "stl-mesh-1":
                     world.Volumes.AddRange(stlReader.ReadFile(@"models\Planetary_Toy_D80.stl"));
                     arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
