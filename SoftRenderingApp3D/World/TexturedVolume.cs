@@ -1,24 +1,24 @@
-﻿using System.Linq;
+﻿using SoftRenderingApp3D;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SoftRenderingApp3D {
-    public class Volume : IVolume {
-        public Volume(Vector3[] vertices, Triangle[] triangleIndices, Vector3[] vertexNormals = null, Vector2[] textureCoordinates = null, ColorRGB[] triangleColors = null) {
+    public class TexturedVolume : IVolume {
+        public TexturedVolume(Vector3[] vertices, Triangle[] triangleIndices, Vector3[] vertexNormals = null, Vector2[] textureCoordinates = null) {
             Vertices = vertices;
             Triangles = triangleIndices;
-
             NormVertices = vertexNormals ?? this.CalculateVertexNormals().ToArray();
-            TexCoordinates = textureCoordinates;
-            TriangleColors = triangleColors ?? Enumerable.Repeat(ColorRGB.Gray, Triangles.Length).ToArray();
+            TextureCoordinates = textureCoordinates;
 
             Scale = Vector3.One;
         }
-
         public Vector3[] Vertices { get; }
 
-        public Vector2[] TexCoordinates { get; }
-
-        public ColorRGB[] TriangleColors { get; }
+        public Vector2[] TextureCoordinates { get; }
 
         public Triangle[] Triangles { get; }
 

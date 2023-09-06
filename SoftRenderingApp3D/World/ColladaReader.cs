@@ -9,9 +9,7 @@ using System.Xml.Linq;
 namespace SoftRenderingApp3D {
     public class ColladaReader : FileReader { 
 
-        // Work in progress
-
-        public static IEnumerable<Volume> ColladaImport(string fileName) {
+        public static IEnumerable<IVolume> ColladaImport(string fileName) {
             XNamespace ns = "http://www.collada.org/2005/11/COLLADASchema";
 
             var xdoc = XDocument.Load(fileName);
@@ -43,12 +41,12 @@ namespace SoftRenderingApp3D {
                     var vertices_normal = getArraySource<Vector3>(mesh, vertices_normal_id);
                     var texture_coordinates = getArraySource<Vector2>(mesh, texture_coordinates_id);
 
-                    yield return new Volume(
+                    yield return new TexturedVolume(
                         vertices_position.ToArray(),
                         polylist_p.ToArray().BuildTriangleIndices().ToArray(),
                         vertices_normal.ToArray(),
-                        texture_coordinates.ToArray(),
-                        null);
+                        texture_coordinates.ToArray()
+                        );
                 }
 
                 var triangles = mesh.Element(ns + "triangles");
@@ -67,11 +65,11 @@ namespace SoftRenderingApp3D {
                     var vertices_position = getArraySource<Vector3>(mesh, vertices_position_id);
                     // var triangles_normal = getArraySource<Vector3>(mesh, triangles_normal_id);
 
-                    yield return new Volume(
+                    yield return new BasicVolume(
                         vertices_position.ToArray(),
                         getTriangles(triangles_p, stride).ToArray(),
-                        null, // triangles_normal.ToArray(),
-                        null);
+                        null // triangles_normal.ToArray(),
+                        );
                 }
             }
         }
@@ -115,7 +113,7 @@ namespace SoftRenderingApp3D {
 
         }
 
-        public IEnumerable<Volume> ReadFile(string fileName) {
+        public IEnumerable<IVolume> ReadFile(string fileName) {
             return ColladaImport(fileName);
         }
     }

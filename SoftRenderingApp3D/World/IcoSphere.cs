@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 
 namespace SoftRenderingApp3D {
-    public class IcoSphere : Volume {
+    public class IcoSphere : BasicVolume {
 
         IcoSphere(sphere sphere) : base(sphere.points.ToArray(), sphere.faces.ToArray()) {
         }

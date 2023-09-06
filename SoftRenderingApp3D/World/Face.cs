@@ -2,7 +2,7 @@
 using System.Numerics;
 
 namespace SoftRenderingApp3D {
-    public class Face : Volume {
+    public class Face : BasicVolume {
 
         public Face() : base(
             new[] {

@@ -11,13 +11,13 @@ namespace SoftRenderingApp3D {
         int size { get; }
 
         public WorldBuffer(IWorld w) {
-            var volumes = w.Volumes;
-            size = volumes.Count;
+            var models = w.Models;
+            size = models.Count;
 
             VertexBuffer = vertexBuffer3bag.Rent(size);
 
             for(var i = 0; i < size; i++) {
-                VertexBuffer[i] = new VertexBuffer(volumes[i].Vertices.Length);
+                VertexBuffer[i] = new VertexBuffer(models[i].volume.Vertices.Length);
             }
         }
 

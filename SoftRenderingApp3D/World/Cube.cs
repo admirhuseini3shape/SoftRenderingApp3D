@@ -1,46 +1,38 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Numerics;
 
 namespace SoftRenderingApp3D {
-    public class Cube : Volume {
+    public class Cube : BasicModel {
 
-        public Cube() : base(
-            new[] {
-                new Vector3(1, 1, 1) - new Vector3(.5f, .5f, .5f),
-                new Vector3(0, 1, 1) - new Vector3(.5f, .5f, .5f),
-                new Vector3(0, 0, 1) - new Vector3(.5f, .5f, .5f),
-                new Vector3(1, 0, 1) - new Vector3(.5f, .5f, .5f),
-                new Vector3(1, 0, 0) - new Vector3(.5f, .5f, .5f),
-                new Vector3(1, 1, 0) - new Vector3(.5f, .5f, .5f),
-                new Vector3(0, 1, 0) - new Vector3(.5f, .5f, .5f),
-                new Vector3(0, 0, 0) - new Vector3(.5f, .5f, .5f),
-            },
-            new[] {
-                0, 1, 2,
-                2, 3, 0,
-                0, 3, 4,
-                4, 5, 0,
-                0, 5, 6,
-                6, 1, 0,
-                1, 6, 7,
-                7, 2, 1,
-                7, 4, 3,
-                3, 2, 7,
-                4, 7, 6,
-                6, 5, 4
-            }.BuildTriangleIndices().ToArray(),
-            null,
-            new[] { 
-                new Vector2(1.0f, 1.0f),
-                new Vector2(0.0f, 1.0f),
-                new Vector2(0.0f, 0.0f),
-                new Vector2(1.0f, 0.0f),
-                new Vector2(1.0f, 0.0f),
-                new Vector2(1.0f, 1.0f),
-                new Vector2(0.0f, 1.0f),
-                new Vector2(0.0f, 0.0f)
-            },
-            new ColorRGB[] {
+        public Cube() : base(new BasicVolume(
+                new[] {
+                    new Vector3(1, 1, 1) - new Vector3(.5f, .5f, .5f),
+                    new Vector3(0, 1, 1) - new Vector3(.5f, .5f, .5f),
+                    new Vector3(0, 0, 1) - new Vector3(.5f, .5f, .5f),
+                    new Vector3(1, 0, 1) - new Vector3(.5f, .5f, .5f),
+                    new Vector3(1, 0, 0) - new Vector3(.5f, .5f, .5f),
+                    new Vector3(1, 1, 0) - new Vector3(.5f, .5f, .5f),
+                    new Vector3(0, 1, 0) - new Vector3(.5f, .5f, .5f),
+                    new Vector3(0, 0, 0) - new Vector3(.5f, .5f, .5f),
+                },
+                new[] {
+                    0, 1, 2,
+                    2, 3, 0,
+                    0, 3, 4,
+                    4, 5, 0,
+                    0, 5, 6,
+                    6, 1, 0,
+                    1, 6, 7,
+                    7, 2, 1,
+                    7, 4, 3,
+                    3, 2, 7,
+                    4, 7, 6,
+                    6, 5, 4
+                }.BuildTriangleIndices().ToArray(),
+                null)) {
+
+            base.colors = new ColorRGB[] {
                 ColorRGB.Red,
                 ColorRGB.Red,
                 ColorRGB.Gray,
@@ -52,8 +44,8 @@ namespace SoftRenderingApp3D {
                 ColorRGB.Magenta,
                 ColorRGB.Magenta,
                 ColorRGB.Blue,
-                ColorRGB.Blue,
-            }) {
+                ColorRGB.Blue
+            };
         }
     }
 }

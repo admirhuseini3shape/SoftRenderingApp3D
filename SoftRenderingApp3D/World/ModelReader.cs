@@ -12,7 +12,7 @@ namespace SoftRenderingApp3D {
         }
     }
     public static class ModelReader {
-        public static IEnumerable<Volume> ReadFile(string path) {
+        public static IEnumerable<BasicVolume> ReadFile(string path) {
             if(path.Contains(".stl")) {
                 return new STLReader().ReadFile(path);
             }

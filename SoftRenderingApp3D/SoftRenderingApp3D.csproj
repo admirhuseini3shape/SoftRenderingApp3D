@@ -105,8 +105,10 @@
     <Compile Include="World\IcoSphere.cs" />
     <Compile Include="World\FileReader.cs" />
     <Compile Include="World\ILightSource.cs" />
+    <Compile Include="World\IModel.cs" />
     <Compile Include="World\ITextureReader.cs" />
     <Compile Include="World\IVolume.cs" />
+    <Compile Include="World\BasicVolume.cs" />
     <Compile Include="IWorld.cs" />
     <Compile Include="Panel3D.cs">
       <SubType>UserControl</SubType>
@@ -118,6 +120,8 @@
     <Compile Include="World\ModelReader.cs" />
     <Compile Include="World\STLReader.cs" />
     <Compile Include="World\Texture.cs" />
+    <Compile Include="World\TexturedModel.cs" />
+    <Compile Include="World\TexturedVolume.cs" />
     <Compile Include="World\TextureReaderBMP.cs" />
     <Compile Include="World\VolumeEx.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -142,7 +146,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="documentation.txt" />
-    <Compile Include="World\Volume.cs" />
+    <Compile Include="World\BasicModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Buffers">

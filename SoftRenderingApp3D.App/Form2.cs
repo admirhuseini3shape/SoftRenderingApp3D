@@ -106,117 +106,57 @@ namespace SoftRenderingApp3D.App {
             var world = new World();
 
             ITextureReader textureReader = new TextureReaderBMP();
-            world.Textures.Add(textureReader.ReadImage(@"textures\bone.bmp"));
-            world.Textures.Add(textureReader.ReadImage(@"textures\glass_effect.bmp"));
-            world.Textures.Add(textureReader.ReadImage(@"textures\bone_high.bmp"));
-
 
             switch(id) {
                 case "jaw":
-                    world.Volumes.AddRange(ModelReader.ReadFile(@"models\original.stl"));
-                    world.Volumes.AddRange(ModelReader.ReadFile(@"models\offset_2.stl"));
+                    var volume = ModelReader.ReadFile(@"models\original.stl");
+                    var volume_offset = ModelReader.ReadFile(@"models\offset_2.stl");
+                    world.Models.Add(new BasicModel((BasicVolume)volume));
+                    world.Models.Add(new BasicModel((BasicVolume)volume_offset));
                     arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
                     break;
                 case "stl-mesh-1":
-                    world.Volumes.AddRange(ModelReader.ReadFile(@"models\Planetary_Toy_D80.stl"));
+                    volume = ModelReader.ReadFile(@"models\Planetary_Toy_D80.stl");
+                    world.Models.Add(new BasicModel((BasicVolume)volume));
                     arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
                     break;
                 case "stl-mesh-2":
-                    world.Volumes.AddRange(ModelReader.ReadFile(@"models\Star_Destroyer_Fixed.stl"));
+                    volume = ModelReader.ReadFile(@"models\Star_Destroyer_Fixed.stl");
+                    world.Models.Add(new BasicModel((BasicVolume)volume));
                     arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
                     break;
                 case "skull":
-                    world.Volumes.AddRange(ModelReader.ReadFile(@"models\skull.dae"));
+                    volume = ModelReader.ReadFile(@"models\skull.dae");
+                    if(volume is BasicVolume) {
+                        world.Models.Add(new BasicModel((BasicVolume)volume));
+                    }
+                    if(volume is TexturedVolume) {
+                        var texture = new TextureReaderBMP().ReadImage("bone_high.bmp");
+                        world.Models.Add(new TexturedModel((TexturedVolume)volume, texture));
+                    }
+                    else {
+                        throw new Exception($"Invalid object type when reading creating model, object type: {volume.GetType()}");
+                    }
                     arcBallCam.Position += new Vector3(0, 0,  -5 - arcBallCam.Position.Z);
                     break;
 
                 case "teapot":
-                    world.Volumes.AddRange(ModelReader.ReadFile(@"models\teapot.dae"));
+                    volume = ModelReader.ReadFile(@"models\teapot.dae");
+                    if(volume is BasicVolume) {
+                        world.Models.Add(new BasicModel((BasicVolume)volume));
+                    }
+                    if(volume is TexturedVolume) {
+                        var texture = new TextureReaderBMP().ReadImage("glass_effect.bmp");
+                        world.Models.Add(new TexturedModel((TexturedVolume)volume, texture));
+                    }
+                    else {
+                        throw new Exception($"Invalid object type when reading creating model, object type: {volume.GetType()}");
+                    }
+                    arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
                     break;
-
+                    
                 case "empty":
                     break;
-
-                case "town": {
-                        var d = 50; var s = 2;
-                        for(var x = -d; x <= d; x += s)
-                            for(var z = -d; z <= d; z += s) {
-                                world.Volumes.Add(
-                                    new Cube() {
-                                        Position = new Vector3(x, 0, z),
-                                        // Scale = new Vector3(1, r.Next(1, 50), 1)
-                                    });
-                            }
-                        break;
-                    }
-
-                case "littletown": {
-                        var d = 10; var s = 2;
-                        for(var x = -d; x <= d; x += s)
-                            for(var z = -d; z <= d; z += s) {
-                                world.Volumes.Add(
-                                    new Cube() {
-                                        Position = new Vector3(x, 0, z),
-                                        // Scale = new Vector3(1, r.Next(1, 50), 1)
-                                    });
-                            }
-                        break;
-                    }
-
-                case "bigtown": {
-                        var d = 200; var s = 2;
-                        for(var x = -d; x <= d; x += s)
-                            for(var z = -d; z <= d; z += s) {
-                                world.Volumes.Add(
-                                    new Cube() {
-                                        Position = new Vector3(x, 0, z),
-                                        // Scale = new Vector3(1, r.Next(1, 50), 1)
-                                    });
-                            }
-                        break;
-                    }
-
-                case "cube":
-                    world.Volumes.Add(new Cube());
-                    break;
-
-                case "bigcube":
-                    world.Volumes.Add(new Cube() { Scale = new Vector3(100, 100, 100) });
-                    break;
-
-                case "spheres": {
-                        var d = 5; var s = 2; var r = new Random();
-                        for(var x = -d; x <= d; x += s)
-                            for(var y = -d; y <= d; y += s)
-                                for(var z = -d; z <= d; z += s) {
-                                    world.Volumes.Add(
-                                        new IcoSphere(2) {
-                                            Position = new System.Numerics.Vector3(x, y, z),
-                                            Rotation = new Rotation3D(
-                                                (float)r.Next(-90, 90),
-                                                (float)r.Next(-90, 90),
-                                                (float)r.Next(-90, 90)).ToRad()
-                                        });
-                                }
-                        break;
-                    }
-
-                case "cubes": {
-                        var d = 20; var s = 2; var r = new Random();
-                        for(var x = -d; x <= d; x += s)
-                            for(var y = -d; y <= d; y += s)
-                                for(var z = -d; z <= d; z += s) {
-                                    world.Volumes.Add(
-                                        new Cube() {
-                                            Position = new System.Numerics.Vector3(x, y, z),
-                                            Rotation = new Rotation3D(
-                                                (float)r.Next(-90, 90),
-                                                (float)r.Next(-90, 90),
-                                                (float)r.Next(-90, 90)).ToRad()
-                                        });
-                                }
-                        break;
-                    }
             }
 
             world.LightSources.Add(new LightSource { Position = new Vector3(0, 0, 10) });

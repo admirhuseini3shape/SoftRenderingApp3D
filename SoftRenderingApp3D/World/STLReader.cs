@@ -11,7 +11,7 @@ using System.Numerics;
 
 namespace SoftRenderingApp3D {
     public class STLReader : FileReader {
-        public IEnumerable<Volume> ReadFile(string fileName) {
+        public IEnumerable<IVolume> ReadFile(string fileName) {
             this.path = fileName;
             return STLImport();
         }
@@ -51,7 +51,7 @@ namespace SoftRenderingApp3D {
         * @param  none
         * @retval Volume
         */
-        public IEnumerable<Volume> STLImport() {
+        public IEnumerable<IVolume> STLImport() {
 
             FileType stlFileType = GetFileType(path);
 
@@ -111,7 +111,7 @@ namespace SoftRenderingApp3D {
         * @param  filePath
         * @retval meshList
         */
-        private Volume ReadBinaryFile(string filePath) {
+        private IVolume ReadBinaryFile(string filePath) {
             List<Vector3> vertices = new List<Vector3>();
             List<Vector3> normals = new List<Vector3>();
             List<Triangle> triangleIndices = new List<Triangle>();
@@ -240,11 +240,10 @@ namespace SoftRenderingApp3D {
             if(processError)
                 throw new FileLoadException($"Error reading file: {path}!");
 
-            return new Volume(vertices.ToArray(),
+            return new BasicVolume(vertices.ToArray(),
                              triangleIndices.ToArray(),
-                             normals.ToArray(),
-                             null,
-                             null);
+                             normals.ToArray()
+                             );
         }
 
 
@@ -253,7 +252,7 @@ namespace SoftRenderingApp3D {
         * @param  filePath
         * @retval meshList
         */
-        private Volume ReadASCIIFile(string filePath) {
+        private IVolume ReadASCIIFile(string filePath) {
             List<Vector3> vertices = new List<Vector3>();
             List<Vector3> normals = new List<Vector3>();
             List<Triangle> triangleIndices = new List<Triangle>();
@@ -375,11 +374,9 @@ namespace SoftRenderingApp3D {
                 } // if solid
             } // while !endofstream
 
-            return new Volume(vertices.ToArray(),
+            return new BasicVolume(vertices.ToArray(),
                               triangleIndices.ToArray(),
-                              normals.ToArray(),
-                              null,
-                              null);
+                              normals.ToArray());
         }
 
     }
