@@ -115,6 +115,7 @@
       <DependentUpon>Panel3D.cs</DependentUpon>
     </Compile>
     <Compile Include="Triangle.cs" />
+    <Compile Include="World\ModelReader.cs" />
     <Compile Include="World\STLReader.cs" />
     <Compile Include="World\Texture.cs" />
     <Compile Include="World\TextureReaderBMP.cs" />

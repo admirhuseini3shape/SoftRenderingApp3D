@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SoftRenderingApp3D {
-    public abstract class FileReader {
-        public abstract IEnumerable<Volume> ReadFile(string fileName);
+    public interface FileReader {
+        public IEnumerable<Volume> ReadFile(string fileName);
     }
 }

@@ -137,7 +137,7 @@ namespace SoftRenderingApp3D {
 
         }
 
-        public override IEnumerable<Volume> ReadFile(string fileName) {
+        public IEnumerable<Volume> ReadFile(string fileName) {
             return NewImportCollada(fileName);
         }
     }

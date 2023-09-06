@@ -11,7 +11,7 @@ using System.Numerics;
 
 namespace SoftRenderingApp3D {
     public class STLReader : FileReader {
-        public override IEnumerable<Volume> ReadFile(string fileName) {
+        public IEnumerable<Volume> ReadFile(string fileName) {
             this.path = fileName;
             return NewSTLImport();
         }
