@@ -7,33 +7,11 @@ using System.Numerics;
 using System.Xml.Linq;
 
 namespace SoftRenderingApp3D {
-    public class ColladaReader : FileReader {
-
-        // Collada import is a brittle hack and need a serious work
-
-        public static IEnumerable<Volume> ImportCollada(string fileName) {
-            var ns = "http://www.collada.org/2005/11/COLLADASchema";
-            var xdoc = XDocument.Load(fileName);
-            var xvolumes = xdoc.Descendants(XName.Get("geometry", ns));
-            foreach(var xvolume in xvolumes) {
-                var xid = xvolume.Attribute("id").Value;
-
-                string svertices = xvolume.Descendants().First(e => e.Attribute("id")?.Value == $"{xid}-positions-array").Value;
-                var vertices = svertices.Split(" ".ToArray(), StringSplitOptions.RemoveEmptyEntries).Select(x => float.Parse(x, CultureInfo.InvariantCulture)).ToArray().BuildVector3s().ToArray();
-
-                string snormals = xvolume.Descendants().First(e => e.Attribute("id")?.Value == $"{xid}-normals-array").Value;
-                var normals = snormals.Split(" ".ToArray(), StringSplitOptions.RemoveEmptyEntries).Select(x => float.Parse(x, CultureInfo.InvariantCulture)).ToArray().BuildVector3s().ToArray();
-
-                string striangles = xvolume.Descendants(XName.Get("p", ns)).First().Value;
-                var triangles = striangles.Split(" ".ToArray(), StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x, CultureInfo.InvariantCulture)).ToArray().BuildTriangleIndices().ToArray();
-
-                yield return new Volume(vertices, triangles, normals, null);
-            }
-        }
+    public class ColladaReader : FileReader { 
 
         // Work in progress
 
-        public static IEnumerable<Volume> NewImportCollada(string fileName) {
+        public static IEnumerable<Volume> ColladaImport(string fileName) {
             XNamespace ns = "http://www.collada.org/2005/11/COLLADASchema";
 
             var xdoc = XDocument.Load(fileName);
@@ -138,7 +116,7 @@ namespace SoftRenderingApp3D {
         }
 
         public IEnumerable<Volume> ReadFile(string fileName) {
-            return NewImportCollada(fileName);
+            return ColladaImport(fileName);
         }
     }
 }

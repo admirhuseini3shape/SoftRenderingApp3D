@@ -13,7 +13,7 @@ namespace SoftRenderingApp3D {
     public class STLReader : FileReader {
         public IEnumerable<Volume> ReadFile(string fileName) {
             this.path = fileName;
-            return NewSTLImport();
+            return STLImport();
         }
 
         public string path; // file path
@@ -51,7 +51,7 @@ namespace SoftRenderingApp3D {
         * @param  none
         * @retval Volume
         */
-        public IEnumerable<Volume> NewSTLImport() {
+        public IEnumerable<Volume> STLImport() {
 
             FileType stlFileType = GetFileType(path);
 
