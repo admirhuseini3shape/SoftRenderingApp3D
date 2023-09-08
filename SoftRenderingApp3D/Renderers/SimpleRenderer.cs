@@ -57,18 +57,20 @@ namespace SoftRenderingApp3D {
 
                 var vbx = worldBuffer.VertexBuffer[idxVolume];
                 var volume = volumes[idxVolume];
-
+                
                 var worldMatrix = volume.WorldMatrix();
                 var modelViewMatrix = worldMatrix * viewMatrix;
+                
+                vbx.Volume = volume;            
 
-
-                vbx.Volume = volume;
                 vbx.WorldMatrix = worldMatrix;
-
+                
                 stats.TotalTriangleCount += volume.Triangles.Length;
 
                 var vertices = volume.Vertices;
                 var viewVertices = vbx.ViewVertices;
+
+
 
                 // Transform and store vertices to View
                 var vertexCount = vertices.Length;
@@ -131,6 +133,71 @@ namespace SoftRenderingApp3D {
 
                     stats.CalcTime();
                 }
+
+
+                if(world.Volumes.Count > 1) {
+
+                    var offsetVbx = worldBuffer.VertexBuffer[idxVolume + 1];
+
+                    var offsetVolume = volumes[idxVolume + 1];
+
+                    var offsetWorldMatrix = offsetVolume.WorldMatrix();
+                    var offsetModelViewMatrix = offsetWorldMatrix * viewMatrix;
+
+                    // Add the second .stl file as a volume that will not be drawn
+                    // fix this later, this is for testing
+                    offsetVbx.Volume = offsetVolume;
+
+                    offsetVbx.WorldMatrix = offsetWorldMatrix;
+
+                    var offsetVertices = offsetVolume.Vertices;
+                    var offsetViewVertices = offsetVbx.ViewVertices;
+
+                    var vertexOffsetCount = offsetVertices.Length;
+                    for(var idxVertex = 0; idxVertex < vertexOffsetCount; idxVertex++) {
+                        offsetViewVertices[idxVertex] = Vector3.Transform(offsetVertices[idxVertex], viewMatrix);
+                    }
+
+                    var offsetTriangleCount = offsetVolume.Triangles.Length;
+                    for(var idxTriangle = 0; idxTriangle < offsetTriangleCount; idxTriangle++) {
+                        var t = offsetVolume.Triangles[idxTriangle];
+
+                        // Discard if behind far plane
+                        if(t.IsBehindFarPlane(offsetVbx)) {
+                            stats.BehindViewTriangleCount++;
+                            continue;
+                        }
+
+                        // Discard if back facing 
+                        if(rendererSettings.BackFaceCulling && t.IsFacingBack(offsetVbx)) {
+                            stats.FacingBackTriangleCount++;
+                            continue;
+                        }
+
+                        // Project in frustum
+                        t.TransformProjection(offsetVbx, projectionMatrix);
+
+                        // Discard if outside view frustum
+                        if(t.isOutsideFrustum(offsetVbx)) {
+                            stats.OutOfViewTriangleCount++;
+                            continue;
+                        }
+
+                        stats.PaintTime();
+
+                        var color = offsetVolume.TriangleColors[idxTriangle];
+
+                        // Cast to GouraudPainter, this needs fixing because currently only the GouraudPainter has implemented the function for drawing textures
+                        SubsurfacePainter painter = new SubsurfacePainter();
+                        painter.RendererContext = renderContext; 
+                        painter.DrawTriangle(color, offsetVbx, idxTriangle);
+
+                    }
+                }
+
+
+
+                surface.CombineScreens();
 
                 // Only draw one volume, will remove later
                 break;

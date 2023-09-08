@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Drawing;
 
 namespace SoftRenderingApp3D {
 
@@ -10,8 +11,10 @@ namespace SoftRenderingApp3D {
         
         private readonly RenderContext renderContext;
         private int[] zBuffer;
+        private int[] zScatterBuffer;
 
         public int[] Screen { get; }
+        public int[] ScatterScreen { get; }
 
         internal int Width { get; }
         internal int Height { get; }
@@ -28,7 +31,11 @@ namespace SoftRenderingApp3D {
 
         public FrameBuffer(int width, int height, RenderContext renderContext) {
             this.Screen = new int[width * height];
+            this.ScatterScreen = new int[width * height];
+
             this.zBuffer = new int[width * height];
+            this.zScatterBuffer = new int[width * height];
+
 
             this.emptyBuffer = new int[width * height];
             this.emptyZBuffer = new int[width * height];
@@ -43,7 +50,11 @@ namespace SoftRenderingApp3D {
 
         public void Clear() {
             Array.Copy(emptyBuffer, Screen, Screen.Length);
+            Array.Copy(emptyBuffer, ScatterScreen, ScatterScreen.Length);
+
             Array.Copy(emptyZBuffer, zBuffer, zBuffer.Length);
+            Array.Copy(emptyZBuffer, zScatterBuffer, zScatterBuffer.Length);
+
         }
 
         // Called to put a pixel on screen at a specific X,Y coordinates
@@ -64,8 +75,57 @@ namespace SoftRenderingApp3D {
 
             zBuffer[index] = z;
 
+
             Screen[index] = color.Color;
         }
+
+        // Called to add the subsurface scattering effect at a specific X,Y coordinate
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
+        public void ScatterPixel(int x, int y, int z, ColorRGB color) {
+#if DEBUG
+            if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0) {
+                throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}, Depth={z}");
+            }
+
+            var index = x + y * Width;
+
+            if(z >= zScatterBuffer[index]) {
+                renderContext.Stats.BehindZPixelCount++;
+                return;
+            }
+
+            renderContext.Stats.DrawnPixelCount++;
+
+            zScatterBuffer[index] = z;
+
+            //var previous_color = Color.FromArgb(Screen[index]);
+
+            //var previousRGB = new ColorRGB(previous_color.R, previous_color.G, previous_color.B);
+
+            //var new_color = new ColorRGB((byte)(previousRGB.R + (color.R * 0.2)), (byte)(previousRGB.G + (color.G * 0.2)), (byte)(previousRGB.B + (color.B * 0.2)));
+
+            //float decay = 0;
+
+            //if (Math.Abs(zBuffer[index] - zScatterBuffer[index]) > 10)
+            //    decay = 10.0f / Math.Abs(zBuffer[index] - zScatterBuffer[index]);
+
+            //ScatterScreen[index] = new ColorRGB((byte)(color.R * decay), (byte)(color.G * decay), (byte)(color.B * decay)).Color;
+            ScatterScreen[index] = color.Color;
+#endif
+        }
+
+        public void CombineScreens() {
+            for (int i  = 0; i < Screen.Length; i++) {
+                Screen[i] += ScatterScreen[i]; 
+            }
+        }
+
+
+        public float ExponentialDecay(int z) {
+            return 10000000 * (float)Math.Exp(-z);
+        }
+
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

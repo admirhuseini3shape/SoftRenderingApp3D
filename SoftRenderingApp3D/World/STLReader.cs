@@ -19,6 +19,7 @@ namespace SoftRenderingApp3D {
         public string path; // file path
 
         private enum FileType { NONE, BINARY, ASCII }; // stl file type enumeration
+        private Dictionary<Vector3, int> indices;
         private bool processError;
 
         /**
@@ -31,7 +32,9 @@ namespace SoftRenderingApp3D {
             Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
             path = filePath;
             processError = false;
+            indices = new Dictionary<Vector3, int>();
         }
+
 
 
         /**
@@ -128,7 +131,8 @@ namespace SoftRenderingApp3D {
 
                 var byteIndex = 84;
 
-                var index = 0;
+                // Used to index the vertices
+                var vertexIndex = 0;
 
                 for(int i = 0; i < numOfMesh; i++) {
                     /* this try-catch block will be reviewed */
@@ -141,13 +145,6 @@ namespace SoftRenderingApp3D {
                         var normalZ = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
                         byteIndex += 4;
 
-                        normals.Add(new Vector3(normalX, normalY, normalZ));
-
-
-                        /* normals of vertex 2 and 3 equals to vertex 1's normals */
-                        normals.Add(new Vector3(normalX, normalY, normalZ));
-                        normals.Add(new Vector3(normalX, normalY, normalZ));
-
                         /* vertex 1 */
                         var x = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
                         byteIndex += 4;
@@ -156,7 +153,7 @@ namespace SoftRenderingApp3D {
                         var z = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
                         byteIndex += 4;
 
-                        vertices.Add(new Vector3(x, y, z));
+                        var vertex1 = new Vector3(x, y, z);
 
                         /* vertex 2 */
                         x = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
@@ -166,7 +163,7 @@ namespace SoftRenderingApp3D {
                         z = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
                         byteIndex += 4;
 
-                        vertices.Add(new Vector3(x, y, z));
+                        var vertex2 = new Vector3(x, y, z);
 
                         /* vertex 3 */
                         x = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
@@ -176,11 +173,55 @@ namespace SoftRenderingApp3D {
                         z = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
                         byteIndex += 4;
 
-                        vertices.Add(new Vector3(x, y, z));
+                        var vertex3 = new Vector3(x, y, z);
 
-                        triangleIndices.Add(new Triangle(index, index + 1, index + 2));
+                        // Create triangle, check if vertices already exist
+                        int I1, I2, I3 = -1;
+                        // First vertex
+                        if(indices.ContainsKey(vertex1)) {
+                            I1 = indices[vertex1];
+                        }
+                        else {
+                            I1 = vertexIndex;
+                            // Add vertex to dictionary
+                            indices.Add(vertex1, vertexIndex);
+                            // Add vertex to list of vertices
+                            vertices.Add(vertex1);
+                            // Add the normal for the vertex, same for all vertices of a triangle
+                            normals.Add(new Vector3(normalX, normalY, normalZ));
+                            vertexIndex++;
+                        }
+                        // Second vertex
+                        if(indices.ContainsKey(vertex2)) {
+                            I2 = indices[vertex2];
+                        }
+                        else {
+                            I2 = vertexIndex;
+                            // Add vertex to dictionary
+                            indices.Add(vertex2, vertexIndex);
+                            // Add vertex to list of vertices
+                            vertices.Add(vertex2);
+                            // Add the normal for the vertex, same for all vertices of a triangle
+                            normals.Add(new Vector3(normalX, normalY, normalZ));
+                            vertexIndex++;
+                        }
+                        // Third vertex
+                        if(indices.ContainsKey(vertex3)) {
+                            I3 = indices[vertex3];
+                        }
+                        else {
+                            I3 = vertexIndex;
+                            // Add vertex to dictionary
+                            indices.Add(vertex3, vertexIndex);
+                            // Add vertex to list of vertices
+                            vertices.Add(vertex3);
+                            // Add the normal for the vertex, same for all vertices of a triangle
+                            normals.Add(new Vector3(normalX, normalY, normalZ));
+                            vertexIndex++;
+                        }
 
-                        index += 3;
+                        // Add triangle to list of triangles
+                        triangleIndices.Add(new Triangle(I1, I2, I3));
 
                         byteIndex += 2; // Attribute byte count
                     }
@@ -224,7 +265,7 @@ namespace SoftRenderingApp3D {
                 lineString = txtReader.ReadLine().Trim(); /* delete whitespace in front and tail of the string */
                 string[] lineData = lineString.Split(' ');
 
-                var index = 0;
+                var vertexIndex = 0;
 
                 if(lineData[0] == "solid") {
                     while(lineData[0] != "endsolid") {
@@ -242,12 +283,6 @@ namespace SoftRenderingApp3D {
 
                             Vector3 normal = new Vector3(float.Parse(lineData[2]), float.Parse(lineData[3]), float.Parse(lineData[4]));
 
-                            normals.Add(normal);
-
-                            /* normals of vertex 2 and 3 equals to vertex 1's normals */
-                            normals.Add(normal);
-                            normals.Add(normal);
-
                             //----------------------------------------------------------------------
                             lineString = txtReader.ReadLine(); // Just skip the OuterLoop line
                             //----------------------------------------------------------------------
@@ -258,7 +293,7 @@ namespace SoftRenderingApp3D {
                             while(lineString.IndexOf("  ") != -1) lineString = lineString.Replace("  ", " ");
                             lineData = lineString.Split(' ');
 
-                            vertices.Add(new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]), float.Parse(lineData[3]))); // x1
+                            var vertex1 = new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]), float.Parse(lineData[3])); // x1
 
                             // Vertex2
                             lineString = txtReader.ReadLine().Trim();
@@ -266,7 +301,7 @@ namespace SoftRenderingApp3D {
                             while(lineString.IndexOf("  ") != -1) lineString = lineString.Replace("  ", " ");
                             lineData = lineString.Split(' ');
 
-                            vertices.Add(new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]), float.Parse(lineData[3])));
+                            var vertex2 = new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]), float.Parse(lineData[3])); // x1
 
                             // Vertex3
                             lineString = txtReader.ReadLine().Trim();
@@ -274,11 +309,55 @@ namespace SoftRenderingApp3D {
                             while(lineString.IndexOf("  ") != -1) lineString = lineString.Replace("  ", " ");
                             lineData = lineString.Split(' ');
 
-                            vertices.Add(new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]), float.Parse(lineData[3])));
+                            var vertex3 = new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]), float.Parse(lineData[3])); // x1
 
-                            triangleIndices.Add(new Triangle(index, index + 1, index + 2));
+                            // Create triangle, check if vertices already exist
+                            int I1, I2, I3 = -1;
+                            // First vertex
+                            if(indices.ContainsKey(vertex1)) {
+                                I1 = indices[vertex1];
+                            }
+                            else {
+                                I1 = vertexIndex;
+                                // Add vertex to dictionary
+                                indices.Add(vertex1, vertexIndex);
+                                // Add vertex to list of vertices
+                                vertices.Add(vertex1);
+                                // Add the normal for the vertex, same for all vertices of a triangle
+                                normals.Add(normal);
+                                vertexIndex++;
+                            }
+                            // Second vertex
+                            if(indices.ContainsKey(vertex2)) {
+                                I2 = indices[vertex2];
+                            }
+                            else {
+                                I2 = vertexIndex;
+                                // Add vertex to dictionary
+                                indices.Add(vertex2, vertexIndex);
+                                // Add vertex to list of vertices
+                                vertices.Add(vertex2);
+                                // Add the normal for the vertex, same for all vertices of a triangle
+                                normals.Add(normal);
+                                vertexIndex++;
+                            }
+                            // Third vertex
+                            if(indices.ContainsKey(vertex3)) {
+                                I3 = indices[vertex3];
+                            }
+                            else {
+                                I3 = vertexIndex;
+                                // Add vertex to dictionary
+                                indices.Add(vertex3, vertexIndex);
+                                // Add vertex to list of vertices
+                                vertices.Add(vertex3);
+                                // Add the normal for the vertex, same for all vertices of a triangle
+                                normals.Add(normal);
+                                vertexIndex++;
+                            }
 
-                            index += 3;
+                            // Add triangle to list of triangles
+                            triangleIndices.Add(new Triangle(I1, I2, I3));
                         }
                         catch {
                             processError = true;

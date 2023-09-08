@@ -87,7 +87,7 @@ namespace SoftRenderingApp3D {
                 var gradient = (x - sx) * mx;
 
                 var z = MathUtils.Lerp(sz, ez, gradient);
-                var c = MathUtils.Lerp(sl, el, gradient);
+                var c = MathUtils.Lerp(sl, el, gradient) * 0.8f;
 
                 surface.PutPixel((int)x, (int)y, (int)z, c * color);
             }
@@ -198,7 +198,7 @@ namespace SoftRenderingApp3D {
                 var gradient = (x - sx) * mx;
 
                 var z = MathUtils.Lerp(sz, ez, gradient);
-                var c = MathUtils.Lerp(sl, el, gradient);
+                var c = MathUtils.Lerp(sl, el, gradient) * 0.8f;
 
                 // TODO: implement the barycentric coordinates calculations using a precomputed matrix of the 3 points of the triangle
                 // This can be optimes by using matrix vector multiplication

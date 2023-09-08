@@ -95,7 +95,7 @@ namespace SoftRenderingApp3D.App {
             this.panel3D2.Projection = projection;
             this.panel3D2.Camera = flyCam;
 
-            prepareWorld("skull");
+            prepareWorld("jaw");
         }
 
         private void LstDemos_DoubleClick(object sender, EventArgs e) {

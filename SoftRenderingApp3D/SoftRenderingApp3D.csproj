@@ -75,6 +75,7 @@
     </Compile>
     <Compile Include="Clipping\CohenSutherlandClipping2D.cs" />
     <Compile Include="Clipping\CohenSutherlandClippingHomogeneous.cs" />
+    <Compile Include="Painter\SubsurfacePainter.cs" />
     <Compile Include="RenderContext.cs" />
     <Compile Include="Painter\PaintedVertex.cs" />
     <Compile Include="Painter\PainterUtils.cs" />

@@ -27,5 +27,6 @@
         public static ColorRGB Green { get; } = new ColorRGB(0, 255, 0);
         public static ColorRGB Red { get; } = new ColorRGB(255, 0, 0);
         public static ColorRGB Magenta { get; } = new ColorRGB(255, 0, 255);
+        public static ColorRGB White { get; } = new ColorRGB(255, 255, 255);
     }
 }
