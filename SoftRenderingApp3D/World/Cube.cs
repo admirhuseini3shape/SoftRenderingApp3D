@@ -32,7 +32,7 @@ namespace SoftRenderingApp3D {
                 }.BuildTriangleIndices().ToArray(),
                 null)) {
 
-            base.colors = new ColorRGB[] {
+            base.Colors = new ColorRGB[] {
                 ColorRGB.Red,
                 ColorRGB.Red,
                 ColorRGB.Gray,

@@ -47,27 +47,24 @@ namespace SoftRenderingApp3D {
             using var worldBuffer = new WorldBuffer(world);
             renderContext.WorldBuffer = worldBuffer;
 
-            // This needs work, this is only for testing
-            var textureIndex = rendererSettings.activeTexture % world.Textures.Count;
-            var texture = world.Textures[textureIndex];
 
-            var volumes = world.Volumes;
-            var volumeCount = volumes.Count;
-            for(var idxVolume = 0; idxVolume < volumeCount; idxVolume++) {
+            var models = world.Models;
+            var modelCount = models.Count;
+            for(var idxModel = 0; idxModel < modelCount; idxModel++) {
 
-                var vbx = worldBuffer.VertexBuffer[idxVolume];
-                var volume = volumes[idxVolume];
+                var vbx = worldBuffer.VertexBuffer[idxModel];
+                var model = models[idxModel];
 
-                var worldMatrix = volume.WorldMatrix();
+                var worldMatrix = model.Volume.WorldMatrix();
                 var modelViewMatrix = worldMatrix * viewMatrix;
 
 
-                vbx.Volume = volume;
+                vbx.Volume = model.Volume;
                 vbx.WorldMatrix = worldMatrix;
 
-                stats.TotalTriangleCount += volume.Triangles.Length;
+                stats.TotalTriangleCount += model.Volume.Triangles.Length;
 
-                var vertices = volume.Vertices;
+                var vertices = model.Volume.Vertices;
                 var viewVertices = vbx.ViewVertices;
 
                 // Transform and store vertices to View
@@ -76,56 +73,61 @@ namespace SoftRenderingApp3D {
                     viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex], viewMatrix);
                 }
 
-                var triangleCount = volume.Triangles.Length;
+                var triangleCount = model.Volume.Triangles.Length;
                 for(var idxTriangle = 0; idxTriangle < triangleCount; idxTriangle++) {
-                    var t = volume.Triangles[idxTriangle];
+                    var triangle = model.Volume.Triangles[idxTriangle];
 
                     // Discard if behind far plane
-                    if(t.IsBehindFarPlane(vbx)) {
+                    if(triangle.IsBehindFarPlane(vbx)) {
                         stats.BehindViewTriangleCount++;
                         continue;
                     }
 
                     // Discard if back facing 
-                    if(rendererSettings.BackFaceCulling && t.IsFacingBack(vbx)) {
+                    if(rendererSettings.BackFaceCulling && triangle.IsFacingBack(vbx)) {
                         stats.FacingBackTriangleCount++;
                         continue;
                     }
 
                     // Project in frustum
-                    t.TransformProjection(vbx, projectionMatrix);
+                    triangle.TransformProjection(vbx, projectionMatrix);
 
                     // Discard if outside view frustum
-                    if(t.isOutsideFrustum(vbx)) {
+                    if(triangle.isOutsideFrustum(vbx)) {
                         stats.OutOfViewTriangleCount++;
                         continue;
                     }
 
                     stats.PaintTime();
 
-                    var color = volume.TriangleColors[idxTriangle];
-
                     if(rendererSettings.ShowTriangles)
                         wireFramePainter.DrawTriangle(ColorRGB.Magenta, vbx, idxTriangle);
 
                     if(rendererSettings.ShowTriangleNormals) {
-                        var worldCentroid = t.CalculateCentroid(vbx.WorldVertices);
+                        var worldCentroid = triangle.CalculateCentroid(vbx.WorldVertices);
 
                         var startPoint = Vector4.Transform(worldCentroid, world2Projection);
-                        var endPoint = Vector4.Transform(worldCentroid + t.CalculateNormal(vbx.WorldVertices), world2Projection);
+                        var endPoint = Vector4.Transform(worldCentroid + triangle.CalculateNormal(vbx.WorldVertices), world2Projection);
 
                         wireFramePainter.DrawLine(surface, ColorRGB.Red, startPoint, endPoint);
                     }
 
-                    if (!rendererSettings.ShowTextures)
+                    // Check if model is textured or not
+                    if (model.GetType() == typeof(BasicModel)) {
+                        var color = (model as BasicModel).Colors[idxTriangle];
+
                         Painter?.DrawTriangle(color, vbx, idxTriangle);
-                    else {
-                        if(Painter.GetType() == typeof(GouraudPainter)) {
-                            // Cast to GouraudPainter, this needs fixing because currently only the GouraudPainter has implemented the function for drawing textures
-                            GouraudPainter painter = (GouraudPainter)Painter;
-                            painter.DrawTriangleTextured(texture, vbx, idxTriangle, rendererSettings.LiearTextureFiltering);
-                        }
                     }
+                    else if (model.GetType() == typeof(TexturedModel)) {
+                        // Cast to GouraudPainter, this needs fixing because currently only the GouraudPainter has implemented the function for drawing textures
+                        GouraudPainter painter = (GouraudPainter)Painter;
+                        painter.DrawTriangleTextured((model as TexturedModel).Texture, vbx, idxTriangle, rendererSettings.LiearTextureFiltering);
+                    }
+                    else {
+                        throw new Exception($"Invalid object type for model, type is: {model.GetType()}, expected: {typeof(TexturedModel)}, {typeof(BasicModel)}");
+                    }
+                    
+
 
                     stats.DrawnTriangleCount++;
 

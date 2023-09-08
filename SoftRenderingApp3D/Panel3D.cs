@@ -157,7 +157,7 @@ namespace SoftRenderingApp3D {
 
             sb.Clear();
             sb.AppendFormat(format,
-                world.Volumes.Count,
+                world.Models.Count,
                 renderContext.Stats.TotalTriangleCount,
                 renderContext.Stats.FacingBackTriangleCount,
                 renderContext.Stats.OutOfViewTriangleCount,

@@ -8,14 +8,14 @@ using System.Threading.Tasks;
 namespace SoftRenderingApp3D {
     public class TexturedModel : IModel {
         public TexturedModel(TexturedVolume volume, Texture texture) {
-            this.texture = texture;
-            this.volume = volume;
+            Texture = texture;
+            Volume = volume;
         }
-        public IVolume volume { get; private set; }
-        public Texture texture { get; private set; }
+        public IVolume Volume { get; private set; }
+        public Texture Texture { get; private set; }
 
         public void ChangeTexture(Texture texture) {
-            this.texture = texture;
+            Texture = texture;
         }
 
     }

@@ -8,6 +8,6 @@ using System.Threading.Tasks;
 
 namespace SoftRenderingApp3D {
     public interface IModel {
-        IVolume volume { get; }
+        IVolume Volume { get; }
     }
 }

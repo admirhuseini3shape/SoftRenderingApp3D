@@ -109,29 +109,25 @@ namespace SoftRenderingApp3D.App {
 
             switch(id) {
                 case "jaw":
-                    var volume = ModelReader.ReadFile(@"models\original.stl");
-                    var volume_offset = ModelReader.ReadFile(@"models\offset_2.stl");
-                    world.Models.Add(new BasicModel((BasicVolume)volume));
-                    world.Models.Add(new BasicModel((BasicVolume)volume_offset));
+                    world.Models.Add(new BasicModel((BasicVolume)ModelReader.ReadFile(@"models\original.stl").First()));
+                    world.Models.Add(new BasicModel((BasicVolume)ModelReader.ReadFile(@"models\offset_2.stl").First()));
                     arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
                     break;
                 case "stl-mesh-1":
-                    volume = ModelReader.ReadFile(@"models\Planetary_Toy_D80.stl");
-                    world.Models.Add(new BasicModel((BasicVolume)volume));
+                    world.Models.Add(new BasicModel((BasicVolume)ModelReader.ReadFile(@"models\Planetary_Toy_D80.stl").First()));
                     arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
                     break;
                 case "stl-mesh-2":
-                    volume = ModelReader.ReadFile(@"models\Star_Destroyer_Fixed.stl");
-                    world.Models.Add(new BasicModel((BasicVolume)volume));
+                    world.Models.Add(new BasicModel((BasicVolume)ModelReader.ReadFile(@"models\Star_Destroyer_Fixed.stl").First()));
                     arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
                     break;
                 case "skull":
-                    volume = ModelReader.ReadFile(@"models\skull.dae");
+                    var volume = ModelReader.ReadFile(@"models\skull.dae").First();
                     if(volume is BasicVolume) {
                         world.Models.Add(new BasicModel((BasicVolume)volume));
                     }
                     if(volume is TexturedVolume) {
-                        var texture = new TextureReaderBMP().ReadImage("bone_high.bmp");
+                        var texture = new TextureReaderBMP().ReadImage(@"textures\bone_high.bmp");
                         world.Models.Add(new TexturedModel((TexturedVolume)volume, texture));
                     }
                     else {
@@ -141,12 +137,12 @@ namespace SoftRenderingApp3D.App {
                     break;
 
                 case "teapot":
-                    volume = ModelReader.ReadFile(@"models\teapot.dae");
+                    volume = ModelReader.ReadFile(@"models\teapot.dae").First();
                     if(volume is BasicVolume) {
                         world.Models.Add(new BasicModel((BasicVolume)volume));
                     }
                     if(volume is TexturedVolume) {
-                        var texture = new TextureReaderBMP().ReadImage("glass_effect.bmp");
+                        var texture = new TextureReaderBMP().ReadImage(@"textures\glass_effect.bmp");
                         world.Models.Add(new TexturedModel((TexturedVolume)volume, texture));
                     }
                     else {

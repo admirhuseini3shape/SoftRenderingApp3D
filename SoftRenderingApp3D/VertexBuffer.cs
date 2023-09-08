@@ -17,7 +17,7 @@ namespace SoftRenderingApp3D {
             VertexBuffer = vertexBuffer3bag.Rent(size);
 
             for(var i = 0; i < size; i++) {
-                VertexBuffer[i] = new VertexBuffer(models[i].volume.Vertices.Length);
+                VertexBuffer[i] = new VertexBuffer(models[i].Volume.Vertices.Length);
             }
         }
 
