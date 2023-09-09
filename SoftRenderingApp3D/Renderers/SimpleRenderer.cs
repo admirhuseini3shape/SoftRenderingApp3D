@@ -119,8 +119,9 @@ namespace SoftRenderingApp3D {
                         wireFramePainter.DrawLine(surface, ColorRGB.Red, startPoint, endPoint);
                     }
 
-                    if (!rendererSettings.ShowTextures)
+                    if(!rendererSettings.ShowTextures) {
                         Painter?.DrawTriangle(color, vbx, idxTriangle);
+                    }
                     else {
                         if(Painter.GetType() == typeof(GouraudPainter)) {
                             // Cast to GouraudPainter, this needs fixing because currently only the GouraudPainter has implemented the function for drawing textures

@@ -87,9 +87,9 @@ namespace SoftRenderingApp3D {
                 var gradient = (x - sx) * mx;
 
                 var z = MathUtils.Lerp(sz, ez, gradient);
-                var c = MathUtils.Lerp(sl, el, gradient) * 0.8f;
+                var c = MathUtils.Lerp(sl, el, gradient);
 
-                surface.PutPixel((int)x, (int)y, (int)z, c * color);
+                surface.PutPixel((int)x, (int)y, (int)z, 0.8f * c * color);
             }
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

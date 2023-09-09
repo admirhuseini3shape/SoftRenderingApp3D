@@ -107,6 +107,9 @@
     <None Include="Models\offset_2.stl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="Models\offset_3.stl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Models\original.stl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

@@ -116,8 +116,8 @@ namespace SoftRenderingApp3D.App {
             switch(id) {
                 case "jaw":
                     world.Volumes.AddRange(stlReader.ReadFile(@"models\original.stl"));
-                    world.Volumes.AddRange(stlReader.ReadFile(@"models\offset_2.stl"));
-                    arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
+                    world.Volumes.AddRange(stlReader.ReadFile(@"models\offset_3.stl"));
+                    arcBallCam.Position += new Vector3(0, 10, -50 - arcBallCam.Position.Z);
                     break;
                 case "stl-mesh-1":
                     world.Volumes.AddRange(stlReader.ReadFile(@"models\Planetary_Toy_D80.stl"));

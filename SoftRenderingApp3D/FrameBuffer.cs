@@ -38,6 +38,7 @@ namespace SoftRenderingApp3D {
 
 
             this.emptyBuffer = new int[width * height];
+            this.emptyBuffer.Fill(ColorRGB.Black.Color);
             this.emptyZBuffer = new int[width * height];
             this.emptyZBuffer.Fill(Depth);
 
@@ -116,14 +117,45 @@ namespace SoftRenderingApp3D {
         }
 
         public void CombineScreens() {
-            for (int i  = 0; i < Screen.Length; i++) {
-                Screen[i] += ScatterScreen[i]; 
+            var color = new ColorRGB(0, 0, 0);
+            for (int i = 0; i < Height; i++) {
+                for (int j = 0; j < Width; j++) {
+                    var index = j + i * Width;
+
+                    if(Screen[index] == ColorRGB.Black.Color)
+                        continue;
+
+                    float r = 0;
+                    float g = 0;
+                    float b = 0;
+
+                    for(int x = i - 25; x < i + 25; x++) {
+                        for (int y = j - 25; y < j + 25; y++) {
+                            if(x < 0 ||
+                                y < 0 ||
+                                x >= Height ||
+                                y >= Width ||
+                                ScatterScreen[x * Width + y] == ColorRGB.Black.Color ||
+                                (int)(r) + Color.FromArgb(Screen[index]).R >= 255 ||
+                                (int)(b) + Color.FromArgb(Screen[index]).B >= 255 ||
+                                (int)(g) + Color.FromArgb(Screen[index]).G >= 255)
+                                continue;
+
+                            var original_color = new ColorRGB(Color.FromArgb(ScatterScreen[x * Width + y]));
+
+                            r += original_color.R * CalculateGaussian(Math.Abs(x - i), Math.Abs(y - j));
+                            g += original_color.G * CalculateGaussian(Math.Abs(x - i), Math.Abs(y - j));
+                            b += original_color.B * CalculateGaussian(Math.Abs(x - i), Math.Abs(y - j));
+                            //color += CalculateGaussian(Math.Abs(x - i), Math.Abs(y - j)) * original_color;
+                            
+                        }
+                    }
+
+                    color = new ColorRGB((byte)r, (byte)g, (byte)b);
+
+                    Screen[index] = (new ColorRGB(Color.FromArgb(Screen[index])) + color).Color;
+                }
             }
-        }
-
-
-        public float ExponentialDecay(int z) {
-            return 10000000 * (float)Math.Exp(-z);
         }
 
 
@@ -148,6 +180,13 @@ namespace SoftRenderingApp3D {
                 ey += dy; if(ey >= dmax) { ey -= dmax; y0 += sy; PutPixel(x0, y0, z0, color); }
                 ez += dz; if(ez >= dmax) { ez -= dmax; z0 += sz; PutPixel(x0, y0, z0, color); }
             }
+        }
+
+        // Calculates the weight for a pixel x pixels away from the original on the x-axis,
+        // and y pixels away from the original on the y-axis
+        public float CalculateGaussian(int x, int y) {
+            var sigma = 4f;
+            return (float)(1.0f / (2.0f * Math.PI * sigma) * Math.Exp(-(x * x + y * y) / (2 * sigma * sigma)));
         }
     }
 }
