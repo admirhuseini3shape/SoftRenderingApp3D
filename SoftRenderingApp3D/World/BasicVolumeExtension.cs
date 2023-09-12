@@ -3,19 +3,19 @@ using System.Linq;
 using System.Numerics;
 
 namespace SoftRenderingApp3D {
-    static class VolumeEx {
+    static class BasicVolumeExtension {
         public static IEnumerable<Vector3> BuildVector3s(this float[] vertices) {
             for(var i = 0; i < vertices.Length; i += 3)
                 yield return new Vector3(vertices[i], vertices[i + 1], vertices[i + 2]);
         }
 
-        public static IEnumerable<int> GetTriangleIndexesHaving(this Vector3 vertex, IVolume volume) {
+        public static IEnumerable<int> GetTriangleIndexesHaving(this Vector3 vertex, Volume volume) {
             for(var i = 0; i < volume.Triangles.Length; i++)
                 if(volume.Triangles[i].Contains(vertex, volume.Vertices))
                     yield return i;
         }
 
-        public static Vector3 CalculateVertexNormal(this Vector3 vertex, IVolume volume) {
+        public static Vector3 CalculateVertexNormal(this Vector3 vertex, Volume volume) {
             var inTriangles = GetTriangleIndexesHaving(vertex, volume);
             if(!inTriangles.Any())
                 return Vector3.Zero;
@@ -23,12 +23,12 @@ namespace SoftRenderingApp3D {
             return Vector3.Normalize(sum);
         }
 
-        public static IEnumerable<Vector3> CalculateVertexNormals(this IVolume volume) {
+        public static IEnumerable<Vector3> CalculateVertexNormals(this Volume volume) {
             foreach(var vertex in volume.Vertices)
                 yield return CalculateVertexNormal(vertex, volume);
         }
 
-        public static IEnumerable<Vector3> CalculateTriangleNormals(this IVolume volume) {
+        public static IEnumerable<Vector3> CalculateTriangleNormals(this Volume volume) {
             foreach(var triangleIndices in volume.Triangles)
                 yield return triangleIndices.CalculateNormal(volume.Vertices);
         }

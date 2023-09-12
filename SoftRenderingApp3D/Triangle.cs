@@ -92,7 +92,7 @@ namespace SoftRenderingApp3D {
             var worldMatrix = vbx.WorldMatrix;
 
             var worldNormVertices = vbx.WorldNormVertices;
-            var normVertices = vbx.Volume.NormVertices;
+            var normVertices = vbx.Model.Volume.NormVertices;
 
             if(worldNormVertices[I0] == Vector3.Zero)
                 worldNormVertices[I0] = Vector3.TransformNormal(normVertices[I0], worldMatrix);
@@ -114,8 +114,8 @@ namespace SoftRenderingApp3D {
                 worldVertices[I2] = Vector3.Transform(worldVertices[I2], worldMatrix);
 
             // Check if volume has texture data
-            if(vbx.Volume.GetType() == typeof(TexturedVolume)) {
-                var textureCoordinates = (vbx.Volume as TexturedVolume).TextureCoordinates;
+            if(vbx.Model.GetType() == typeof(TexturedModel)) {
+                var textureCoordinates = (vbx.Model as TexturedModel).TextureCoordinates;
 
                 if(textureCoordinates[I0] == Vector2.Zero) {
                     var temp = Vector3.Transform(new Vector3(textureCoordinates[I0].X, textureCoordinates[I0].Y, 1.0f), worldMatrix);

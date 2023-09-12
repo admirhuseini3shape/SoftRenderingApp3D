@@ -3,13 +3,13 @@ using System.Linq;
 using System.Numerics;
 
 namespace SoftRenderingApp3D {
-    public class BasicModel : IModel {
-        public BasicModel(IVolume volume) {
+    public class BasicModel {
+        public BasicModel(Volume volume) {
             Volume = volume;
             Colors = Colors ?? Enumerable.Repeat(ColorRGB.Gray, volume.Triangles.Length).ToArray();
         }
         public ColorRGB[] Colors { get; set; }
-        public IVolume Volume { get; private set; }
+        public Volume Volume { get; private set; }
     }
 
 }

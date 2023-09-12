@@ -5,7 +5,7 @@ namespace SoftRenderingApp3D {
     class PainterUtils {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SortTrianglePoints(VertexBuffer vbx, FrameBuffer frameBuffer, int triangleIndices, out PaintedVertex v0, out PaintedVertex v1, out PaintedVertex v2, out int index0, out int index1, out int index2) {
-            var t = vbx.Volume.Triangles[triangleIndices];
+            var t = vbx.Model.Volume.Triangles[triangleIndices];
 
             var worldNormVertices = vbx.WorldNormVertices;
             var projectionVertices = vbx.ProjectionVertices;

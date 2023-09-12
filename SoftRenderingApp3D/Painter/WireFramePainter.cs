@@ -8,7 +8,7 @@ namespace SoftRenderingApp3D {
 
         public void DrawTriangle(ColorRGB color, VertexBuffer vbx, int triangleIndice) {
             var surface = RendererContext.Surface;
-            var t = vbx.Volume.Triangles[triangleIndice];
+            var t = vbx.Model.Volume.Triangles[triangleIndice];
 
             var projectionP0 = vbx.ProjectionVertices[t.I0];
             var projectionP1 = vbx.ProjectionVertices[t.I1];

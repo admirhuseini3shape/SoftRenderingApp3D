@@ -5,7 +5,7 @@ using System.Numerics;
 namespace SoftRenderingApp3D {
     public class Cube : BasicModel {
 
-        public Cube() : base(new BasicVolume(
+        public Cube() : base(new Volume(
                 new[] {
                     new Vector3(1, 1, 1) - new Vector3(.5f, .5f, .5f),
                     new Vector3(0, 1, 1) - new Vector3(.5f, .5f, .5f),

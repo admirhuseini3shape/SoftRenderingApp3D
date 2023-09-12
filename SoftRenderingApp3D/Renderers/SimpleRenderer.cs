@@ -59,7 +59,7 @@ namespace SoftRenderingApp3D {
                 var modelViewMatrix = worldMatrix * viewMatrix;
 
 
-                vbx.Volume = model.Volume;
+                vbx.Model = model;
                 vbx.WorldMatrix = worldMatrix;
 
                 stats.TotalTriangleCount += model.Volume.Triangles.Length;
@@ -114,7 +114,7 @@ namespace SoftRenderingApp3D {
 
                     // Check if model is textured or not
                     if (model.GetType() == typeof(BasicModel)) {
-                        var color = (model as BasicModel).Colors[idxTriangle];
+                        var color = model.Colors[idxTriangle];
 
                         Painter?.DrawTriangle(color, vbx, idxTriangle);
                     }

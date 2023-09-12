@@ -9,7 +9,7 @@ namespace SoftRenderingApp3D {
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DrawTriangle(ColorRGB color, VertexBuffer vbx, int triangleIndice) {
-            vbx.Volume.Triangles[triangleIndice].TransformWorld(vbx);
+            vbx.Model.Volume.Triangles[triangleIndice].TransformWorld(vbx);
 
             var surface = RendererContext.Surface;
             PainterUtils.SortTrianglePoints(vbx, surface, triangleIndice, out var v0, out var v1, out var v2, out var index0, out var index1, out var index2);
@@ -94,7 +94,8 @@ namespace SoftRenderingApp3D {
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DrawTriangleTextured(Texture texture, VertexBuffer vbx, int triangleIndice, bool linearFiltering) {
-            var volume = (vbx.Volume as TexturedVolume);
+            var model = (vbx.Model as TexturedModel);
+            var volume = model.Volume;
 
             volume.Triangles[triangleIndice].TransformWorld(vbx);
 
@@ -104,9 +105,9 @@ namespace SoftRenderingApp3D {
             var p0 = v0.ScreenPoint; var p1 = v1.ScreenPoint; var p2 = v2.ScreenPoint;
 
             // Get the texture coordinates of each point of the triangle
-            var texCoord0 = volume.TextureCoordinates[index0];
-            var texCoord1 = volume.TextureCoordinates[index1];
-            var texCoord2 = volume.TextureCoordinates[index2];
+            var texCoord0 = model.TextureCoordinates[index0];
+            var texCoord1 = model.TextureCoordinates[index1];
+            var texCoord2 = model.TextureCoordinates[index2];
 
 
             var yStart = (int)Math.Max(p0.Y, 0);

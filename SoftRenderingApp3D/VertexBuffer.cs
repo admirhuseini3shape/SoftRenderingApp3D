@@ -35,8 +35,8 @@ namespace SoftRenderingApp3D {
         private static ArrayPool<Vector3> vector3bag = ArrayPool<Vector3>.Shared;
         private static ArrayPool<Vector4> vector4bag = ArrayPool<Vector4>.Shared;
 
-        public IVolume Volume { get; set; }             // Volumes
-        public IVolume Offset { get; set; }
+        public BasicModel Model { get; set; }             // Volumes
+        public BasicModel Offset { get; set; }
         public Vector3[] ViewVertices { get; }          // Vertices in view
         public Vector3[] WorldVertices { get; }         // Vertices in world
         public Vector3[] WorldNormVertices { get; }     // Vertices normals in world

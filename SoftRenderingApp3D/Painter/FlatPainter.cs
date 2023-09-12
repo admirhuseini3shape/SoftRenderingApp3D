@@ -9,7 +9,7 @@ namespace SoftRenderingApp3D {
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DrawTriangle(ColorRGB color, VertexBuffer vbx, int triangleIndice) {
-            vbx.Volume.Triangles[triangleIndice].TransformWorld(vbx);
+            vbx.Model.Volume.Triangles[triangleIndice].TransformWorld(vbx);
 
             var surface = RendererContext.Surface;
             PainterUtils.SortTrianglePoints(vbx, surface, triangleIndice, out var v0, out var v1, out var v2, out var index0, out var index1, out var index2);

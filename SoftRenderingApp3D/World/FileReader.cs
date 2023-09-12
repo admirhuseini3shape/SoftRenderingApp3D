@@ -6,6 +6,6 @@ using System.Threading.Tasks;
 
 namespace SoftRenderingApp3D {
     public interface FileReader {
-        public IEnumerable<IVolume> ReadFile(string fileName);
+        public IEnumerable<BasicModel> ReadFile(string fileName);
     }
 }

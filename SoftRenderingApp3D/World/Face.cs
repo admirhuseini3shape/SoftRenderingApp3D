@@ -2,7 +2,7 @@
 using System.Numerics;
 
 namespace SoftRenderingApp3D {
-    public class Face : BasicVolume {
+    public class Face : Volume {
 
         public Face() : base(
             new[] {
@@ -10,7 +10,8 @@ namespace SoftRenderingApp3D {
                 new Vector3(0, 1, 1)- new Vector3(.5f, .5f, .5f),
                 new Vector3(0, 0, 1)- new Vector3(.5f, .5f, .5f),
             },
-            new[] { 0, 1, 2 }.BuildTriangleIndices().ToArray()) {
+            new[] { 0, 1, 2 }.BuildTriangleIndices().ToArray(), 
+            null) {
         }
     }
 }

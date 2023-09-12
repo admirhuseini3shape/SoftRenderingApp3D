@@ -109,44 +109,46 @@ namespace SoftRenderingApp3D.App {
 
             switch(id) {
                 case "jaw":
-                    world.Models.Add(new BasicModel((BasicVolume)ModelReader.ReadFile(@"models\original.stl").First()));
-                    world.Models.Add(new BasicModel((BasicVolume)ModelReader.ReadFile(@"models\offset_2.stl").First()));
+                    world.Models.Add(ModelReader.ReadFile(@"models\original.stl").First());
+                    world.Models.Add(ModelReader.ReadFile(@"models\offset_2.stl").First());
                     arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
                     break;
                 case "stl-mesh-1":
-                    world.Models.Add(new BasicModel((BasicVolume)ModelReader.ReadFile(@"models\Planetary_Toy_D80.stl").First()));
+                    world.Models.Add(ModelReader.ReadFile(@"models\Planetary_Toy_D80.stl").First());
                     arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
                     break;
                 case "stl-mesh-2":
-                    world.Models.Add(new BasicModel((BasicVolume)ModelReader.ReadFile(@"models\Star_Destroyer_Fixed.stl").First()));
+                    world.Models.Add(ModelReader.ReadFile(@"models\Star_Destroyer_Fixed.stl").First());
                     arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
                     break;
                 case "skull":
-                    var volume = ModelReader.ReadFile(@"models\skull.dae").First();
-                    if(volume is BasicVolume) {
-                        world.Models.Add(new BasicModel((BasicVolume)volume));
+                    var model = ModelReader.ReadFile(@"models\skull.dae").First();
+                    if(model is BasicModel && !(model is TexturedModel)) {
+                        world.Models.Add(model);
                     }
-                    if(volume is TexturedVolume) {
+                    else if(model is TexturedModel) {
                         var texture = new TextureReaderBMP().ReadImage(@"textures\bone_high.bmp");
-                        world.Models.Add(new TexturedModel((TexturedVolume)volume, texture));
+                        (model as TexturedModel).Texture = texture;
+                        world.Models.Add(model);
                     }
                     else {
-                        throw new Exception($"Invalid object type when reading creating model, object type: {volume.GetType()}");
+                        throw new Exception($"Invalid object type when reading creating model, object type: {model.GetType()}");
                     }
                     arcBallCam.Position += new Vector3(0, 0,  -5 - arcBallCam.Position.Z);
                     break;
 
                 case "teapot":
-                    volume = ModelReader.ReadFile(@"models\teapot.dae").First();
-                    if(volume is BasicVolume) {
-                        world.Models.Add(new BasicModel((BasicVolume)volume));
+                    model = ModelReader.ReadFile(@"models\teapot.dae").First();
+                    if(model is BasicModel && !(model is TexturedModel)) {
+                        world.Models.Add(model);
                     }
-                    if(volume is TexturedVolume) {
+                    else if(model is TexturedModel) {
                         var texture = new TextureReaderBMP().ReadImage(@"textures\glass_effect.bmp");
-                        world.Models.Add(new TexturedModel((TexturedVolume)volume, texture));
+                        (model as TexturedModel).Texture = texture;
+                        world.Models.Add(model);
                     }
                     else {
-                        throw new Exception($"Invalid object type when reading creating model, object type: {volume.GetType()}");
+                        throw new Exception($"Invalid object type when reading creating model, object type: {model.GetType()}");
                     }
                     arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
                     break;

@@ -1,24 +1,16 @@
-﻿using SoftRenderingApp3D;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SoftRenderingApp3D {
-    public class TexturedVolume : IVolume {
-        public TexturedVolume(Vector3[] vertices, Triangle[] triangleIndices, Vector3[] vertexNormals = null, Vector2[] textureCoordinates = null) {
+    public class Volume {
+        public Volume(Vector3[] vertices, Triangle[] triangleIndices, Vector3[] vertexNormals = null) {
             Vertices = vertices;
             Triangles = triangleIndices;
             NormVertices = vertexNormals ?? this.CalculateVertexNormals().ToArray();
-            TextureCoordinates = textureCoordinates;
 
             Scale = Vector3.One;
         }
         public Vector3[] Vertices { get; }
-
-        public Vector2[] TextureCoordinates { get; }
 
         public Triangle[] Triangles { get; }
 
