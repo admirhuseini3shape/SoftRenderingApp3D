@@ -14,11 +14,17 @@ namespace SoftRenderingApp3D {
             Scale = Vector3.One;
         }
 
+        public void SetVolumeColor(ColorRGB color) {
+            TriangleColors = Enumerable.Repeat(color, Triangles.Length).ToArray();
+
+        }
+
         public Vector3[] Vertices { get; }
 
         public Vector2[] TexCoordinates { get; }
 
-        public ColorRGB[] TriangleColors { get; }
+        public ColorRGB[] TriangleColors { get; private set; }
+
 
         public Triangle[] Triangles { get; }
 

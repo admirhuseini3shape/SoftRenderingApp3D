@@ -100,23 +100,11 @@ namespace SoftRenderingApp3D {
 
             zScatterBuffer[index] = z;
 
-            //var previous_color = Color.FromArgb(Screen[index]);
-
-            //var previousRGB = new ColorRGB(previous_color.R, previous_color.G, previous_color.B);
-
-            //var new_color = new ColorRGB((byte)(previousRGB.R + (color.R * 0.2)), (byte)(previousRGB.G + (color.G * 0.2)), (byte)(previousRGB.B + (color.B * 0.2)));
-
-            //float decay = 0;
-
-            //if (Math.Abs(zBuffer[index] - zScatterBuffer[index]) > 10)
-            //    decay = 10.0f / Math.Abs(zBuffer[index] - zScatterBuffer[index]);
-
-            //ScatterScreen[index] = new ColorRGB((byte)(color.R * decay), (byte)(color.G * decay), (byte)(color.B * decay)).Color;
             ScatterScreen[index] = color.Color;
 #endif
         }
         // Combines the effect of the subsurface lighting and the surface lighting using a gaussian blur on the subsurface model.
-        public void CombineScreens() {
+        /*public void CombineScreens() {
             ColorRGB color;
             for (int i = 0; i < Height; i++) {
                 for (int j = 0; j < Width; j++) {
@@ -157,6 +145,11 @@ namespace SoftRenderingApp3D {
                     Screen[index] = (new ColorRGB(Color.FromArgb(Screen[index])) + color).Color;
                 }
             }
+        }*/
+
+        public void CombineScreens() {
+            for(int i = 0; i < Screen.Length; i++)
+                Screen[i] = (new ColorRGB(Color.FromArgb(Screen[i])) + new ColorRGB(Color.FromArgb(ScatterScreen[i]))).Color;
         }
 
 

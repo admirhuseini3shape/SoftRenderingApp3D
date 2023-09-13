@@ -1,5 +1,8 @@
-﻿using System;
+﻿using g3;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace SoftRenderingApp3D {
@@ -29,6 +32,37 @@ namespace SoftRenderingApp3D {
 
             sw.Stop();
             Console.WriteLine(caption + ":" + sw.ElapsedMilliseconds + " ms");
+        }
+        public static Vector3d Vector3ToVector3d(Vector3 vector) {
+            return new Vector3d(vector.X, vector.Y, vector.Z);
+        }
+
+        public static IEnumerable<Vector3d> ToVector3dList(this Vector3[] array) {
+            var resultList = new List<Vector3d>();
+            foreach(Vector3 vector in array) {
+                resultList.Add(Vector3ToVector3d(vector));
+            }
+            return resultList;
+        }
+
+        public static float[] ToFloatArray(this Vector3[] array) {
+            var resultArray = new float[array.Length * 3];
+            for (int i = 0; i < array.Length * 3; i += 3) {
+                resultArray[i] = array[i / 3].X;
+                resultArray[i + 1] = array[i / 3].Y;
+                resultArray[i + 2] = array[i / 3].Z;
+            }
+            return resultArray;
+        }
+
+        public static int[] ToIntArray(this Triangle[] triangles) {
+            int[] array = new int[triangles.Length * 3];
+            for(int i = 0; i < triangles.Length * 3; i += 3) {
+                array[i] = triangles[i / 3].I0;
+                array[i + 1] = triangles[i / 3].I1;
+                array[i + 2] = triangles[i / 3].I2;
+            }
+            return array;
         }
     }
 }

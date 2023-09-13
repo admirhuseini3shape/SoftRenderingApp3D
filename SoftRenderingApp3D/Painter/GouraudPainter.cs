@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using g3;
 
 namespace SoftRenderingApp3D {
 
@@ -25,7 +26,7 @@ namespace SoftRenderingApp3D {
             var yMiddle = MathUtils.Clamp((int)p1.Y, yStart, yEnd);
 
             // This has to move elsewhere
-            var lightPos = new Vector3(0, 10, 10);
+            var lightPos = RendererContext.Camera.GetType() == typeof(ArcBallCam) ? -(RendererContext.Camera as ArcBallCam).Position : -(RendererContext.Camera as FlyCam).Position;
 
             // computing the cos of the angle between the light vector and the normal vector
             // it will return a value between 0 and 1 that will be used as the intensity of the color

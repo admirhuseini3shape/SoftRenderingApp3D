@@ -44,6 +44,7 @@ namespace SoftRenderingApp3D {
         int size { get; }
 
         public Matrix4x4 WorldMatrix { get; set; }
+        public Matrix4x4 WorldViewMatrix { get; set; }
 
         public VertexBuffer(int vertexCount) {
             this.size = vertexCount;
@@ -52,6 +53,17 @@ namespace SoftRenderingApp3D {
             WorldNormVertices = vector3bag.Rent(vertexCount);
             ProjectionVertices = vector4bag.Rent(vertexCount);
         }
+
+        public void TransformWorld() {
+            for(int i = 0; i < Volume.Vertices.Length; i++)
+                WorldVertices[i] = Vector3.Transform(Volume.Vertices[i], WorldMatrix);
+        }
+
+        public void TransformWorldView() {
+            for(int i = 0; i < Volume.Vertices.Length; i++)
+                ViewVertices[i] = Vector3.Transform(Volume.Vertices[i], WorldViewMatrix);
+        }
+
 
         public void Dispose() {
             Array.Clear(ViewVertices, 0, size);

@@ -104,7 +104,7 @@ namespace SoftRenderingApp3D {
             if(worldNormVertices[I2] == Vector3.Zero)
                 worldNormVertices[I2] = Vector3.TransformNormal(normVertices[I2], worldMatrix);
 
-            var worldVertices = vbx.WorldVertices;
+            /*var worldVertices = vbx.WorldVertices;
             if(worldVertices[I0] == Vector3.Zero)
                 worldVertices[I0] = Vector3.Transform(worldVertices[I0], worldMatrix);
 
@@ -113,6 +113,7 @@ namespace SoftRenderingApp3D {
 
             if(worldVertices[I2] == Vector3.Zero)
                 worldVertices[I2] = Vector3.Transform(worldVertices[I2], worldMatrix);
+            */
 
             // Check if volume has texture data
             if(vbx.Volume.TexCoordinates != null) {
@@ -131,6 +132,14 @@ namespace SoftRenderingApp3D {
             }
 
 
+        }
+
+        public Vector3 GetCenterCoordinates(VertexBuffer vbx) {
+            var x = (vbx.WorldVertices[I0].X + vbx.WorldVertices[I1].X + vbx.WorldVertices[I2].X) / 3.0f;
+            var y = (vbx.WorldVertices[I0].Y + vbx.WorldVertices[I1].Y + vbx.WorldVertices[I2].Y) / 3.0f;
+            var z = (vbx.WorldVertices[I0].Z + vbx.WorldVertices[I1].Z + vbx.WorldVertices[I2].Z) / 3.0f;
+
+            return new Vector3(x, y, z);
         }
     }
 }

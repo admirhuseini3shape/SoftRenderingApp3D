@@ -88,7 +88,7 @@ namespace SoftRenderingApp3D {
                 var z = MathUtils.Lerp(sz, ez, gradient);
                 float c = MathUtils.Lerp(sl, el, gradient);
 
-                surface.ScatterPixel((int)x, (int)y, (int)z, 0.2f * c * ColorRGB.White);
+                surface.ScatterPixel((int)x, (int)y, (int)z, 0.2f * c * color);
             }
         }
 
