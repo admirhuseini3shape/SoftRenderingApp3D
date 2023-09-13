@@ -10,6 +10,9 @@ namespace SoftRenderingApp3D {
         public void DrawTriangle(ColorRGB color, VertexBuffer vbx, int triangleIndice) {
             vbx.Volume.Triangles[triangleIndice].TransformWorld(vbx);
 
+            // Get z world coordinate
+            var zWorld = vbx.Volume.Triangles[triangleIndice].CalculateCentroid(vbx.Volume.Vertices);
+
             var surface = RendererContext.Surface;
             PainterUtils.SortTrianglePoints(vbx, surface, triangleIndice, out var v0, out var v1, out var v2, out var index0, out var index1, out var index2);
 
@@ -37,20 +40,20 @@ namespace SoftRenderingApp3D {
                 // P0
                 //   P1
                 // P2
-                paintHalfTriangle(yStart, (int)yMiddle - 1, color, p0, p2, p0, p1, nl0, nl2, nl0, nl1);
-                paintHalfTriangle((int)yMiddle, yEnd, color, p0, p2, p1, p2, nl0, nl2, nl1, nl2);
+                paintHalfTriangle(yStart, (int)yMiddle - 1, color, p0, p2, p0, p1, nl0, nl2, nl0, nl1, zWorld);
+                paintHalfTriangle((int)yMiddle, yEnd, color, p0, p2, p1, p2, nl0, nl2, nl1, nl2, zWorld);
             }
             else {
                 //   P0
                 // P1 
                 //   P2
-                paintHalfTriangle(yStart, (int)yMiddle - 1, color, p0, p1, p0, p2, nl0, nl1, nl0, nl2);
-                paintHalfTriangle((int)yMiddle, yEnd, color, p1, p2, p0, p2, nl1, nl2, nl0, nl2);
+                paintHalfTriangle(yStart, (int)yMiddle - 1, color, p0, p1, p0, p2, nl0, nl1, nl0, nl2, zWorld);
+                paintHalfTriangle((int)yMiddle, yEnd, color, p1, p2, p0, p2, nl1, nl2, nl0, nl2, zWorld);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void paintHalfTriangle(int yStart, int yEnd, ColorRGB color, Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd, float nla, float nlb, float nlc, float nld) {
+        void paintHalfTriangle(int yStart, int yEnd, ColorRGB color, Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd, float nla, float nlb, float nlc, float nld, Vector3 zWorld) {
             var mg1 = pa.Y == pb.Y ? 1f : 1 / (pb.Y - pa.Y);
             var mg2 = pd.Y == pc.Y ? 1f : 1 / (pd.Y - pc.Y);
 
@@ -69,12 +72,12 @@ namespace SoftRenderingApp3D {
                 var sz = MathUtils.Lerp(pa.Z, pb.Z, gradient1);
                 var ez = MathUtils.Lerp(pc.Z, pd.Z, gradient2);
 
-                paintScanline(y, sx, ex, sz, ez, sl, el, color);
+                paintScanline(y, sx, ex, sz, ez, sl, el, color, zWorld);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void paintScanline(float y, float sx, float ex, float sz, float ez, float sl, float el, ColorRGB color) {
+        void paintScanline(float y, float sx, float ex, float sz, float ez, float sl, float el, ColorRGB color, Vector3 zWorld) {
             var surface = RendererContext.Surface;
 
             var minX = Math.Max(sx, 0);
@@ -88,7 +91,8 @@ namespace SoftRenderingApp3D {
                 var z = MathUtils.Lerp(sz, ez, gradient);
                 float c = MathUtils.Lerp(sl, el, gradient);
 
-                surface.ScatterPixel((int)x, (int)y, (int)z, 0.2f * c * color);
+                //surface.ScatterPixel((int)x, (int)y, (int)z, 0.2f * c * new ColorRGB(100, 100, 150), zWorld);
+                surface.ScatterPixel((int)x, (int)y, (int)z, 0.2f * c * ColorRGB.White, zWorld);
             }
         }
 

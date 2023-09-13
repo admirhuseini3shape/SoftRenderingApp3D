@@ -111,8 +111,9 @@ namespace SoftRenderingApp3D {
                 vbx.TransformWorldView();
                 offsetVbx.TransformWorld();
                 offsetVbx.TransformWorldView();
+                var offsetCount = offset.Triangles.Length;
 
-                if(rendererSettings.ShowTextures) {
+                /*if(rendererSettings.ShowTextures) {
                     DMeshAABBTree3 spatial = new DMeshAABBTree3(offsetG3);
                     spatial.Build();
                     for(int i = 0; i < triangleCount; i++) {
@@ -136,11 +137,39 @@ namespace SoftRenderingApp3D {
                         }
 
                     }
-                }
+                }*/
 
-                var offsetCount = offset.Triangles.Length;
+
 
                 if(rendererSettings.ShowTextures) {
+                    var spatial = new DMeshAABBTree3(originalG3);
+                    spatial.Build();
+                    for(int i = 0; i < triangleCount; i++) {
+                        var t = volume.Triangles[i];
+                        // Now calculate amount of light reaching camera
+
+                        // Calculate distance to offset
+                        // get light position
+                        Vector3 lightPos = new Vector3(0, 10, 50);
+                        Vector3 trianglePos = t.GetCenterCoordinates(vbx);
+                        Vector3 direction = trianglePos - lightPos;
+
+                        Ray3d ray = new Ray3d(MiscUtils.Vector3ToVector3d(lightPos), MiscUtils.Vector3ToVector3d(direction));
+                        int hit_tid = spatial.FindNearestHitTriangle(ray);
+
+                        // Check if ray misses
+                        if(hit_tid != DMesh3.InvalidID) {
+                            IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(originalG3, hit_tid, ray);
+                            double hit_dist = MiscUtils.Vector3ToVector3d(trianglePos).Distance(ray.PointAt(intr.RayParameter));
+                            vbx.Volume.TriangleColors[i] = (float)Math.Exp(-hit_dist * 0.1f) * ColorRGB.White;
+                        }
+                        else {
+                            vbx.Volume.TriangleColors[i] = ColorRGB.Black;
+                        }
+                    }
+                }
+
+                /*if(rendererSettings.ShowTextures) {
                     var spatial = new DMeshAABBTree3(originalG3);
                     spatial.Build();
                     for(int i = 0; i < offsetCount; i++) {
@@ -166,7 +195,7 @@ namespace SoftRenderingApp3D {
                             vbx.Volume.TriangleColors[hit_tid] += (float)Math.Exp(-hit_dist * 0.01f) * offsetVbx.Volume.TriangleColors[i];
                         }
                     }
-                }
+                }*/
 
 
                 // Render surface mesh
@@ -219,7 +248,7 @@ namespace SoftRenderingApp3D {
                 }
 
                 // Render subsurface mesh
-                /* if(rendererSettings.ShowTextures) {
+                if(rendererSettings.ShowTextures) {
 
                     var offsetTriangleCount = offset.Triangles.Length;
 
@@ -262,7 +291,7 @@ namespace SoftRenderingApp3D {
 
                         stats.CalcTime();
                     }
-                }*/
+                }
 
                 surface.CombineScreens();
 

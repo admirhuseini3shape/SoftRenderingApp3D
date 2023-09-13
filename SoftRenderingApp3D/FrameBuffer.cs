@@ -8,10 +8,13 @@ namespace SoftRenderingApp3D {
     public class FrameBuffer {
         private readonly int[] emptyZBuffer;
         private readonly int[] emptyBuffer;
+        private readonly Vector3[] emptyWorldBuffer;
         
         private readonly RenderContext renderContext;
         private int[] zBuffer;
         private int[] zScatterBuffer;
+        private Vector3[] WorldBuffer;
+        private Vector3[] WorldScatterBuffer;
 
         public int[] Screen { get; }
         public int[] ScatterScreen { get; }
@@ -30,17 +33,21 @@ namespace SoftRenderingApp3D {
             Depth * p.Z / p.W);
 
         public FrameBuffer(int width, int height, RenderContext renderContext) {
+            this.emptyWorldBuffer = new Vector3[width * height];
             this.Screen = new int[width * height];
             this.ScatterScreen = new int[width * height];
 
             this.zBuffer = new int[width * height];
             this.zScatterBuffer = new int[width * height];
-
+            this.WorldBuffer = new Vector3[width * height];
+            this.WorldScatterBuffer = new Vector3[width * height];
 
             this.emptyBuffer = new int[width * height];
             this.emptyBuffer.Fill(ColorRGB.Black.Color);
             this.emptyZBuffer = new int[width * height];
             this.emptyZBuffer.Fill(Depth);
+            this.emptyWorldBuffer.Fill(Vector3.Zero);
+
 
             this.Width = width;
             this.Height = height;
@@ -55,12 +62,14 @@ namespace SoftRenderingApp3D {
 
             Array.Copy(emptyZBuffer, zBuffer, zBuffer.Length);
             Array.Copy(emptyZBuffer, zScatterBuffer, zScatterBuffer.Length);
+            Array.Copy(emptyWorldBuffer, WorldBuffer, WorldBuffer.Length);
+            Array.Copy(emptyWorldBuffer, WorldScatterBuffer, WorldScatterBuffer.Length);
 
         }
 
         // Called to put a pixel on screen at a specific X,Y coordinates
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void PutPixel(int x, int y, int z, ColorRGB color) {
+        public void PutPixel(int x, int y, int z, ColorRGB color, Vector3 World) {
 #if DEBUG
             if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0) {
                 throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}, Depth={z}");
@@ -75,7 +84,7 @@ namespace SoftRenderingApp3D {
             renderContext.Stats.DrawnPixelCount++;
 
             zBuffer[index] = z;
-
+            WorldBuffer[index] = World;
 
             Screen[index] = color.Color;
         }
@@ -83,7 +92,7 @@ namespace SoftRenderingApp3D {
         // Called to add the subsurface scattering effect at a specific X,Y coordinate
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 
-        public void ScatterPixel(int x, int y, int z, ColorRGB color) {
+        public void ScatterPixel(int x, int y, int z, ColorRGB color, Vector3 World) {
 #if DEBUG
             if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0) {
                 throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}, Depth={z}");
@@ -99,6 +108,7 @@ namespace SoftRenderingApp3D {
             renderContext.Stats.DrawnPixelCount++;
 
             zScatterBuffer[index] = z;
+            WorldScatterBuffer[index] = World;
 
             ScatterScreen[index] = color.Color;
 #endif
@@ -148,8 +158,14 @@ namespace SoftRenderingApp3D {
         }*/
 
         public void CombineScreens() {
-            for(int i = 0; i < Screen.Length; i++)
-                Screen[i] = (new ColorRGB(Color.FromArgb(Screen[i])) + new ColorRGB(Color.FromArgb(ScatterScreen[i]))).Color;
+            for(int i = 0; i < Screen.Length; i++) {
+                if(WorldScatterBuffer[i] == emptyWorldBuffer[i])
+                    continue;
+                float distance = Vector3.Distance(WorldScatterBuffer[i], WorldBuffer[i]);
+                if( distance < 10) {
+                    Screen[i] = (new ColorRGB(Color.FromArgb(Screen[i])) + (float)Math.Exp(-distance) * new ColorRGB(Color.FromArgb(ScatterScreen[i]))).Color;
+                }
+            }
         }
 
 
@@ -170,9 +186,9 @@ namespace SoftRenderingApp3D {
 
             int i = 0;
             while(i++ < dmax) {
-                ex += dx; if(ex >= dmax) { ex -= dmax; x0 += sx; PutPixel(x0, y0, z0, color); }
-                ey += dy; if(ey >= dmax) { ey -= dmax; y0 += sy; PutPixel(x0, y0, z0, color); }
-                ez += dz; if(ez >= dmax) { ez -= dmax; z0 += sz; PutPixel(x0, y0, z0, color); }
+                ex += dx; if(ex >= dmax) { ex -= dmax; x0 += sx; PutPixel(x0, y0, z0, color, Vector3.Zero); }
+                ey += dy; if(ey >= dmax) { ey -= dmax; y0 += sy; PutPixel(x0, y0, z0, color, Vector3.Zero); }
+                ez += dz; if(ez >= dmax) { ez -= dmax; z0 += sz; PutPixel(x0, y0, z0, color, Vector3.Zero); }
             }
         }
 

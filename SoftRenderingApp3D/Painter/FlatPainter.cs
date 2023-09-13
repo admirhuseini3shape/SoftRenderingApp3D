@@ -82,7 +82,7 @@ namespace SoftRenderingApp3D {
 
                 var z = MathUtils.Lerp(sz, ez, gradient);
 
-                surface.PutPixel((int)x, (int)y, (int)z, color);
+                surface.PutPixel((int)x, (int)y, (int)z, color, Vector3.Zero);
             }
         }
     }

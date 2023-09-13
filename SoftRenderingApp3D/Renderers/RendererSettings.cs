@@ -9,6 +9,8 @@
         public bool LiearTextureFiltering { get; set; }
         public int activeTexture { get; set; }
 
+        public int translucency { get; set; }
+
         public void changeActiveTexture() {
             activeTexture += 1;
         }
