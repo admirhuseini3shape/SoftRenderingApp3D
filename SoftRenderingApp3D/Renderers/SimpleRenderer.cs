@@ -81,7 +81,6 @@ namespace SoftRenderingApp3D {
                 offsetVbx.WorldMatrix = offsetWorldMatrix;
                 offsetVbx.WorldViewMatrix = offsetModelViewMatrix;
 
-                var offsetVertices = offset.Vertices;
                 var offsetViewVertices = offsetVbx.ViewVertices;
 
 
@@ -182,17 +181,10 @@ namespace SoftRenderingApp3D {
                     subSurfacePainter.RendererContext = renderContext;
                     subSurfacePainter.DrawTriangle(color, offsetVbx, idxTriangle);
 
-
-
                     stats.DrawnTriangleCount++;
-
-                    // Now calculate colors for offset
-
 
                     stats.CalcTime();
                 }
-
-                surface.CombineScreens();
 
                 // Only draw one volume, will remove later
                 break;
@@ -214,7 +206,6 @@ namespace SoftRenderingApp3D {
 
         public void calculateSubsurfaceScattering(IVolume volume, IVolume offset, VertexBuffer vbx, RendererSettings rendererSettings) {
             DMesh3 originalG3 = GetDMesh3FromVolume(volume as Volume);
-            DMesh3 offsetG3 = GetDMesh3FromVolume(offset as Volume);
 
             var triangleCount = volume.Triangles.Length;
 

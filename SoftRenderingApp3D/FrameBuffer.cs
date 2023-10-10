@@ -92,7 +92,7 @@ namespace SoftRenderingApp3D {
         // Called to add the subsurface scattering effect at a specific X,Y coordinate
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 
-        public void ScatterPixel(int x, int y, int z, ColorRGB color, Vector3 World) {
+        public void PutSubsurfacePixel(int x, int y, int z, ColorRGB color, Vector3 World) {
 #if DEBUG
             if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0) {
                 throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}, Depth={z}");
@@ -110,22 +110,15 @@ namespace SoftRenderingApp3D {
             zScatterBuffer[index] = z;
             WorldScatterBuffer[index] = World;
 
-            ScatterScreen[index] = color.Color;
+            float distance = Vector3.Distance(WorldScatterBuffer[index], WorldBuffer[index]);
+            if(distance < 10) {
+                var surfaceColor = new ColorRGB(Color.FromArgb(Screen[index]));
+                var subsurfaceColor = color;
+                var depth = (float)Math.Exp(-distance);
+                Screen[index] = ( surfaceColor + depth * subsurfaceColor ).Color;
+            }
 #endif
         }
-
-        public void CombineScreens() {
-            for(int i = 0; i < Screen.Length; i++) {
-                if(WorldScatterBuffer[i] == emptyWorldBuffer[i])
-                    continue;
-                float distance = Vector3.Distance(WorldScatterBuffer[i], WorldBuffer[i]);
-                if( distance < 10) {
-                    Screen[i] = (new ColorRGB(Color.FromArgb(Screen[i])) + (float)Math.Exp(-distance) * new ColorRGB(Color.FromArgb(ScatterScreen[i]))).Color;
-                }
-            }
-        }
-
-
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DrawLine(Vector3 p0, Vector3 p1, ColorRGB color) {
@@ -147,13 +140,6 @@ namespace SoftRenderingApp3D {
                 ey += dy; if(ey >= dmax) { ey -= dmax; y0 += sy; PutPixel(x0, y0, z0, color, Vector3.Zero); }
                 ez += dz; if(ez >= dmax) { ez -= dmax; z0 += sz; PutPixel(x0, y0, z0, color, Vector3.Zero); }
             }
-        }
-
-        // Calculates the weight for a pixel x pixels away from the original on the x-axis,
-        // and y pixels away from the original on the y-axis
-        public float CalculateGaussian(int x, int y) {
-            var sigma = 4f;
-            return (float)(1.0f / (2.0f * Math.PI * sigma) * Math.Exp(-(x * x + y * y) / (2 * sigma * sigma)));
         }
     }
 }

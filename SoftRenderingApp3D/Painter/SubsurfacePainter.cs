@@ -93,7 +93,7 @@ namespace SoftRenderingApp3D {
 
                 var finalColor = RenderUtils.subsurfaceVisibility * c * RenderUtils.subsurfaceColor;
 
-                surface.ScatterPixel((int)x, (int)y, (int)z, finalColor, zWorld);
+                surface.PutSubsurfacePixel((int)x, (int)y, (int)z, finalColor, zWorld);
             }
         }
 
