@@ -2,7 +2,6 @@
 using g3;
 using System.Numerics;
 
-
 namespace SoftRenderingApp3D {
 
     public class SimpleRenderer : IRenderer {
@@ -66,8 +65,6 @@ namespace SoftRenderingApp3D {
                 vbx.WorldMatrix = worldMatrix;
                 vbx.WorldViewMatrix = modelViewMatrix;
 
-                (vbx.Volume as Volume).SetVolumeColor(ColorRGB.Gray); 
-
                 stats.TotalTriangleCount += volume.Triangles.Length;
 
                 var vertices = volume.Vertices;
@@ -87,11 +84,6 @@ namespace SoftRenderingApp3D {
                 var offsetVertices = offset.Vertices;
                 var offsetViewVertices = offsetVbx.ViewVertices;
 
-                (offsetVbx.Volume as Volume).SetVolumeColor(ColorRGB.White);
-
-
-                DMesh3 originalG3 = GetDMesh3FromVolume(volume as Volume);
-                DMesh3 offsetG3 = GetDMesh3FromVolume(offset as Volume);
 
                 var triangleCount = volume.Triangles.Length;
 
@@ -113,89 +105,8 @@ namespace SoftRenderingApp3D {
                 offsetVbx.TransformWorldView();
                 var offsetCount = offset.Triangles.Length;
 
-                /*if(rendererSettings.ShowTextures) {
-                    DMeshAABBTree3 spatial = new DMeshAABBTree3(offsetG3);
-                    spatial.Build();
-                    for(int i = 0; i < triangleCount; i++) {
-                        var t = volume.Triangles[i];
-                        // Calculate subsurface lighting
-
-                        // Calculate distance to offset
-                        // get light position
-                        Vector3 lightPos = world.LightSources[0].Position;
-                        Vector3 trianglePos = t.GetCenterCoordinates(vbx);
-                        Vector3 direction = (trianglePos - lightPos);
-
-                        Ray3d ray = new Ray3d(MiscUtils.Vector3ToVector3d(lightPos), MiscUtils.Vector3ToVector3d(direction));
-                        int hit_tid = spatial.FindNearestHitTriangle(ray);
-
-                        // Check if ray misses
-                        if(hit_tid != DMesh3.InvalidID) {
-                            IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(offsetG3, hit_tid, ray);
-                            double hit_dist = MiscUtils.Vector3ToVector3d(lightPos).Distance(ray.PointAt(intr.RayParameter));
-                            offsetVbx.Volume.TriangleColors[hit_tid] += (float)Math.Exp(-hit_dist * 0.1f) * ColorRGB.White;
-                        }
-
-                    }
-                }*/
-
-
-
-                if(rendererSettings.ShowTextures) {
-                    var spatial = new DMeshAABBTree3(originalG3);
-                    spatial.Build();
-                    for(int i = 0; i < triangleCount; i++) {
-                        var t = volume.Triangles[i];
-                        // Now calculate amount of light reaching camera
-
-                        // Calculate distance to offset
-                        // get light position
-                        Vector3 lightPos = new Vector3(0, 10, 50);
-                        Vector3 trianglePos = t.GetCenterCoordinates(vbx);
-                        Vector3 direction = trianglePos - lightPos;
-
-                        Ray3d ray = new Ray3d(MiscUtils.Vector3ToVector3d(lightPos), MiscUtils.Vector3ToVector3d(direction));
-                        int hit_tid = spatial.FindNearestHitTriangle(ray);
-
-                        // Check if ray misses
-                        if(hit_tid != DMesh3.InvalidID) {
-                            IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(originalG3, hit_tid, ray);
-                            double hit_dist = MiscUtils.Vector3ToVector3d(trianglePos).Distance(ray.PointAt(intr.RayParameter));
-                            vbx.Volume.TriangleColors[i] = (float)Math.Exp(-hit_dist * 0.1f) * ColorRGB.White;
-                        }
-                        else {
-                            vbx.Volume.TriangleColors[i] = ColorRGB.Black;
-                        }
-                    }
-                }
-
-                /*if(rendererSettings.ShowTextures) {
-                    var spatial = new DMeshAABBTree3(originalG3);
-                    spatial.Build();
-                    for(int i = 0; i < offsetCount; i++) {
-                        var t = offset.Triangles[i];
-                        // Now calculate amount of light reaching camera
-
-                        // Calculate distance to offset
-                        // get light position
-                        Vector3 cameraPos = (renderContext.Camera as ArcBallCam).Position;
-                        Vector3 trianglePos = t.GetCenterCoordinates(offsetVbx);
-                        Vector3 direction = trianglePos - cameraPos;
-
-                        if(Vector3.Dot(t.CalculateNormal(offset.Vertices), direction) < 0)
-                            continue;
-
-                        Ray3d ray = new Ray3d(MiscUtils.Vector3ToVector3d(trianglePos), MiscUtils.Vector3ToVector3d(direction));
-                        int hit_tid = spatial.FindNearestHitTriangle(ray);
-
-                        // Check if ray misses
-                        if(hit_tid != DMesh3.InvalidID) {
-                            IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(originalG3, hit_tid, ray);
-                            double hit_dist = MiscUtils.Vector3ToVector3d(cameraPos).Distance(ray.PointAt(intr.RayParameter));
-                            vbx.Volume.TriangleColors[hit_tid] += (float)Math.Exp(-hit_dist * 0.01f) * offsetVbx.Volume.TriangleColors[i];
-                        }
-                    }
-                }*/
+                if (volume.TriangleColors == null)
+                    calculateSubsurfaceScattering(volume, offset, vbx, rendererSettings);
 
 
                 // Render surface mesh
@@ -231,16 +142,7 @@ namespace SoftRenderingApp3D {
                     if(rendererSettings.ShowTriangles)
                         wireFramePainter.DrawTriangle(ColorRGB.Magenta, vbx, idxTriangle);
 
-                    if(!rendererSettings.ShowTextures || true) {
-                        Painter?.DrawTriangle(color, vbx, idxTriangle);
-                    }
-                    else {
-                        if(Painter.GetType() == typeof(GouraudPainter)) {
-                            // Cast to GouraudPainter, this needs fixing because currently only the GouraudPainter has implemented the function for drawing textures
-                            GouraudPainter painter = (GouraudPainter)Painter;
-                            painter.DrawTriangleTextured(texture, vbx, idxTriangle, rendererSettings.LiearTextureFiltering);
-                        }
-                    }
+                    Painter?.DrawTriangle(color, vbx, idxTriangle);
 
                     stats.DrawnTriangleCount++;
 
@@ -248,49 +150,46 @@ namespace SoftRenderingApp3D {
                 }
 
                 // Render subsurface mesh
-                if(rendererSettings.ShowTextures) {
+                var offsetTriangleCount = offset.Triangles.Length;
 
-                    var offsetTriangleCount = offset.Triangles.Length;
+                for(var idxTriangle = 0; idxTriangle < offsetTriangleCount; idxTriangle++) {
+                    // Get triangle
+                    var t = offset.Triangles[idxTriangle];
 
-                    for(var idxTriangle = 0; idxTriangle < offsetTriangleCount; idxTriangle++) {
-                        // Get triangle
-                        var t = offset.Triangles[idxTriangle];
-
-                        // Discard if behind far plane
-                        if(t.IsBehindFarPlane(offsetVbx)) {
-                            stats.BehindViewTriangleCount++;
-                            continue;
-                        }
-
-                        // Discard if back facing 
-                        if(rendererSettings.BackFaceCulling && t.IsFacingBack(offsetVbx)) {
-                            stats.FacingBackTriangleCount++;
-                            continue;
-                        }
-
-                        // Project in frustum
-                        t.TransformProjection(offsetVbx, projectionMatrix);
-
-                        // Discard if outside view frustum
-                        if(t.isOutsideFrustum(offsetVbx)) {
-                            stats.OutOfViewTriangleCount++;
-                            continue;
-                        }
-
-                        var color = offset.TriangleColors[idxTriangle];
-                        var subSurfacePainter = new SubsurfacePainter();
-                        subSurfacePainter.RendererContext = renderContext;
-                        subSurfacePainter.DrawTriangle(color, offsetVbx, idxTriangle);
-
-
-
-                        stats.DrawnTriangleCount++;
-
-                        // Now calculate colors for offset
-
-
-                        stats.CalcTime();
+                    // Discard if behind far plane
+                    if(t.IsBehindFarPlane(offsetVbx)) {
+                        stats.BehindViewTriangleCount++;
+                        continue;
                     }
+
+                    // Discard if back facing 
+                    if(rendererSettings.BackFaceCulling && t.IsFacingBack(offsetVbx)) {
+                        stats.FacingBackTriangleCount++;
+                        continue;
+                    }
+
+                    // Project in frustum
+                    t.TransformProjection(offsetVbx, projectionMatrix);
+
+                    // Discard if outside view frustum
+                    if(t.isOutsideFrustum(offsetVbx)) {
+                        stats.OutOfViewTriangleCount++;
+                        continue;
+                    }
+
+                    var color = offset.TriangleColors[idxTriangle];
+                    var subSurfacePainter = new SubsurfacePainter();
+                    subSurfacePainter.RendererContext = renderContext;
+                    subSurfacePainter.DrawTriangle(color, offsetVbx, idxTriangle);
+
+
+
+                    stats.DrawnTriangleCount++;
+
+                    // Now calculate colors for offset
+
+
+                    stats.CalcTime();
                 }
 
                 surface.CombineScreens();
@@ -311,6 +210,41 @@ namespace SoftRenderingApp3D {
 
         public DMesh3 GetDMesh3FromVolume(Volume volume) {
             return DMesh3Builder.Build(volume.Vertices.ToFloatArray(), volume.Triangles.ToIntArray(), volume.NormVertices.ToFloatArray());
+        }
+
+        public void calculateSubsurfaceScattering(IVolume volume, IVolume offset, VertexBuffer vbx, RendererSettings rendererSettings) {
+            DMesh3 originalG3 = GetDMesh3FromVolume(volume as Volume);
+            DMesh3 offsetG3 = GetDMesh3FromVolume(offset as Volume);
+
+            var triangleCount = volume.Triangles.Length;
+
+            (vbx.Volume as Volume).InitializeTrianglesColor(ColorRGB.Black);
+
+            var spatial = new DMeshAABBTree3(originalG3);
+            spatial.Build();
+            for(int i = 0; i < triangleCount; i++) {
+                var t = volume.Triangles[i];
+                // Now calculate amount of light reaching camera
+
+                // Calculate distance to offset
+                // get light position
+                Vector3 lightPos = new Vector3(0, 10, 50);
+                Vector3 trianglePos = t.GetCenterCoordinates(vbx);
+                Vector3 direction = trianglePos - lightPos;
+
+                Ray3d ray = new Ray3d(MiscUtils.Vector3ToVector3d(lightPos), MiscUtils.Vector3ToVector3d(direction));
+                int hit_tid = spatial.FindNearestHitTriangle(ray);
+
+                // Check if ray misses
+                if(hit_tid != DMesh3.InvalidID) {
+                    IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(originalG3, hit_tid, ray);
+                    // Calculate distance traveled after passing through the surface
+                    double hit_dist = MiscUtils.Vector3ToVector3d(trianglePos).Distance(ray.PointAt(intr.RayParameter));
+                    // Calculate the decay of the light
+                    float decay = (float)Math.Exp(-hit_dist * 0.1f);
+                    vbx.Volume.TriangleColors[i] = decay * RenderUtils.subsurfaceColor;
+                }
+            }
         }
     }
 }

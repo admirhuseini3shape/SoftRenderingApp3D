@@ -37,5 +37,14 @@ namespace SoftRenderingApp3D {
 
             wireFramePainter.DrawLine(surface, color, projectionP0, projectionP1);
         }
+
+        public static float surfaceOpacity = 0.5f;
+        public static float subsurfaceVisibility = 1.0f - surfaceOpacity;
+        public static float lightWeight = 0.6f;
+        public static float subsurfaceScatteringWeight = 1.0f - lightWeight;
+
+
+        public static ColorRGB subsurfaceColor = new ColorRGB(200, 200, 200);
+        public static ColorRGB surfaceColor = new ColorRGB(50, 50, 50);
     }
 }

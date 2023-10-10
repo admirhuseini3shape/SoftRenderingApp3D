@@ -9,12 +9,12 @@ namespace SoftRenderingApp3D {
 
             NormVertices = vertexNormals ?? this.CalculateVertexNormals().ToArray();
             TexCoordinates = textureCoordinates;
-            TriangleColors = triangleColors ?? Enumerable.Repeat(ColorRGB.Gray, Triangles.Length).ToArray();
+            TriangleColors = null;
 
             Scale = Vector3.One;
         }
 
-        public void SetVolumeColor(ColorRGB color) {
+        public void InitializeTrianglesColor(ColorRGB color) {
             TriangleColors = Enumerable.Repeat(color, Triangles.Length).ToArray();
 
         }

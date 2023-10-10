@@ -85,15 +85,11 @@ namespace SoftRenderingApp3D.App {
             flyCam = new FlyCam { Position = new Vector3(0, 0, -25) };
 
             var arcBallCamHandler = new ArcBallCamHandler(this.panel3D1, arcBallCam);
-            var flyCamHandler = new FlyCamHandler(this.panel3D2, flyCam);
 
             this.arcBallCamControl1.Camera = arcBallCam;
 
             this.panel3D1.Projection = projection;
             this.panel3D1.Camera = arcBallCam;
-
-            this.panel3D2.Projection = projection;
-            this.panel3D2.Camera = flyCam;
 
             prepareWorld("jaw");
         }
@@ -117,7 +113,7 @@ namespace SoftRenderingApp3D.App {
                 case "jaw":
                     world.Volumes.AddRange(stlReader.ReadFile(@"models\original.stl"));
                     world.Volumes.AddRange(stlReader.ReadFile(@"models\offset_3.stl"));
-                    (world.Volumes[1] as Volume).SetVolumeColor(ColorRGB.White);
+                    (world.Volumes[1] as Volume).InitializeTrianglesColor(ColorRGB.Black);
                     arcBallCam.Position += new Vector3(0, 10, -50 - arcBallCam.Position.Z);
                     break;
                 case "stl-mesh-1":
@@ -224,18 +220,14 @@ namespace SoftRenderingApp3D.App {
 
             world.LightSources.Add(new LightSource { Position = new Vector3(0, 0, 10) });
 
-            // var camObject = new Cube() { Position = arcBallCam.Position };
-
             arcBallCam.CameraChanged -= MainCam_CameraChanged;
             arcBallCam.CameraChanged += MainCam_CameraChanged;
 
             // world.Volumes.Add(camObject);
 
             this.panel3D1.World = world;
-            this.panel3D2.World = world;
 
             this.panel3D1.Invalidate();
-            this.panel3D2.Invalidate();
 
             void MainCam_CameraChanged(object cam, EventArgs _1) {
                 // camObject.Position = ((ArcBallCam)cam).Position;

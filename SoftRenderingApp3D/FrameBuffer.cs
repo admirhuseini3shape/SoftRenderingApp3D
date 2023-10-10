@@ -113,49 +113,6 @@ namespace SoftRenderingApp3D {
             ScatterScreen[index] = color.Color;
 #endif
         }
-        // Combines the effect of the subsurface lighting and the surface lighting using a gaussian blur on the subsurface model.
-        /*public void CombineScreens() {
-            ColorRGB color;
-            for (int i = 0; i < Height; i++) {
-                for (int j = 0; j < Width; j++) {
-                    var index = j + i * Width;
-
-                    if(Screen[index] == ColorRGB.Black.Color)
-                        continue;
-
-                    float r = 0;
-                    float g = 0;
-                    float b = 0;
-
-                    for(int x = i - 25; x < i + 25; x++) {
-                        for (int y = j - 25; y < j + 25; y++) {
-                            if(x < 0 ||
-                                y < 0 ||
-                                x >= Height ||
-                                y >= Width ||
-                                ScatterScreen[x * Width + y] == ColorRGB.Black.Color ||
-                                (int)(r) + Color.FromArgb(Screen[index]).R >= 255 ||
-                                (int)(b) + Color.FromArgb(Screen[index]).B >= 255 ||
-                                (int)(g) + Color.FromArgb(Screen[index]).G >= 255)
-                                continue;
-
-                            var original_color = new ColorRGB(Color.FromArgb(ScatterScreen[x * Width + y]));
-
-                            // Add light to the target pixel
-                            r += original_color.R * CalculateGaussian(Math.Abs(x - i), Math.Abs(y - j));
-                            g += original_color.G * CalculateGaussian(Math.Abs(x - i), Math.Abs(y - j));
-                            b += original_color.B * CalculateGaussian(Math.Abs(x - i), Math.Abs(y - j));
-                            //color += CalculateGaussian(Math.Abs(x - i), Math.Abs(y - j)) * original_color;
-                            
-                        }
-                    }
-                    color = new ColorRGB((byte)r, (byte)g, (byte)b);
-
-                    // Add the subsurface light to the surface light
-                    Screen[index] = (new ColorRGB(Color.FromArgb(Screen[index])) + color).Color;
-                }
-            }
-        }*/
 
         public void CombineScreens() {
             for(int i = 0; i < Screen.Length; i++) {
