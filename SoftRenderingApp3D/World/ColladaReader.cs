@@ -27,7 +27,7 @@ namespace SoftRenderingApp3D {
                 string striangles = xvolume.Descendants(XName.Get("p", ns)).First().Value;
                 var triangles = striangles.Split(" ".ToArray(), StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x, CultureInfo.InvariantCulture)).ToArray().BuildTriangleIndices().ToArray();
 
-                yield return new Volume(vertices, triangles, normals, null);
+                yield return new Volume(vertices.Vector3ArrayToColoredVertices().ToArray(), triangles, normals, null);
             }
         }
 
@@ -66,7 +66,7 @@ namespace SoftRenderingApp3D {
                     var texture_coordinates = getArraySource<Vector2>(mesh, texture_coordinates_id);
 
                     yield return new Volume(
-                        vertices_position.ToArray(),
+                        vertices_position.ToArray().Vector3ArrayToColoredVertices().ToArray(),
                         polylist_p.ToArray().BuildTriangleIndices().ToArray(),
                         vertices_normal.ToArray(),
                         texture_coordinates.ToArray(),
@@ -90,7 +90,7 @@ namespace SoftRenderingApp3D {
                     // var triangles_normal = getArraySource<Vector3>(mesh, triangles_normal_id);
 
                     yield return new Volume(
-                        vertices_position.ToArray(),
+                        vertices_position.ToArray().Vector3ArrayToColoredVertices().ToArray(),
                         getTriangles(triangles_p, stride).ToArray(),
                         null, // triangles_normal.ToArray(),
                         null);

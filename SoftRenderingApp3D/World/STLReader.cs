@@ -239,7 +239,7 @@ namespace SoftRenderingApp3D {
             if(processError)
                 throw new FileLoadException($"Error reading file: {path}!");
 
-            return new Volume(vertices.ToArray(),
+            return new Volume(vertices.ToArray().Vector3ArrayToColoredVertices().ToArray(),
                              triangleIndices.ToArray(),
                              normals.ToArray(),
                              null,
@@ -374,7 +374,7 @@ namespace SoftRenderingApp3D {
                 } // if solid
             } // while !endofstream
 
-            return new Volume(vertices.ToArray(),
+            return new Volume(vertices.ToArray().Vector3ArrayToColoredVertices().ToArray(),
                               triangleIndices.ToArray(),
                               normals.ToArray(),
                               null,

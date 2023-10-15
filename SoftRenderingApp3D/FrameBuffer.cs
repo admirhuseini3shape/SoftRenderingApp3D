@@ -12,12 +12,13 @@ namespace SoftRenderingApp3D {
         
         private readonly RenderContext renderContext;
         private int[] zBuffer;
-        private int[] zScatterBuffer;
+        private int[] zSubsurfaceBuffer;
         private Vector3[] WorldBuffer;
-        private Vector3[] WorldScatterBuffer;
+        private Vector3[] SubsurfaceWorldBuffer;
 
         public int[] Screen { get; }
-        public int[] ScatterScreen { get; }
+        public int[] TempScreen { get; }
+        public int[] SubsurfaceScreen { get; }
 
         internal int Width { get; }
         internal int Height { get; }
@@ -35,12 +36,15 @@ namespace SoftRenderingApp3D {
         public FrameBuffer(int width, int height, RenderContext renderContext) {
             this.emptyWorldBuffer = new Vector3[width * height];
             this.Screen = new int[width * height];
-            this.ScatterScreen = new int[width * height];
+            this.TempScreen = new int[width * height];
+
+            this.SubsurfaceScreen = new int[width * height];
+
 
             this.zBuffer = new int[width * height];
-            this.zScatterBuffer = new int[width * height];
+            this.zSubsurfaceBuffer = new int[width * height];
             this.WorldBuffer = new Vector3[width * height];
-            this.WorldScatterBuffer = new Vector3[width * height];
+            this.SubsurfaceWorldBuffer = new Vector3[width * height];
 
             this.emptyBuffer = new int[width * height];
             this.emptyBuffer.Fill(ColorRGB.Black.Color);
@@ -58,12 +62,13 @@ namespace SoftRenderingApp3D {
 
         public void Clear() {
             Array.Copy(emptyBuffer, Screen, Screen.Length);
-            Array.Copy(emptyBuffer, ScatterScreen, ScatterScreen.Length);
+            Array.Copy(emptyBuffer, TempScreen, TempScreen.Length);
+            Array.Copy(emptyBuffer, SubsurfaceScreen, SubsurfaceScreen.Length);
 
             Array.Copy(emptyZBuffer, zBuffer, zBuffer.Length);
-            Array.Copy(emptyZBuffer, zScatterBuffer, zScatterBuffer.Length);
+            Array.Copy(emptyZBuffer, zSubsurfaceBuffer, zSubsurfaceBuffer.Length);
             Array.Copy(emptyWorldBuffer, WorldBuffer, WorldBuffer.Length);
-            Array.Copy(emptyWorldBuffer, WorldScatterBuffer, WorldScatterBuffer.Length);
+            Array.Copy(emptyWorldBuffer, SubsurfaceWorldBuffer, SubsurfaceWorldBuffer.Length);
 
         }
 
@@ -76,7 +81,7 @@ namespace SoftRenderingApp3D {
             }
 #endif
             var index = x + y * Width;
-            if(z > zBuffer[index]) {
+            if(z >= zBuffer[index]) {
                 renderContext.Stats.BehindZPixelCount++;
                 return;
             }
@@ -86,13 +91,14 @@ namespace SoftRenderingApp3D {
             zBuffer[index] = z;
             WorldBuffer[index] = World;
 
+            TempScreen[index] = color.Color;
             Screen[index] = color.Color;
         }
 
         // Called to add the subsurface scattering effect at a specific X,Y coordinate
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 
-        public void PutSubsurfacePixel(int x, int y, int z, ColorRGB color, Vector3 World) {
+        public void PutSubsurfacePixel(int x, int y, int z, ColorRGB color, Vector3 world) {
 #if DEBUG
             if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0) {
                 throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}, Depth={z}");
@@ -100,22 +106,22 @@ namespace SoftRenderingApp3D {
 
             var index = x + y * Width;
 
-            if(z >= zScatterBuffer[index]) {
+            if(z >= zSubsurfaceBuffer[index]) {
                 renderContext.Stats.BehindZPixelCount++;
                 return;
             }
 
             renderContext.Stats.DrawnPixelCount++;
 
-            zScatterBuffer[index] = z;
-            WorldScatterBuffer[index] = World;
+            zSubsurfaceBuffer[index] = z;
+            SubsurfaceWorldBuffer[index] = world;
 
-            float distance = Vector3.Distance(WorldScatterBuffer[index], WorldBuffer[index]);
+            float distance = Vector3.Distance(SubsurfaceWorldBuffer[index], WorldBuffer[index]);
             if(distance < 10) {
-                var surfaceColor = new ColorRGB(Color.FromArgb(Screen[index]));
+                var surfaceColor = new ColorRGB(Color.FromArgb(TempScreen[index]));
+                var decay = (float)Math.Exp(-distance);
                 var subsurfaceColor = color;
-                var depth = (float)Math.Exp(-distance);
-                Screen[index] = ( surfaceColor + depth * subsurfaceColor ).Color;
+                Screen[index] = ( surfaceColor + subsurfaceColor ).Color;
             }
 #endif
         }

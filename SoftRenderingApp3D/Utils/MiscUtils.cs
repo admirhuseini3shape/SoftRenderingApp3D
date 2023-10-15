@@ -55,6 +55,16 @@ namespace SoftRenderingApp3D {
             return resultArray;
         }
 
+        public static float[] ToFloatArray(this ColoredVertex[] array) {
+            var resultArray = new float[array.Length * 3];
+            for(int i = 0; i < array.Length * 3; i += 3) {
+                resultArray[i] = array[i / 3].position.X;
+                resultArray[i + 1] = array[i / 3].position.Y;
+                resultArray[i + 2] = array[i / 3].position.Z;
+            }
+            return resultArray;
+        }
+
         public static int[] ToIntArray(this Triangle[] triangles) {
             int[] array = new int[triangles.Length * 3];
             for(int i = 0; i < triangles.Length * 3; i += 3) {
@@ -64,5 +74,7 @@ namespace SoftRenderingApp3D {
             }
             return array;
         }
+
+
     }
 }

@@ -85,9 +85,7 @@
     <Compile Include="Painter\GouraudPainter.cs" />
     <Compile Include="FrameBuffer.cs" />
     <Compile Include="Camera\FlyCam.cs" />
-    <Compile Include="Painter\ClassicPainter.cs" />
     <Compile Include="ColorRGB.cs" />
-    <Compile Include="Painter\FlatPainter.cs" />
     <Compile Include="Painter\IPainter.cs" />
     <Compile Include="Renderers\RendererSettings.cs" />
     <Compile Include="Renderers\RenderUtils.cs" />
@@ -97,9 +95,9 @@
     <Compile Include="Utils\GeomUtils.cs" />
     <Compile Include="Utils\ImageUtils.cs" />
     <Compile Include="Utils\MathUtils.cs" />
-    <Compile Include="Painter\WireFramePainter.cs" />
     <Compile Include="Utils\MiscUtils.cs" />
     <Compile Include="VertexBuffer.cs" />
+    <Compile Include="World\ColoredVertex.cs" />
     <Compile Include="World\Face.cs" />
     <Compile Include="World\Cube.cs" />
     <Compile Include="Camera\ICamera.cs" />

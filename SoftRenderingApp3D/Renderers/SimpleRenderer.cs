@@ -11,17 +11,10 @@ namespace SoftRenderingApp3D {
             get => renderContext;
             set {
                 renderContext = value;
-                wireFramePainter.RendererContext = value;
             }
         }
 
         public IPainter Painter { get; set; }
-
-        private WireFramePainter wireFramePainter;
-
-        public SimpleRenderer() {
-            wireFramePainter = new WireFramePainter();
-        }
 
         public int[] Render() {
             var stats = RenderContext.Stats;
@@ -89,13 +82,13 @@ namespace SoftRenderingApp3D {
                 // Transform and store vertices to View
                 var vertexCount = vertices.Length;
                 for(var idxVertex = 0; idxVertex < vertexCount; idxVertex++) {
-                    viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex], viewMatrix);
+                    viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex].position, viewMatrix);
                 }
 
                 // Transform and store offset vertices
                 var offsetVertexCount = offset.Vertices.Length;
                 for(var idxVertex = 0; idxVertex < offsetVertexCount; idxVertex++) {
-                    offsetViewVertices[idxVertex] = Vector3.Transform(offset.Vertices[idxVertex], viewMatrix);
+                    offsetViewVertices[idxVertex] = Vector3.Transform(offset.Vertices[idxVertex].position, viewMatrix);
                 }
 
                 vbx.TransformWorld();
@@ -138,10 +131,7 @@ namespace SoftRenderingApp3D {
 
                     var color = volume.TriangleColors[idxTriangle];
 
-                    if(rendererSettings.ShowTriangles)
-                        wireFramePainter.DrawTriangle(ColorRGB.Magenta, vbx, idxTriangle);
-
-                    Painter?.DrawTriangle(color, vbx, idxTriangle);
+                    Painter?.DrawTriangle(vbx, idxTriangle);
 
                     stats.DrawnTriangleCount++;
 
@@ -179,7 +169,7 @@ namespace SoftRenderingApp3D {
                     var color = offset.TriangleColors[idxTriangle];
                     var subSurfacePainter = new SubsurfacePainter();
                     subSurfacePainter.RendererContext = renderContext;
-                    subSurfacePainter.DrawTriangle(color, offsetVbx, idxTriangle);
+                    subSurfacePainter.DrawTriangle(offsetVbx, idxTriangle);
 
                     stats.DrawnTriangleCount++;
 
@@ -189,11 +179,6 @@ namespace SoftRenderingApp3D {
                 // Only draw one volume, will remove later
                 break;
             }
-            if(rendererSettings.ShowXZGrid)
-                RenderUtils.drawGrid(surface, wireFramePainter, world2Projection, -10, 10);
-
-            if(rendererSettings.ShowAxes)
-                RenderUtils.drawAxes(surface, wireFramePainter, world2Projection);
 
             return surface.Screen;
         }

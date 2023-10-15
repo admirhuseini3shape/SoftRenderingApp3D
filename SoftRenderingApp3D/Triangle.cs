@@ -13,17 +13,17 @@ namespace SoftRenderingApp3D {
         public int I1 { get; }
         public int I2 { get; }
 
-        public Vector3 CalculateCentroid(Vector3[] vertices) => (vertices[I0] + vertices[I1] + vertices[I2]) / 3;
+        public Vector3 CalculateCentroid(ColoredVertex[] vertices) => (vertices[I0].position + vertices[I1].position + vertices[I2].position) / 3;
 
-        public Vector3 CalculateNormal(Vector3[] vertices) {
+        public Vector3 CalculateNormal(ColoredVertex[] vertices) {
             // Avoid division with zero
-            if(vertices[I0] == Vector3.Zero && vertices[I1] == Vector3.Zero && vertices[I2] == Vector3.Zero)
+            if(vertices[I0].position == Vector3.Zero && vertices[I1].position == Vector3.Zero && vertices[I2].position == Vector3.Zero)
                 return Vector3.Zero;
-            var result = Vector3.Normalize(Vector3.Cross(vertices[I1] - vertices[I0], vertices[I2] - vertices[I0]));
+            var result = Vector3.Normalize(Vector3.Cross(vertices[I1].position - vertices[I0].position, vertices[I2].position - vertices[I0].position));
             return (float.IsNaN(result.X) || float.IsNaN(result.Y) || float.IsNaN(result.Z)) ? Vector3.Zero : result;
         }
 
-        public bool Contains(Vector3 vertex, Vector3[] vertices) => vertices[I0] == vertex || vertices[I1] == vertex || vertices[I2] == vertex;
+        public bool Contains(ColoredVertex vertex, ColoredVertex[] vertices) => vertices[I0] == vertex || vertices[I1] == vertex || vertices[I2] == vertex;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsBehindFarPlane(VertexBuffer vbx) {

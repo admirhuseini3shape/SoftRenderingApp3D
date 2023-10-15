@@ -38,13 +38,9 @@ namespace SoftRenderingApp3D.App {
             lstDemos.DoubleClick += LstDemos_DoubleClick;
 
             rdbNoneShading.Checked = panel3D1.Painter == null;
-            rdbClassicShading.Checked = panel3D1.Painter is ClassicPainter;
-            rdbFlatShading.Checked = panel3D1.Painter is FlatPainter;
             rdbGouraudShading.Checked = panel3D1.Painter is GouraudPainter;
 
             rdbNoneShading.CheckedChanged += (s, e) => { if(!((RadioButton)s).Checked) return; panel3D1.Painter = null; panel3D1.Invalidate(); };
-            rdbClassicShading.CheckedChanged += (s, e) => { if(!((RadioButton)s).Checked) return; panel3D1.Painter = new ClassicPainter(); panel3D1.Invalidate(); };
-            rdbFlatShading.CheckedChanged += (s, e) => { if(!((RadioButton)s).Checked) return; panel3D1.Painter = new FlatPainter(); panel3D1.Invalidate(); };
             rdbGouraudShading.CheckedChanged += (s, e) => { if(!((RadioButton)s).Checked) return; panel3D1.Painter = new GouraudPainter(); panel3D1.Invalidate(); };
 
             rdbSimpleRendererLogic.Checked = panel3D1.Renderer is SimpleRenderer;

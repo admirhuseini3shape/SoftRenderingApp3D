@@ -56,12 +56,12 @@ namespace SoftRenderingApp3D {
 
         public void TransformWorld() {
             for(int i = 0; i < Volume.Vertices.Length; i++)
-                WorldVertices[i] = Vector3.Transform(Volume.Vertices[i], WorldMatrix);
+                WorldVertices[i] = Vector3.Transform(Volume.Vertices[i].position, WorldMatrix);
         }
 
         public void TransformWorldView() {
             for(int i = 0; i < Volume.Vertices.Length; i++)
-                ViewVertices[i] = Vector3.Transform(Volume.Vertices[i], WorldViewMatrix);
+                ViewVertices[i] = Vector3.Transform(Volume.Vertices[i].position, WorldViewMatrix);
         }
 
 

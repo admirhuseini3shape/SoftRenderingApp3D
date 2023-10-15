@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace SoftRenderingApp3D {
     public class IcoSphere : Volume {
 
-        IcoSphere(sphere sphere) : base(sphere.points.ToArray(), sphere.faces.ToArray()) {
+        IcoSphere(sphere sphere) : base(sphere.points.ToArray().Vector3ArrayToColoredVertices().ToArray(), sphere.faces.ToArray()) {
         }
 
         public IcoSphere(int recursionLevel) : this(new sphere(recursionLevel)) {
