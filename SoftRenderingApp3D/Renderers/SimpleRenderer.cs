@@ -98,8 +98,7 @@ namespace SoftRenderingApp3D {
                 var offsetCount = offset.Triangles.Length;
 
                 if (volume.TriangleColors == null)
-                    calculateSubsurfaceScattering(volume, offset, vbx, rendererSettings);
-
+                    calculateSubsurfaceScattering(vbx);
 
                 // Render surface mesh
                 for(var idxTriangle = 0; idxTriangle < triangleCount; idxTriangle++) {
@@ -128,8 +127,6 @@ namespace SoftRenderingApp3D {
                     }
 
                     stats.PaintTime();
-
-                    var color = volume.TriangleColors[idxTriangle];
 
                     Painter?.DrawTriangle(vbx, idxTriangle);
 
@@ -189,37 +186,42 @@ namespace SoftRenderingApp3D {
             return DMesh3Builder.Build(volume.Vertices.ToFloatArray(), volume.Triangles.ToIntArray(), volume.NormVertices.ToFloatArray());
         }
 
-        public void calculateSubsurfaceScattering(IVolume volume, IVolume offset, VertexBuffer vbx, RendererSettings rendererSettings) {
-            DMesh3 originalG3 = GetDMesh3FromVolume(volume as Volume);
+        public void calculateSubsurfaceScattering(VertexBuffer vbx) {
+            DMesh3 originalG3 = GetDMesh3FromVolume(vbx.Volume as Volume);
 
-            var triangleCount = volume.Triangles.Length;
+            var verticesCount = vbx.Volume.Vertices.Length;
+
+            var lightPos = new Vector3(0, 10, 50);
 
             (vbx.Volume as Volume).InitializeTrianglesColor(ColorRGB.Black);
 
             var spatial = new DMeshAABBTree3(originalG3);
             spatial.Build();
-            for(int i = 0; i < triangleCount; i++) {
-                var t = volume.Triangles[i];
-                // Now calculate amount of light reaching camera
+            for(int i = 0; i < verticesCount; i++) {
+                calculateVertexSubsurfaceScattering(vbx.Volume.Vertices[i], lightPos, spatial, originalG3, (vbx.Volume as Volume), i);
+            }
+        }
 
-                // Calculate distance to offset
-                // get light position
-                Vector3 lightPos = new Vector3(0, 10, 50);
-                Vector3 trianglePos = t.GetCenterCoordinates(vbx);
-                Vector3 direction = trianglePos - lightPos;
+        public void calculateVertexSubsurfaceScattering(ColoredVertex vertex, Vector3 lightPos, DMeshAABBTree3 spatial, DMesh3 originalG3, Volume volume, int index) {
+            // get direction of light to vertex
+            Vector3 direction = vertex.position - lightPos;
 
-                Ray3d ray = new Ray3d(MiscUtils.Vector3ToVector3d(lightPos), MiscUtils.Vector3ToVector3d(direction));
-                int hit_tid = spatial.FindNearestHitTriangle(ray);
-
-                // Check if ray misses
-                if(hit_tid != DMesh3.InvalidID) {
-                    IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(originalG3, hit_tid, ray);
-                    // Calculate distance traveled after passing through the surface
-                    double hit_dist = MiscUtils.Vector3ToVector3d(trianglePos).Distance(ray.PointAt(intr.RayParameter));
-                    // Calculate the decay of the light
-                    float decay = (float)Math.Exp(-hit_dist * 0.1f);
-                    vbx.Volume.TriangleColors[i] = decay * RenderUtils.subsurfaceColor;
-                }
+            Ray3d ray = new Ray3d(MiscUtils.Vector3ToVector3d(lightPos), MiscUtils.Vector3ToVector3d(direction));
+            int hit_tid = spatial.FindNearestHitTriangle(ray);
+            // Check if ray misses
+            if(hit_tid != DMesh3.InvalidID) {
+                IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(originalG3, hit_tid, ray);
+                // Calculate distance traveled after passing through the surface
+                double hit_dist = MiscUtils.Vector3ToVector3d(vertex.position).Distance(ray.PointAt(intr.RayParameter));
+                // Calculate the decay of the light
+                float decay = (float)Math.Exp(-hit_dist * 0.1f);
+                // Color of the vertex
+                var color = decay * RenderUtils.subsurfaceColor;
+                volume.Vertices[index].color = color;
+            }
+            else {
+                var color = RenderUtils.subsurfaceColor;
+                volume.Vertices[index].color = color;
             }
         }
     }

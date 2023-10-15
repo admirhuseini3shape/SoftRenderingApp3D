@@ -11,9 +11,9 @@ namespace SoftRenderingApp3D {
             var projectionVertices = vbx.ProjectionVertices;
             var worldVertices = vbx.WorldVertices;
 
-            v0 = new PaintedVertex(worldNormVertices[t.I0], frameBuffer.ToScreen3(projectionVertices[t.I0]), worldVertices[t.I0]);
-            v1 = new PaintedVertex(worldNormVertices[t.I1], frameBuffer.ToScreen3(projectionVertices[t.I1]), worldVertices[t.I1]);
-            v2 = new PaintedVertex(worldNormVertices[t.I2], frameBuffer.ToScreen3(projectionVertices[t.I2]), worldVertices[t.I2]);
+            v0 = new PaintedVertex(worldNormVertices[t.I0], frameBuffer.ToScreen3(projectionVertices[t.I0]), new ColoredVertex(worldVertices[t.I0], vbx.Volume.Vertices[t.I0].color));
+            v1 = new PaintedVertex(worldNormVertices[t.I1], frameBuffer.ToScreen3(projectionVertices[t.I1]), new ColoredVertex(worldVertices[t.I1], vbx.Volume.Vertices[t.I1].color));
+            v2 = new PaintedVertex(worldNormVertices[t.I2], frameBuffer.ToScreen3(projectionVertices[t.I2]), new ColoredVertex(worldVertices[t.I2], vbx.Volume.Vertices[t.I2].color));
 
             index0 = t.I0;
             index1 = t.I1;

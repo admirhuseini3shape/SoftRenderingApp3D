@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Numerics;
+﻿using System.Numerics;
 
 
 namespace SoftRenderingApp3D {
@@ -12,6 +7,11 @@ namespace SoftRenderingApp3D {
         public ColoredVertex(Vector3 position) {
             this.position = position;
             this.color = ColorRGB.Black;
+        }
+
+        public ColoredVertex(Vector3 position, ColorRGB color) {
+            this.position = position;
+            this.color = color;
         }
         public Vector3 position { get; }
 

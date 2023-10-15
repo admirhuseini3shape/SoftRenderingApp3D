@@ -74,7 +74,7 @@ namespace SoftRenderingApp3D {
 
         // Called to put a pixel on screen at a specific X,Y coordinates
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void PutPixel(int x, int y, int z, ColorRGB color, Vector3 World) {
+        public void PutPixel(int x, int y, int z, ColorRGB color) {
 #if DEBUG
             if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0) {
                 throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}, Depth={z}");
@@ -89,7 +89,6 @@ namespace SoftRenderingApp3D {
             renderContext.Stats.DrawnPixelCount++;
 
             zBuffer[index] = z;
-            WorldBuffer[index] = World;
 
             TempScreen[index] = color.Color;
             Screen[index] = color.Color;
@@ -116,13 +115,9 @@ namespace SoftRenderingApp3D {
             zSubsurfaceBuffer[index] = z;
             SubsurfaceWorldBuffer[index] = world;
 
-            float distance = Vector3.Distance(SubsurfaceWorldBuffer[index], WorldBuffer[index]);
-            if(distance < 10) {
-                var surfaceColor = new ColorRGB(Color.FromArgb(TempScreen[index]));
-                var decay = (float)Math.Exp(-distance);
-                var subsurfaceColor = color;
-                Screen[index] = ( surfaceColor + subsurfaceColor ).Color;
-            }
+            var surfaceColor = new ColorRGB(Color.FromArgb(TempScreen[index]));
+            var subsurfaceColor = color;
+            Screen[index] = ( surfaceColor + subsurfaceColor ).Color;
 #endif
         }
 
@@ -142,9 +137,9 @@ namespace SoftRenderingApp3D {
 
             int i = 0;
             while(i++ < dmax) {
-                ex += dx; if(ex >= dmax) { ex -= dmax; x0 += sx; PutPixel(x0, y0, z0, color, Vector3.Zero); }
-                ey += dy; if(ey >= dmax) { ey -= dmax; y0 += sy; PutPixel(x0, y0, z0, color, Vector3.Zero); }
-                ez += dz; if(ez >= dmax) { ez -= dmax; z0 += sz; PutPixel(x0, y0, z0, color, Vector3.Zero); }
+                ex += dx; if(ex >= dmax) { ex -= dmax; x0 += sx; PutPixel(x0, y0, z0, color); }
+                ey += dy; if(ey >= dmax) { ey -= dmax; y0 += sy; PutPixel(x0, y0, z0, color); }
+                ez += dz; if(ez >= dmax) { ez -= dmax; z0 += sz; PutPixel(x0, y0, z0, color); }
             }
         }
     }
