@@ -36,6 +36,8 @@
             this.trackBar3 = new System.Windows.Forms.TrackBar();
             this.trackBar4 = new System.Windows.Forms.TrackBar();
             this.label4 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
+            this.trackBar5 = new System.Windows.Forms.TrackBar();
             this.arcBallCamControl1 = new SoftRenderingApp3D.ArcBallCamControl();
             this.panel3D1 = new SoftRenderingApp3D.Panel3D();
             this.groupBox6.SuspendLayout();
@@ -44,6 +46,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackBar2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar4)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar5)).BeginInit();
             this.SuspendLayout();
             // 
             // toolTip1
@@ -171,6 +174,26 @@
             this.label4.TabIndex = 20;
             this.label4.Text = "Surface vibrance (%):";
             // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(13, 276);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(113, 13);
+            this.label5.TabIndex = 25;
+            this.label5.Text = "Subsurface decay (%):";
+            // 
+            // trackBar5
+            // 
+            this.trackBar5.Location = new System.Drawing.Point(17, 295);
+            this.trackBar5.Maximum = 100;
+            this.trackBar5.Minimum = 1;
+            this.trackBar5.Name = "trackBar5";
+            this.trackBar5.Size = new System.Drawing.Size(104, 45);
+            this.trackBar5.TabIndex = 24;
+            this.trackBar5.Value = 1;
+            this.trackBar5.Scroll += new System.EventHandler(this.trackBar5_Scroll);
+            // 
             // arcBallCamControl1
             // 
             this.arcBallCamControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -200,6 +223,8 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1065, 618);
+            this.Controls.Add(this.label5);
+            this.Controls.Add(this.trackBar5);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.trackBar3);
             this.Controls.Add(this.trackBar4);
@@ -219,6 +244,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackBar2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar4)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar5)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -240,5 +266,7 @@
         private System.Windows.Forms.TrackBar trackBar3;
         private System.Windows.Forms.TrackBar trackBar4;
         private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.TrackBar trackBar5;
     }
 }

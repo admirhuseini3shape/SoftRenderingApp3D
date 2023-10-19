@@ -35,7 +35,6 @@ namespace SoftRenderingApp3D {
 
             var viewMatrix = camera.ViewMatrix();
             var projectionMatrix = projection.ProjectionMatrix(surface.Width, surface.Height);
-            var world2Projection = viewMatrix * projectionMatrix;
 
             // Allocate arrays to store transformed vertices
             using var worldBuffer = new WorldBuffer(world);
@@ -97,8 +96,10 @@ namespace SoftRenderingApp3D {
                 offsetVbx.TransformWorldView();
                 var offsetCount = offset.Triangles.Length;
 
-                if (volume.TriangleColors == null)
+                if(RenderUtils.recalcSubsurfaceScattering) {
                     calculateSubsurfaceScattering(vbx);
+                    RenderUtils.recalcSubsurfaceScattering = false;
+                }
 
                 // Render surface mesh
                 for(var idxTriangle = 0; idxTriangle < triangleCount; idxTriangle++) {
@@ -214,7 +215,7 @@ namespace SoftRenderingApp3D {
                 // Calculate distance traveled after passing through the surface
                 double hit_dist = MiscUtils.Vector3ToVector3d(vertex.position).Distance(ray.PointAt(intr.RayParameter));
                 // Calculate the decay of the light
-                float decay = (float)Math.Exp(-hit_dist * 0.1f);
+                float decay = (float)Math.Exp(-hit_dist * RenderUtils.subsurfaceDecay);
                 // Color of the vertex
                 var color = decay * RenderUtils.subsurfaceColor;
                 volume.Vertices[index].color = color;

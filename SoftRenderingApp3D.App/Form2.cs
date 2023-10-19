@@ -28,6 +28,7 @@ namespace SoftRenderingApp3D.App {
 
             this.trackBar1.Value = 50;
             this.trackBar2.Value = 40;
+            this.trackBar5.Value = 10;
 
             this.trackBar3.Value = 100;
             this.trackBar4.Value = 100;
@@ -197,6 +198,12 @@ namespace SoftRenderingApp3D.App {
 
         private void trackBar3_Scroll(object sender, EventArgs e) {
             RenderUtils.ChangeSubsurfaceColor(this.trackBar3.Value);
+            this.panel3D1.Invalidate();
+
+        }
+
+        private void trackBar5_Scroll(object sender, EventArgs e) {
+            RenderUtils.ChangeSubsurfaceDecay(this.trackBar5.Value);
             this.panel3D1.Invalidate();
 
         }
