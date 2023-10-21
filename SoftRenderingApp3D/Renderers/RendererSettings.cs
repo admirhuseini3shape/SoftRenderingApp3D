@@ -14,5 +14,7 @@
         public void changeActiveTexture() {
             activeTexture += 1;
         }
+
+        public bool blur = false;
     }
 }

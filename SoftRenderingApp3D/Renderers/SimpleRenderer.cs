@@ -174,10 +174,13 @@ namespace SoftRenderingApp3D {
                     stats.CalcTime();
                 }
 
+                if(RenderUtils.GaussianBlur)
+                    renderContext.Surface.ApplyGaussianBlurToSubsurface();
+                else
+                    renderContext.Surface.ApplyClearSubsurface();
                 // Only draw one volume, will remove later
                 break;
             }
-
             return surface.Screen;
         }
 
@@ -217,11 +220,11 @@ namespace SoftRenderingApp3D {
                 // Calculate the decay of the light
                 float decay = (float)Math.Exp(-hit_dist * RenderUtils.subsurfaceDecay);
                 // Color of the vertex
-                var color = decay * RenderUtils.subsurfaceColor;
+                var color = decay * RenderUtils.surfaceColor;
                 volume.Vertices[index].color = color;
             }
             else {
-                var color = RenderUtils.subsurfaceColor;
+                var color = RenderUtils.surfaceColor;
                 volume.Vertices[index].color = color;
             }
         }

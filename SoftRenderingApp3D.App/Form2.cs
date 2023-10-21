@@ -29,9 +29,12 @@ namespace SoftRenderingApp3D.App {
             this.trackBar1.Value = 50;
             this.trackBar2.Value = 40;
             this.trackBar5.Value = 10;
+            this.trackBar6.Value = 50;
 
             this.trackBar3.Value = 100;
             this.trackBar4.Value = 100;
+
+            this.checkBox1.Checked = false;
 
             prepareWorld("jaw");
         }
@@ -206,6 +209,17 @@ namespace SoftRenderingApp3D.App {
             RenderUtils.ChangeSubsurfaceDecay(this.trackBar5.Value);
             this.panel3D1.Invalidate();
 
+        }
+
+        private void trackBar6_Scroll(object sender, EventArgs e) {
+            RenderUtils.ChangeGaussianBlurStDev(trackBar6.Value);
+            this.panel3D1.Invalidate();
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e) {
+            RenderUtils.ToggleGaussianBlur();
+            this.trackBar6.Enabled = RenderUtils.GaussianBlur;
+            this.panel3D1.Invalidate();
         }
     }
 }

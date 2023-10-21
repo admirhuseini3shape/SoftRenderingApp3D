@@ -39,6 +39,8 @@ namespace SoftRenderingApp3D {
         public static ColorRGB White { get; } = new ColorRGB(255, 255, 255);
         public static ColorRGB Black { get; } = new ColorRGB(0, 0, 0);
 
+        public static ColorRGB Purple { get; } = new ColorRGB(128, 0, 128);
+
         public override string ToString() {
             return $"Color: ({R}, {G}, {B})";
         }

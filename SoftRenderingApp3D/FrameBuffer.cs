@@ -115,32 +115,62 @@ namespace SoftRenderingApp3D {
             zSubsurfaceBuffer[index] = z;
             SubsurfaceWorldBuffer[index] = world;
 
-            var surfaceColor = new ColorRGB(Color.FromArgb(TempScreen[index]));
-            var subsurfaceColor = color;
-            Screen[index] = ( surfaceColor + subsurfaceColor ).Color;
+            SubsurfaceScreen[index] = color.Color;
 #endif
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DrawLine(Vector3 p0, Vector3 p1, ColorRGB color) {
-
-            var x0 = (int)p0.X; var y0 = (int)p0.Y; var z0 = (int)p0.Z;
-            var x1 = (int)p1.X; var y1 = (int)p1.Y; var z1 = (int)p1.Z;
-
-            var dx = Math.Abs(x1 - x0); var dy = Math.Abs(y1 - y0); var dz = Math.Abs(z1 - z0);
-
-            var sx = x0 < x1 ? 1 : -1; var sy = y0 < y1 ? 1 : -1; var sz = z0 < z1 ? 1 : -1;
-
-            var ex = 0; var ey = 0; var ez = 0;
-
-            var dmax = Math.Max(dx, dy);
-
-            int i = 0;
-            while(i++ < dmax) {
-                ex += dx; if(ex >= dmax) { ex -= dmax; x0 += sx; PutPixel(x0, y0, z0, color); }
-                ey += dy; if(ey >= dmax) { ey -= dmax; y0 += sy; PutPixel(x0, y0, z0, color); }
-                ez += dz; if(ez >= dmax) { ez -= dmax; z0 += sz; PutPixel(x0, y0, z0, color); }
+        public void ApplyGaussianBlurToSubsurface() {
+            for ( int i = 0; i < Height; i++) {
+                for (int j = 0; j < Width; j++) {
+                    var index = j + i * Width;
+                    // check if subsurface visible at that pixel
+                    if ( zSubsurfaceBuffer[index] != 0) {
+                        var color = new ColorRGB(Color.FromArgb(SubsurfaceScreen[index]));
+                        GaussianBlurAtPixel(j, i, color);                        
+                    }
+                }
             }
+        }
+
+        public void ApplyClearSubsurface() {
+            for(int i = 0; i < Height; i++) {
+                for(int j = 0; j < Width; j++) {
+                    var index = j + i * Width;
+                    // check if subsurface visible at that pixel
+                    if(zSubsurfaceBuffer[index] != 0) {
+                        var color = new ColorRGB(Color.FromArgb(SubsurfaceScreen[index]));
+                        ColorRGB priorPixelColor = new ColorRGB(Color.FromArgb(Screen[index]));
+                        ColorRGB pixelColorWithSubsurface = priorPixelColor + color;
+                        Screen[index] = pixelColorWithSubsurface.Color;
+                    }
+                }
+            }
+        }
+
+        public void GaussianBlurAtPixel(int x, int y, ColorRGB color) {
+            int radius = RenderUtils.BlurRadiusInPixels;
+            for (int i = y - radius; i < y + radius; i++) {
+                for (int j = x - radius; j < x + radius; j++) {
+                    if(WithinHeight(i) && WithinWidth(j)) {
+                        var index = j + i * Width;
+                        float gaussianWeight = RenderUtils.Gaussian[Math.Abs(x - j), Math.Abs(y - i)];
+                        ColorRGB gaussianColor = gaussianWeight * color;
+                        ColorRGB priorPixelColor = new ColorRGB(Color.FromArgb(Screen[index]));
+                        ColorRGB pixelColorWithGaussian = priorPixelColor + gaussianColor;
+                        Screen[index] = pixelColorWithGaussian.Color;
+                    }
+                }
+            }
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
+        public bool WithinHeight(int x) {
+            return x < Height && x >= 0;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
+        public bool WithinWidth(int x) {
+            return x < Width && x >= 0;
         }
     }
 }

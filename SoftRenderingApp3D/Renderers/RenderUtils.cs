@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 
 namespace SoftRenderingApp3D {
 
@@ -15,13 +16,47 @@ namespace SoftRenderingApp3D {
         public static bool recalcSubsurfaceScattering = true;
 
         // These are kept permanent so the color can be reverted
-        public static ColorRGB SubsurfaceColor = new ColorRGB(255, 255, 255);
-        public static ColorRGB SurfaceColor = new ColorRGB(255, 255, 255);
+        public static ColorRGB SubsurfaceColor = ColorRGB.Purple;
+        public static ColorRGB SurfaceColor = ColorRGB.White;
 
-        public static ColorRGB surfaceColor = SubsurfaceColor;
-        public static ColorRGB subsurfaceColor = SurfaceColor;
+        public static ColorRGB surfaceColor = SurfaceColor;
+        public static ColorRGB subsurfaceColor = SubsurfaceColor;
 
-        
+        public static bool GaussianBlur = false;
+
+        public static void ToggleGaussianBlur() {
+            GaussianBlur = !GaussianBlur;
+        }
+
+        public static float GaussianBlurStDev = 1.0f;
+
+        public static float GaussianNormallizationConst = 1.0f / (2 * (float)Math.PI * GaussianBlurStDev * GaussianBlurStDev);
+
+        public static int BlurRadiusInPixels = (int)GaussianBlurStDev * 3;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="x">Distance from center point X.</param>
+        /// <param name="y">Distance from center point Y</param>
+        /// <returns></returns>
+        public static float GetGaussianAt(int x, int y) {
+            float exponent = -(x * x + y * y) / (2 * RenderUtils.GaussianBlurStDev * RenderUtils.GaussianBlurStDev);
+            return RenderUtils.GaussianNormallizationConst * (float)Math.Exp(exponent);
+        }
+
+        public static float[,] CalcGaussianMatrix(int radius) {
+            float[,] result = new float[radius + 1, radius + 1];
+            for(int i = 0; i <= radius; i++) {
+                for(int j = 0; j <= radius; j++) {
+                    result[i, j] = GetGaussianAt(Math.Abs(i), Math.Abs(j));
+                }
+            }
+            return result;
+        }
+
+        public static float[,] Gaussian = CalcGaussianMatrix(BlurRadiusInPixels);
+
 
         public static void ChangeVisibility(int value) {
             surfaceOpacity = value / 100.0f;
@@ -45,6 +80,12 @@ namespace SoftRenderingApp3D {
             subsurfaceDecay = value / 100.0f;
             // Subsurface scattering needs recalculation
             recalcSubsurfaceScattering = true;
+        }
+
+        public static void ChangeGaussianBlurStDev(int value) {
+            GaussianBlurStDev = (value  + 50.0f) / 100.0f;
+            BlurRadiusInPixels = (int)GaussianBlurStDev * 3;
+            Gaussian = CalcGaussianMatrix(BlurRadiusInPixels);
         }
     }
 }

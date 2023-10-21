@@ -38,8 +38,11 @@
             this.label4 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.trackBar5 = new System.Windows.Forms.TrackBar();
+            this.label6 = new System.Windows.Forms.Label();
+            this.trackBar6 = new System.Windows.Forms.TrackBar();
             this.arcBallCamControl1 = new SoftRenderingApp3D.ArcBallCamControl();
             this.panel3D1 = new SoftRenderingApp3D.Panel3D();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.groupBox6.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
@@ -47,6 +50,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackBar3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar4)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar5)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar6)).BeginInit();
             this.SuspendLayout();
             // 
             // toolTip1
@@ -194,6 +198,26 @@
             this.trackBar5.Value = 1;
             this.trackBar5.Scroll += new System.EventHandler(this.trackBar5_Scroll);
             // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(13, 343);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(132, 13);
+            this.label6.TabIndex = 27;
+            this.label6.Text = "Gaussian blur strength (%):";
+            // 
+            // trackBar6
+            // 
+            this.trackBar6.Location = new System.Drawing.Point(17, 362);
+            this.trackBar6.Maximum = 100;
+            this.trackBar6.Minimum = 1;
+            this.trackBar6.Name = "trackBar6";
+            this.trackBar6.Size = new System.Drawing.Size(104, 45);
+            this.trackBar6.TabIndex = 26;
+            this.trackBar6.Value = 1;
+            this.trackBar6.Scroll += new System.EventHandler(this.trackBar6_Scroll);
+            // 
             // arcBallCamControl1
             // 
             this.arcBallCamControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -218,11 +242,25 @@
             this.panel3D1.Size = new System.Drawing.Size(875, 592);
             this.panel3D1.TabIndex = 0;
             // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Location = new System.Drawing.Point(17, 399);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(91, 17);
+            this.checkBox1.TabIndex = 28;
+            this.checkBox1.Text = "Gaussian Blur";
+            this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            // 
             // Form2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1065, 618);
+            this.Controls.Add(this.checkBox1);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.trackBar6);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.trackBar5);
             this.Controls.Add(this.label3);
@@ -245,6 +283,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.trackBar3)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar4)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar5)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.trackBar6)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -268,5 +307,8 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.TrackBar trackBar5;
+        private System.Windows.Forms.Label label6;
+        private System.Windows.Forms.TrackBar trackBar6;
+        private System.Windows.Forms.CheckBox checkBox1;
     }
 }
