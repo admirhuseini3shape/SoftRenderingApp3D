@@ -91,11 +91,15 @@ namespace SoftRenderingApp3D {
                 var c = MathUtils.Lerp(sl, el, gradient);
 
                 var surfaceColor = RenderUtils.surfaceColor;
+                ColorRGB newSurfaceColor = new ColorRGB(surfaceColor.R, surfaceColor.G, surfaceColor.B, (byte)(RenderUtils.surfaceOpacity * 255));
+
                 var subsurfaceColor = InterpolateTriangleVerticesColors((int)x, (int)y, (int)z, v0, v1, v2);
+                ColorRGB newSubsurfaceColor = new ColorRGB(subsurfaceColor.R, subsurfaceColor.G, subsurfaceColor.B, (byte)(RenderUtils.subsurfaceVisibility * 255));
 
-                var finalColor = RenderUtils.surfaceOpacity * (RenderUtils.lightWeight * c * surfaceColor + RenderUtils.subsurfaceScatteringWeight * subsurfaceColor);
-
-                surface.PutPixel((int)x, (int)y, (int)z, finalColor);
+                var finalColor = ColorRGB.AlphaBlend(RenderUtils.lightWeight * c * newSurfaceColor, newSubsurfaceColor);
+                ColorRGB newColor = new ColorRGB(finalColor.R, finalColor.G, finalColor.B, (byte)(RenderUtils.surfaceOpacity * 255));
+                //Console.WriteLine($"newColor {newColor}. alpha {newColor.Alpha}");
+                surface.PutPixel((int)x, (int)y, (int)z, newColor);
             }
         }
 

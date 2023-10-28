@@ -139,8 +139,12 @@ namespace SoftRenderingApp3D {
                     // check if subsurface visible at that pixel
                     if(zSubsurfaceBuffer[index] != 0) {
                         var color = new ColorRGB(Color.FromArgb(SubsurfaceScreen[index]));
+                        var newcolor = new ColorRGB(color.R, color.G, color.B, (byte)(RenderUtils.subsurfaceVisibility * 255));
+
                         ColorRGB priorPixelColor = new ColorRGB(Color.FromArgb(Screen[index]));
-                        ColorRGB pixelColorWithSubsurface = priorPixelColor + color;
+                        var newPriorPixelColor = new ColorRGB(priorPixelColor.R, priorPixelColor.G, priorPixelColor.B, (byte)(RenderUtils.surfaceOpacity * 255));
+                        ColorRGB pixelColorWithSubsurface = ColorRGB.AlphaBlend(newPriorPixelColor, newcolor);
+                        // Console.WriteLine($"subsurface color: {color}, surface color: {priorPixelColor}, final color: {pixelColorWithSubsurface}");
                         Screen[index] = pixelColorWithSubsurface.Color;
                     }
                 }
@@ -149,18 +153,24 @@ namespace SoftRenderingApp3D {
 
         public void GaussianBlurAtPixel(int x, int y, ColorRGB color) {
             int radius = RenderUtils.BlurRadiusInPixels;
-            for (int i = y - radius; i < y + radius; i++) {
-                for (int j = x - radius; j < x + radius; j++) {
+            ColorRGB result = ColorRGB.Black;
+            for (int i = y - radius; i <= y + radius; i++) {
+                for (int j = x - radius; j <= x + radius; j++) {
                     if(WithinHeight(i) && WithinWidth(j)) {
                         var index = j + i * Width;
-                        float gaussianWeight = RenderUtils.Gaussian[Math.Abs(x - j), Math.Abs(y - i)];
-                        ColorRGB gaussianColor = gaussianWeight * color;
-                        ColorRGB priorPixelColor = new ColorRGB(Color.FromArgb(Screen[index]));
-                        ColorRGB pixelColorWithGaussian = priorPixelColor + gaussianColor;
-                        Screen[index] = pixelColorWithGaussian.Color;
+                        float gaussianWeight = RenderUtils.Gaussian[j - x + radius, i - y + radius];
+                        ColorRGB gaussianColor = gaussianWeight * new ColorRGB(Color.FromArgb(SubsurfaceScreen[index]));
+                        result += gaussianColor;
+                        
                     }
                 }
             }
+            var pixelIndex = x + y * Width;
+            ColorRGB priorPixelColor = new ColorRGB(Color.FromArgb(Screen[pixelIndex]));
+            var newPriorPixelColor = new ColorRGB(priorPixelColor.R, priorPixelColor.G, priorPixelColor.B, (byte)(RenderUtils.surfaceOpacity * 255));
+            var newResult = new ColorRGB(result.R, result.G, result.B, (byte)(RenderUtils.surfaceOpacity * 255));
+            var finalColor = ColorRGB.AlphaBlend(newPriorPixelColor, newResult);
+            Screen[pixelIndex] = finalColor.Color;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
 

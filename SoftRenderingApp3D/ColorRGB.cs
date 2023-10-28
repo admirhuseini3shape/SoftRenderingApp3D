@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Drawing;
 
 namespace SoftRenderingApp3D {
 
@@ -22,7 +23,7 @@ namespace SoftRenderingApp3D {
         public byte G { get => (byte)((value >> ARGBGreenShift) & 0xFF); }
         public byte B { get => (byte)((value >> ARGBBlueShift) & 0xFF); }
 
-        public byte Alpha {get => (byte)((value >> ARGBAlphaShift) & 0xFF); }
+        public byte Alpha { get { return (byte)((value >> ARGBAlphaShift) & 0xFF); } }
 
         public int Color { get => (int)value; }
 
@@ -30,8 +31,20 @@ namespace SoftRenderingApp3D {
 
         public static ColorRGB operator +(ColorRGB color1, ColorRGB color2) => new ColorRGB((byte)(color1.R + color2.R), (byte)(color1.G + color2.G), (byte)(color1.B + color2.B));
 
-        public static ColorRGB Yellow { get; } = new ColorRGB(255, 255, 0);
-        public static ColorRGB Blue { get; } = new ColorRGB(0, 0, 255);
+        public static ColorRGB AlphaBlend(ColorRGB color1, ColorRGB color2) {
+            var alpha1 = color1.Alpha / 255.0f;
+            var alpha2 = color2.Alpha / 255.0f;
+            var alpha0 = alpha1 + alpha2 * (1 - alpha1);
+
+            ColorRGB color0 = (1.0f / alpha0) * (alpha1 * color1 + (1.0f - alpha0) * alpha2 * color2);
+            //Console.WriteLine($"color: {color0}, alpha1 {alpha1}, alpha2 {alpha2}, alpha0 {alpha0}");
+            return color0;
+        }
+
+        public static ColorRGB Yellow { get; } = new ColorRGB(255, 255, 0, 255);
+        public static ColorRGB Blue { get; } = new ColorRGB(0, 0, 255, 255);
+        public static ColorRGB LightBlue { get; } = new ColorRGB(127, 127, 255);
+
         public static ColorRGB Gray { get; } = new ColorRGB(127, 127, 127);
         public static ColorRGB Green { get; } = new ColorRGB(0, 255, 0);
         public static ColorRGB Red { get; } = new ColorRGB(255, 0, 0);

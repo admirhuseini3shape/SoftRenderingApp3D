@@ -26,6 +26,8 @@
             this.components = new System.ComponentModel.Container();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.arcBallCamControl1 = new SoftRenderingApp3D.ArcBallCamControl();
+            this.panel3D1 = new SoftRenderingApp3D.Panel3D();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.lblSw = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
@@ -40,8 +42,6 @@
             this.trackBar5 = new System.Windows.Forms.TrackBar();
             this.label6 = new System.Windows.Forms.Label();
             this.trackBar6 = new System.Windows.Forms.TrackBar();
-            this.arcBallCamControl1 = new SoftRenderingApp3D.ArcBallCamControl();
-            this.panel3D1 = new SoftRenderingApp3D.Panel3D();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.groupBox6.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
@@ -72,6 +72,30 @@
             this.groupBox6.TabIndex = 10;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Camera view";
+            // 
+            // arcBallCamControl1
+            // 
+            this.arcBallCamControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.arcBallCamControl1.BackColor = System.Drawing.Color.Gainsboro;
+            this.arcBallCamControl1.Camera = null;
+            this.arcBallCamControl1.Location = new System.Drawing.Point(729, 16);
+            this.arcBallCamControl1.Margin = new System.Windows.Forms.Padding(4);
+            this.arcBallCamControl1.Name = "arcBallCamControl1";
+            this.arcBallCamControl1.Size = new System.Drawing.Size(139, 117);
+            this.arcBallCamControl1.TabIndex = 1;
+            // 
+            // panel3D1
+            // 
+            this.panel3D1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel3D1.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.panel3D1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.panel3D1.Location = new System.Drawing.Point(0, 2);
+            this.panel3D1.Margin = new System.Windows.Forms.Padding(4);
+            this.panel3D1.Name = "panel3D1";
+            this.panel3D1.Size = new System.Drawing.Size(875, 592);
+            this.panel3D1.TabIndex = 0;
             // 
             // tableLayoutPanel1
             // 
@@ -210,37 +234,13 @@
             // trackBar6
             // 
             this.trackBar6.Location = new System.Drawing.Point(17, 362);
-            this.trackBar6.Maximum = 100;
+            this.trackBar6.Maximum = 1000;
             this.trackBar6.Minimum = 1;
             this.trackBar6.Name = "trackBar6";
             this.trackBar6.Size = new System.Drawing.Size(104, 45);
             this.trackBar6.TabIndex = 26;
             this.trackBar6.Value = 1;
             this.trackBar6.Scroll += new System.EventHandler(this.trackBar6_Scroll);
-            // 
-            // arcBallCamControl1
-            // 
-            this.arcBallCamControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.arcBallCamControl1.BackColor = System.Drawing.Color.Gainsboro;
-            this.arcBallCamControl1.Camera = null;
-            this.arcBallCamControl1.Location = new System.Drawing.Point(729, 16);
-            this.arcBallCamControl1.Margin = new System.Windows.Forms.Padding(4);
-            this.arcBallCamControl1.Name = "arcBallCamControl1";
-            this.arcBallCamControl1.Size = new System.Drawing.Size(139, 117);
-            this.arcBallCamControl1.TabIndex = 1;
-            // 
-            // panel3D1
-            // 
-            this.panel3D1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel3D1.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.panel3D1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.panel3D1.Location = new System.Drawing.Point(0, 2);
-            this.panel3D1.Margin = new System.Windows.Forms.Padding(4);
-            this.panel3D1.Name = "panel3D1";
-            this.panel3D1.Size = new System.Drawing.Size(875, 592);
-            this.panel3D1.TabIndex = 0;
             // 
             // checkBox1
             // 

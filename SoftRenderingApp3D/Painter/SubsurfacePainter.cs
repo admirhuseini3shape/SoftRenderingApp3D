@@ -91,9 +91,11 @@ namespace SoftRenderingApp3D {
                 var z = MathUtils.Lerp(sz, ez, gradient);
                 var c = MathUtils.Lerp(sl, el, gradient);
 
-                var finalColor = RenderUtils.subsurfaceVisibility * c * RenderUtils.subsurfaceColor;
+                var finalColor = c * RenderUtils.subsurfaceColor;
+                ColorRGB newColor = new ColorRGB(finalColor.R, finalColor.G, finalColor.B, (byte)(RenderUtils.subsurfaceVisibility * 255));
 
-                surface.PutSubsurfacePixel((int)x, (int)y, (int)z, finalColor, zWorld);
+
+                surface.PutSubsurfacePixel((int)x, (int)y, (int)z, newColor, zWorld);
             }
         }
 
