@@ -221,13 +221,11 @@ namespace SoftRenderingApp3D {
                 float decay = (float)Math.Exp(-hit_dist * RenderUtils.subsurfaceDecay);
                 // Color of the vertex
                 var color = decay * RenderUtils.surfaceColor;
-                var alphaColor = new ColorRGB(color.R, color.G, color.B, (byte)(RenderUtils.subsurfaceScatteringWeight * 255));
-                volume.Vertices[index].color = alphaColor;
+                volume.Vertices[index].color = color;
             }
             else {
                 var color = RenderUtils.surfaceColor;
-                var alphaColor = new ColorRGB(color.R, color.G, color.B, (byte)(RenderUtils.subsurfaceScatteringWeight * 255));
-                volume.Vertices[index].color = alphaColor;
+                volume.Vertices[index].color = color;
             }
         }
     }

@@ -27,7 +27,7 @@ namespace SoftRenderingApp3D {
 
         public int Color { get => (int)value; }
 
-        public static ColorRGB operator *(float f, ColorRGB color) => new ColorRGB((byte)(f * color.R), (byte)(f * color.G), (byte)(f * color.B));
+        public static ColorRGB operator *(float f, ColorRGB color) => new ColorRGB((byte)(f * color.R), (byte)(f * color.G), (byte)(f * color.B), color.Alpha);
 
         public static ColorRGB operator +(ColorRGB color1, ColorRGB color2) => new ColorRGB((byte)(color1.R + color2.R), (byte)(color1.G + color2.G), (byte)(color1.B + color2.B));
 
