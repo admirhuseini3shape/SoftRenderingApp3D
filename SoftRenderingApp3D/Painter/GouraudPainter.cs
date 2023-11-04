@@ -91,44 +91,89 @@ namespace SoftRenderingApp3D {
                 var c = MathUtils.Lerp(sl, el, gradient);
 
                 var surfaceColor = RenderUtils.surfaceColor;
+                var scatteringColor = InterpolateTriangleVerticesColors(x, y, z, v0, v1, v2);
 
-                var scatteringColor = InterpolateTriangleVerticesColors((int)x, (int)y, (int)z, v0, v1, v2);
+                int R = (int)(RenderUtils.lightWeight * c * surfaceColor.R) + (int)(RenderUtils.subsurfaceScatteringWeight * scatteringColor.R);
+                int G = (int)(RenderUtils.lightWeight * c * surfaceColor.G) + (int)(RenderUtils.subsurfaceScatteringWeight * scatteringColor.G);
+                int B = (int)(RenderUtils.lightWeight * c * surfaceColor.B) + (int)(RenderUtils.subsurfaceScatteringWeight * scatteringColor.B);
 
-                var finalColor = RenderUtils.lightWeight * c * surfaceColor + RenderUtils.subsurfaceScatteringWeight * scatteringColor;
-                ColorRGB finalColorWithAlpha = new ColorRGB(finalColor.R, finalColor.G, finalColor.B, (byte)(RenderUtils.surfaceOpacity * 255));
+                ColorRGB finalColor = new ColorRGB((byte)R, (byte)G, (byte)B, (byte)(255));
                 //Console.WriteLine($"newColor {newColor}. alpha {newColor.Alpha}");
-                surface.PutPixel((int)x, (int)y, (int)z, finalColorWithAlpha);
+                surface.PutPixel((int)x, (int)y, (int)z, finalColor);
             }
         }
 
-        ColorRGB InterpolateTriangleVerticesColors(int x, int y, int z, PaintedVertex v0, PaintedVertex v1, PaintedVertex v2) {
+        ColorRGB InterpolateTriangleVerticesColors(float x, float y, float z, PaintedVertex v0, PaintedVertex v1, PaintedVertex v2) {
             // point to be colored
             var pointInTriangle = new Vector3(x, y, z);
             // calculate barycentric weight for each vertex
             var barycentric = GetBarycentricCoordinates(pointInTriangle, v0.ScreenPoint, v1.ScreenPoint, v2.ScreenPoint);
+            var maxR = Math.Max(v0.WorldPoint.color.R, Math.Max(v1.WorldPoint.color.R, v2.WorldPoint.color.R));
+            var maxG = Math.Max(v0.WorldPoint.color.G, Math.Max(v1.WorldPoint.color.G, v2.WorldPoint.color.G));
+            var maxB = Math.Max(v0.WorldPoint.color.B, Math.Max(v1.WorldPoint.color.B, v2.WorldPoint.color.B));
             // interpolate
-            ColorRGB finalColor = barycentric.X * v0.WorldPoint.color + barycentric.Y * v1.WorldPoint.color + barycentric.Z * v2.WorldPoint.color;
+            int R = (int)(MathUtils.Clamp((barycentric.X * v0.WorldPoint.color.R + barycentric.Y * v1.WorldPoint.color.R + barycentric.Z * v2.WorldPoint.color.R), 0, maxR));
+            int G = (int)(MathUtils.Clamp((barycentric.X * v0.WorldPoint.color.G + barycentric.Y * v1.WorldPoint.color.G + barycentric.Z * v2.WorldPoint.color.G), 0, maxG));
+            int B = (int)(MathUtils.Clamp((barycentric.X * v0.WorldPoint.color.B + barycentric.Y * v1.WorldPoint.color.B + barycentric.Z * v2.WorldPoint.color.B), 0, maxB));
+            ColorRGB finalColor = new ColorRGB((byte)R, (byte)G, (byte)B, 255);
+
+            
 
             return finalColor;
         }
 
+         bool CheckIfBarycentricOutsideTriangle(Vector3 barycentric) {
+            return barycentric.X < 0 || barycentric.X > 1
+                || barycentric.Y < 0 || barycentric.Y > 1
+                || barycentric.Z < 0 || barycentric.Z > 1
+                || (barycentric.X + barycentric.Y + barycentric.Z) > 1;
+         }
+        
+        // deals with edge cases in the scanline algorithm
+        Vector3 GetAdjustedBarycentric(Vector3 barycentric) {
+            if(barycentric.X > 1)
+                return new Vector3(1, 0, 0);
+            if(barycentric.Y > 1)
+                return new Vector3(0, 1, 0);
+            if(barycentric.Z > 1)
+                return new Vector3(0, 0, 1);
+            if(barycentric.X < 0)
+                return new Vector3(0, barycentric.Y, barycentric.Z);
+            if(barycentric.Y < 0)
+                return new Vector3(barycentric.X, 0, barycentric.Z);
+            if(barycentric.Z < 0)
+                return new Vector3(barycentric.X, barycentric.Y, 0);
+            if((barycentric.X + barycentric.Y + barycentric.Z) > 1) {
+                var sumDenom = 1 / (barycentric.X + barycentric.Y + barycentric.Z);
+                return new Vector3(barycentric.X * sumDenom, barycentric.Y * sumDenom, barycentric.Z * sumDenom);
+            }
+            throw new Exception("something not good if this happens");
+        }
+
+
+        Vector3 GetBarycentricCoordinates(Vector3 p, Vector3 v0, Vector3 v1, Vector3 v2) {
+            var barycentric = CalculateBarycentricCoordinates(p, v0, v1, v2);
+            if(CheckIfBarycentricOutsideTriangle(barycentric)) {
+                return GetAdjustedBarycentric(barycentric);
+            }
+            return barycentric;
+        }
+
         // Efficient calculation of barycentric coordinates
         // taken from https://gamedev.stackexchange.com/a/23745
-        Vector3 GetBarycentricCoordinates(Vector3 p, Vector3 v0, Vector3 v1, Vector3 v2) {
-            var temp0 = v1 - v0;
-            var temp1 = v2 - v0;
-            var temp2 = p - v0;
-            float d00 = Vector3.Dot(temp0, temp0);
-            float d01 = Vector3.Dot(temp0, temp1);
-            float d11 = Vector3.Dot(temp1, temp1);
-            float d20 = Vector3.Dot(temp2, temp0);
-            float d21 = Vector3.Dot(temp2, temp1);
-            float denom = d00 * d11 - d01 * d01;
-            var v = (d11 * d20 - d01 * d21) / denom;
-            var w = (d00 * d21 - d01 * d20) / denom;
-            var u = 1.0f - v - w;
+        Vector3 CalculateBarycentricCoordinates(Vector3 p, Vector3 v0, Vector3 v1, Vector3 v2) {
+            var n = Vector3.Cross((v1 - v0), (v2 - v0));
+            var na = Vector3.Cross((v2 - v1), (p - v1));
+            var nb = Vector3.Cross((v0 - v2), (p - v2));
+            var nc = Vector3.Cross((v1 - v0), (p - v0));
 
-            return new Vector3(u, v, w);
+            var normFactor = 1 / (Vector3.Dot(n, n));
+
+            var alpha = Vector3.Dot(n, na) * normFactor;
+            var beta = Vector3.Dot(n, nb) * normFactor;
+            var gamma = Vector3.Dot(n, nc) * normFactor;
+
+            return new Vector3((float)(alpha), (float)(beta), (float)(gamma));
         }
 
     }

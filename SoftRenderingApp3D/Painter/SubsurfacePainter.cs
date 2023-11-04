@@ -24,7 +24,7 @@ namespace SoftRenderingApp3D {
             // Out if clipped
             if(yStart > yEnd) return;
 
-            var yMiddle = MathUtils.Clamp((int)p1.Y, yStart, yEnd);
+            var yMiddle = (int)MathUtils.Clamp(p1.Y, yStart, yEnd);
 
             // This has to move elsewhere
             var lightPos = new Vector3(0, 10, 10);
@@ -40,8 +40,8 @@ namespace SoftRenderingApp3D {
                 // P0
                 //   P1
                 // P2
-                paintHalfTriangle(yStart, (int)yMiddle - 1, p0, p2, p0, p1, nl0, nl2, nl0, nl1, zWorld);
-                paintHalfTriangle((int)yMiddle, yEnd, p0, p2, p1, p2, nl0, nl2, nl1, nl2, zWorld);
+                paintHalfTriangle(yStart, yMiddle, p0, p2, p0, p1, nl0, nl2, nl0, nl1, zWorld);
+                paintHalfTriangle(yMiddle + 1, yEnd, p0, p2, p1, p2, nl0, nl2, nl1, nl2, zWorld);
             }
             else {
                 //   P0
@@ -92,10 +92,8 @@ namespace SoftRenderingApp3D {
                 var c = MathUtils.Lerp(sl, el, gradient);
 
                 var finalColor = c * RenderUtils.subsurfaceColor;
-                ColorRGB newColor = new ColorRGB(finalColor.R, finalColor.G, finalColor.B, (byte)(RenderUtils.subsurfaceVisibility * 255));
 
-
-                surface.PutSubsurfacePixel((int)x, (int)y, (int)z, newColor, zWorld);
+                surface.PutSubsurfacePixel((int)x, (int)y, z, finalColor, zWorld);
             }
         }
 

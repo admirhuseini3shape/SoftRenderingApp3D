@@ -213,13 +213,14 @@ namespace SoftRenderingApp3D {
             Ray3d ray = new Ray3d(MiscUtils.Vector3ToVector3d(lightPos), MiscUtils.Vector3ToVector3d(direction));
             int hit_tid = spatial.FindNearestHitTriangle(ray);
             // Check if ray misses
-            if(hit_tid != DMesh3.InvalidID) {
+                if(hit_tid != DMesh3.InvalidID) {
                 IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(originalG3, hit_tid, ray);
                 // Calculate distance traveled after passing through the surface
                 double hit_dist = MiscUtils.Vector3ToVector3d(vertex.position).Distance(ray.PointAt(intr.RayParameter));
                 // Calculate the decay of the light
                 float decay = (float)Math.Exp(-hit_dist * RenderUtils.subsurfaceDecay);
                 // Color of the vertex
+                //var color = decay * RenderUtils.surfaceColor;
                 var color = decay * RenderUtils.surfaceColor;
                 volume.Vertices[index].color = color;
             }

@@ -36,6 +36,8 @@ namespace SoftRenderingApp3D {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         // Clamping values to keep them between 0 and 1
         public static float Clamp(this float value, float min = 0, float max = 1) => Math.Max(min, Math.Min(value, max));
+        public static double Clamp(this double value, double min = 0, double max = 1) => Math.Max(min, Math.Min(value, max));
+
 
         public static Vector3 Random(this Vector3 vector) {
             var rand = new Random();

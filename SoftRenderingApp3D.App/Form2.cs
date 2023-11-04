@@ -53,6 +53,7 @@ namespace SoftRenderingApp3D.App {
             switch(id) {
                 case "jaw":
                     world.Volumes.AddRange(stlReader.ReadFile(@"models\original.stl"));
+                    // Add a cube that represents the light
                     world.Volumes.AddRange(stlReader.ReadFile(@"models\offset_3.stl"));
                     (world.Volumes[1] as Volume).InitializeTrianglesColor(ColorRGB.Black);
                     arcBallCam.Position += new Vector3(0, 10, -50 - arcBallCam.Position.Z);
