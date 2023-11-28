@@ -24,9 +24,17 @@ namespace SoftRenderingApp3D {
         public static ColorRGB subsurfaceColor = SubsurfaceColor;
 
         public static bool GaussianBlur = false;
+        public static bool OnlySubsurfaceBlur = false;
+        public static bool Caries = false;
 
         public static void ToggleGaussianBlur() {
             GaussianBlur = !GaussianBlur;
+        }
+        public static void ToggleOnlySubsurfaceBlur() {
+            OnlySubsurfaceBlur = !OnlySubsurfaceBlur;
+        }
+        public static void ToggleCaries() {
+            Caries = !Caries;
         }
 
         public static float GaussianBlurStDev = 1.0f;

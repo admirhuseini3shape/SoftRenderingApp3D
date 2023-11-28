@@ -104,6 +104,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Content Include="Models\caries_offset.stl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Include="Models\offset_2.stl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

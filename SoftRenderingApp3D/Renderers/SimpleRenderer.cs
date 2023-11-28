@@ -174,17 +174,86 @@ namespace SoftRenderingApp3D {
                     stats.CalcTime();
                 }
 
+
+                // Caries ==================================================
+                if(!RenderUtils.Caries) {
+                    if(RenderUtils.GaussianBlur)
+                        renderContext.Surface.ApplyGaussianBlurToSubsurface();
+                    else
+                        renderContext.Surface.ApplyClearSubsurface();
+                    break;
+                }
+
+                var cariesVbx = worldBuffer.VertexBuffer[idxVolume + 2];
+                var caries = volumes[idxVolume + 2];
+
+                var cariesWorldMatrix = caries.WorldMatrix();
+                var cariesModelViewMatrix = cariesWorldMatrix * viewMatrix;
+
+                cariesVbx.Volume = caries;
+                cariesVbx.WorldMatrix = cariesWorldMatrix;
+                cariesVbx.WorldViewMatrix = cariesModelViewMatrix;
+
+                var cariesVertices = caries.Vertices;
+                var cariesViewVertices = cariesVbx.ViewVertices;
+
+
+                var cariesTriangleCount = caries.Triangles.Length;
+
+                // Transform and store vertices to View
+                var cariesVertexCount = cariesVertices.Length;
+                for(var idxVertex = 0; idxVertex < cariesVertexCount; idxVertex++) {
+                    cariesViewVertices[idxVertex] = Vector3.Transform(cariesVertices[idxVertex].position, viewMatrix);
+                }
+
+                cariesVbx.TransformWorld();
+                cariesVbx.TransformWorldView();
+                
+
+                for(var idxTriangle = 0; idxTriangle < cariesTriangleCount; idxTriangle++) {
+                    // Get triangle
+                    var t = caries.Triangles[idxTriangle];
+
+                    // Discard if behind far plane
+                    if(t.IsBehindFarPlane(cariesVbx)) {
+                        stats.BehindViewTriangleCount++;
+                        continue;
+                    }
+
+                    // Discard if back facing 
+                    if(rendererSettings.BackFaceCulling && t.IsFacingBack(cariesVbx)) {
+                        stats.FacingBackTriangleCount++;
+                        continue;
+                    }
+
+                    // Project in frustum
+                    t.TransformProjection(cariesVbx, projectionMatrix);
+
+                    // Discard if outside view frustum
+                    if(t.isOutsideFrustum(cariesVbx)) {
+                        stats.OutOfViewTriangleCount++;
+                        continue;
+                    }
+
+                    var cariesPainter = new CariesPainter();
+                    cariesPainter.RendererContext = renderContext;
+                    cariesPainter.DrawTriangle(cariesVbx, idxTriangle);
+
+                    stats.DrawnTriangleCount++;
+
+                    stats.CalcTime();
+                }
+
                 if(RenderUtils.GaussianBlur)
                     renderContext.Surface.ApplyGaussianBlurToSubsurface();
                 else
                     renderContext.Surface.ApplyClearSubsurface();
+
                 // Only draw one volume, will remove later
                 break;
             }
             return surface.Screen;
         }
-
-        
 
         public DMesh3 GetDMesh3FromVolume(Volume volume) {
             return DMesh3Builder.Build(volume.Vertices.ToFloatArray(), volume.Triangles.ToIntArray(), volume.NormVertices.ToFloatArray());

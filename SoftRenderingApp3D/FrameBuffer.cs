@@ -2,6 +2,10 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Drawing;
+using System.IO;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace SoftRenderingApp3D {
 
@@ -13,12 +17,15 @@ namespace SoftRenderingApp3D {
         private readonly RenderContext renderContext;
         private float[] zBuffer;
         private float[] zSubsurfaceBuffer;
+        private float[] zCariesBuffer;
         private Vector3[] WorldBuffer;
         private Vector3[] SubsurfaceWorldBuffer;
 
         public int[] Screen { get; }
         public int[] TempScreen { get; }
         public int[] SubsurfaceScreen { get; }
+        public int[] BlurScreen { get; set; }
+        public int[] CariesScreen { get; }
 
         internal int Width { get; }
         internal int Height { get; }
@@ -37,12 +44,13 @@ namespace SoftRenderingApp3D {
             this.emptyWorldBuffer = new Vector3[width * height];
             this.Screen = new int[width * height];
             this.TempScreen = new int[width * height];
-
+            this.CariesScreen = new int[width * height];
             this.SubsurfaceScreen = new int[width * height];
 
 
             this.zBuffer = new float[width * height];
             this.zSubsurfaceBuffer = new float[width * height];
+            this.zCariesBuffer = new float[width * height];
             this.WorldBuffer = new Vector3[width * height];
             this.SubsurfaceWorldBuffer = new Vector3[width * height];
 
@@ -64,9 +72,12 @@ namespace SoftRenderingApp3D {
             Array.Copy(emptyBuffer, Screen, Screen.Length);
             Array.Copy(emptyBuffer, TempScreen, TempScreen.Length);
             Array.Copy(emptyBuffer, SubsurfaceScreen, SubsurfaceScreen.Length);
+            Array.Copy(emptyBuffer, CariesScreen, CariesScreen.Length);
+
 
             Array.Copy(emptyZBuffer, zBuffer, zBuffer.Length);
             Array.Copy(emptyZBuffer, zSubsurfaceBuffer, zSubsurfaceBuffer.Length);
+            Array.Copy(emptyZBuffer, zCariesBuffer, zCariesBuffer.Length);
             Array.Copy(emptyWorldBuffer, WorldBuffer, WorldBuffer.Length);
             Array.Copy(emptyWorldBuffer, SubsurfaceWorldBuffer, SubsurfaceWorldBuffer.Length);
 
@@ -119,16 +130,71 @@ namespace SoftRenderingApp3D {
 
             color.Alpha = (byte)(255);
 
+            zCariesBuffer[index] = z;
+
             SubsurfaceScreen[index] = color.Color;
 #endif
         }
 
         public void ApplyGaussianBlurToSubsurface() {
-            for ( int i = 0; i < Height; i++) {
-                for (int j = 0; j < Width; j++) {
-                    GaussianBlurAtPixel(j, i);                        
+            var bmp = new Bitmap(this.Width, this.Height, PixelFormat.Format32bppPArgb);
+            ImageUtils.FillBitmap(bmp, SubsurfaceScreen, this.Width, this.Height);
+            var gaussian = new GaussianBlur(bmp);
+
+            var result = gaussian.Process(RenderUtils.BlurRadiusInPixels);
+            BlurScreen = BitmapToIntArray(result);
+
+            CombineAllScreens();
+        }
+
+        private void CombineAllScreens() {
+            for(int i = 0; i < Height; i++) {
+                for(int j = 0; j < Width; j++) {
+                    var index = j + i * Width;
+                    ColorRGB subsurfacePixelColor = new ColorRGB(Color.FromArgb(SubsurfaceScreen[index]));
+                    ColorRGB surfacePixelColor = new ColorRGB(Color.FromArgb(Screen[index]));
+                    ColorRGB blurPixelColor = new ColorRGB(Color.FromArgb(BlurScreen[index]));
+                    ColorRGB combinedColor = surfacePixelColor + blurPixelColor;
+                    if(SubsurfaceScreen[index] != emptyBuffer[0] && CariesScreen[index] != 1 && !RenderUtils.OnlySubsurfaceBlur) {
+                        combinedColor = surfacePixelColor + subsurfacePixelColor;
+                    }
+                    Screen[index] = combinedColor.Color;
                 }
             }
+        }
+
+        private static int[] BitmapToIntArray(Bitmap bitmap) {
+            int width = bitmap.Width;
+            int height = bitmap.Height;
+
+            // Lock the bitmap's bits.
+            System.Drawing.Imaging.BitmapData bmpData = bitmap.LockBits(
+                new Rectangle(0, 0, width, height),
+                System.Drawing.Imaging.ImageLockMode.ReadOnly,
+                bitmap.PixelFormat);
+
+            // Get the address of the first line.
+            IntPtr ptr = bmpData.Scan0;
+
+            // Declare an array to hold the bytes of the bitmap.
+            int bytes = Math.Abs(bmpData.Stride) * height;
+            byte[] rgbValues = new byte[bytes];
+
+            // Copy the RGB values into the array.
+            System.Runtime.InteropServices.Marshal.Copy(ptr, rgbValues, 0, bytes);
+
+            // Unlock the bits.
+            bitmap.UnlockBits(bmpData);
+
+            // Convert byte array to int array (assuming RGBA format)
+            int[] result = new int[width * height];
+
+            for(int i = 0, j = 0; i < result.Length; i++, j += 4) {
+                int pixelValue = (rgbValues[j + 3] << 24) | (rgbValues[j] << 16) | (rgbValues[j + 1] << 8) | rgbValues[j + 2];
+                result[i] = pixelValue;
+            }
+
+            return result;
         }
 
         public void ApplyClearSubsurface() {
@@ -142,41 +208,28 @@ namespace SoftRenderingApp3D {
                         ColorRGB pixelColorWithSubsurface = surfacePixelColor + subsurfacePixelColor;
                         // Console.WriteLine($"subsurface color: {color}, surface color: {priorPixelColor}, final color: {pixelColorWithSubsurface}");
                         Screen[index] = pixelColorWithSubsurface.Color;
-                    //}
+                        //}
                 }
             }
         }
 
-        public void GaussianBlurAtPixel(int x, int y) {
-            int radius = RenderUtils.BlurRadiusInPixels;
-            ColorRGB result = ColorRGB.Black;
-            for (int i = y - radius; i <= y + radius; i++) {
-                for (int j = x - radius; j <= x + radius; j++) {
-                    if(WithinHeight(i) && WithinWidth(j)) {
-                        var index = j + i * Width;
-                        float gaussianWeight = RenderUtils.Gaussian[j - x + radius, i - y + radius];
-                        ColorRGB gaussianColor = gaussianWeight * new ColorRGB(Color.FromArgb(SubsurfaceScreen[index]));
-                        gaussianColor.Alpha = 255;
-                        result += gaussianColor;
-                    }
-                }
+        public void PutCariesPixel(int x, int y, float z, ColorRGB color, Vector3 zWorld) {
+            if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0) {
+                throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}, Depth={z}");
             }
-            var pixelIndex = x + y * Width;
-            ColorRGB priorPixelColor = new ColorRGB(Color.FromArgb(Screen[pixelIndex]));
-            var newPriorPixelColor = new ColorRGB(priorPixelColor.R, priorPixelColor.G, priorPixelColor.B, (byte)(RenderUtils.surfaceOpacity * 255));
-            var newResult = new ColorRGB(result.R, result.G, result.B, (byte)(RenderUtils.surfaceOpacity * 255));
-            var finalColor = ColorRGB.AlphaBlend(newPriorPixelColor, newResult);
-            Screen[pixelIndex] = finalColor.Color;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 
-        public bool WithinHeight(int x) {
-            return x < Height && x >= 0;
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            var index = x + y * Width;
 
-        public bool WithinWidth(int x) {
-            return x < Width && x >= 0;
+            if(z >= zSubsurfaceBuffer[index]) {
+                renderContext.Stats.BehindZPixelCount++;
+                return;
+            }
+
+            renderContext.Stats.DrawnPixelCount++;
+
+            zCariesBuffer[index] = z;
+
+            CariesScreen[index] = 1;
         }
     }
 }

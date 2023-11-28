@@ -35,6 +35,7 @@ namespace SoftRenderingApp3D.App {
             this.trackBar4.Value = 100;
 
             this.checkBox1.Checked = false;
+            this.checkBox2.Checked = false;
 
             prepareWorld("jaw");
         }
@@ -55,7 +56,9 @@ namespace SoftRenderingApp3D.App {
                     world.Volumes.AddRange(stlReader.ReadFile(@"models\original.stl"));
                     // Add a cube that represents the light
                     world.Volumes.AddRange(stlReader.ReadFile(@"models\offset_3.stl"));
+                    world.Volumes.AddRange(stlReader.ReadFile(@"models\caries_offset.stl"));
                     (world.Volumes[1] as Volume).InitializeTrianglesColor(ColorRGB.Black);
+                    (world.Volumes[2] as Volume).InitializeTrianglesColor(ColorRGB.Black);
                     arcBallCam.Position += new Vector3(0, 10, -50 - arcBallCam.Position.Z);
                     break;
                 case "stl-mesh-1":
@@ -220,6 +223,15 @@ namespace SoftRenderingApp3D.App {
         private void checkBox1_CheckedChanged(object sender, EventArgs e) {
             RenderUtils.ToggleGaussianBlur();
             this.trackBar6.Enabled = RenderUtils.GaussianBlur;
+            this.panel3D1.Invalidate();
+        }
+        private void checkBox2_CheckedChanged(object sender, EventArgs e) {
+            RenderUtils.ToggleOnlySubsurfaceBlur();
+            this.panel3D1.Invalidate();
+        }
+
+        private void checkBox3_CheckedChanged(object sender, EventArgs e) {
+            RenderUtils.ToggleCaries();
             this.panel3D1.Invalidate();
         }
     }

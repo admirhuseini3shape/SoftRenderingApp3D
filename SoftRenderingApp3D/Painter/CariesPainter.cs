@@ -3,7 +3,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace SoftRenderingApp3D {
-    class SubsurfacePainter : IPainter {
+    class CariesPainter : IPainter {
         public RenderContext RendererContext { get; set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -24,7 +24,7 @@ namespace SoftRenderingApp3D {
             // Out if clipped
             if(yStart > yEnd) return;
 
-            var yMiddle = (int)MathUtils.Clamp(p1.Y, yStart, yEnd);
+            var yMiddle = (int)p1.Y.Clamp(yStart, yEnd);
 
             // This has to move elsewhere
             var lightPos = new Vector3(0, 10, 10);
@@ -91,9 +91,12 @@ namespace SoftRenderingApp3D {
                 var z = MathUtils.Lerp(sz, ez, gradient);
                 var c = MathUtils.Lerp(sl, el, gradient);
 
-                var finalColor = c * RenderUtils.subsurfaceColor;
+                var finalVal = (byte)(c * 255).Clamp(50, 128);
+
+                var finalColor = new ColorRGB(finalVal, 0, finalVal);
 
                 surface.PutSubsurfacePixel((int)x, (int)y, z, finalColor, zWorld);
+                surface.PutCariesPixel((int)x, (int)y, z, finalColor, zWorld);
             }
         }
 

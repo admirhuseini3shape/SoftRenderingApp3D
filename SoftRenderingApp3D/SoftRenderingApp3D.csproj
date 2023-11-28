@@ -75,6 +75,7 @@
     </Compile>
     <Compile Include="Clipping\CohenSutherlandClipping2D.cs" />
     <Compile Include="Clipping\CohenSutherlandClippingHomogeneous.cs" />
+    <Compile Include="Painter\CariesPainter.cs" />
     <Compile Include="Painter\SubsurfacePainter.cs" />
     <Compile Include="RenderContext.cs" />
     <Compile Include="Painter\PaintedVertex.cs" />
@@ -92,6 +93,7 @@
     <Compile Include="Renderers\IRenderer.cs" />
     <Compile Include="Renderers\SimpleRenderer.cs" />
     <Compile Include="Stats.cs" />
+    <Compile Include="Utils\GaussianBlur.cs" />
     <Compile Include="Utils\GeomUtils.cs" />
     <Compile Include="Utils\ImageUtils.cs" />
     <Compile Include="Utils\MathUtils.cs" />
