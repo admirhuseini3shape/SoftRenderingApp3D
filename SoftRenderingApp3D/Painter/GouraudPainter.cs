@@ -188,41 +188,37 @@ namespace SoftRenderingApp3D {
         void paintScanlineTextured(float y, float sx, float ex, float sz, float ez, float sl, float el, Texture texture, bool linearFiltering, Vector3 vertex0, Vector3 vertex1, Vector3 vertex2, Vector2 texCoord0, Vector2 texCoord1, Vector2 texCoord2) {
             var surface = RendererContext.Surface;
 
+            // Precompute constants for barycentric coordinates
+            float dInv = 1.0f / ((vertex1.Y - vertex2.Y) * (vertex0.X - vertex2.X) + (vertex2.X - vertex1.X) * (vertex0.Y - vertex2.Y));
+            float aYB_YC = (vertex1.Y - vertex2.Y);
+            float aXC_XB = (vertex2.X - vertex1.X);
+            float bYC_YA = (vertex2.Y - vertex0.Y);
+            float bXA_XC = (vertex0.X - vertex2.X);
+
             var minX = Math.Max(sx, 0);
             var maxX = Math.Min(ex, surface.Width);
-
             var mx = 1 / (ex - sx);
-
 
             for(var x = minX; x < maxX; x++) {
                 var gradient = (x - sx) * mx;
-
                 var z = MathUtils.Lerp(sz, ez, gradient);
                 var c = MathUtils.Lerp(sl, el, gradient);
 
-                // TODO: implement the barycentric coordinates calculations using a precomputed matrix of the 3 points of the triangle
-                // This can be optimes by using matrix vector multiplication
-
-                // Barycentric coordinates are calculated
-                var alpha = (-(x - vertex1.X) * (vertex2.Y - vertex1.Y) + (y - vertex1.Y) * (vertex2.X - vertex1.X)) /
-                    (-(vertex0.X - vertex1.X) * (vertex2.Y - vertex1.Y) + (vertex0.Y - vertex1.Y) * (vertex2.X - vertex1.X));
-                var beta = (-(x - vertex2.X) * (vertex0.Y - vertex2.Y) + (y - vertex2.Y) * (vertex0.X - vertex2.X)) /
-                    (-(vertex1.X - vertex2.X) * (vertex0.Y - vertex2.Y) + (vertex1.Y - vertex2.Y) * (vertex0.X - vertex2.X));
+                // Calculate barycentric coordinates
+                var alpha = (aYB_YC * (x - vertex2.X) + aXC_XB * (y - vertex2.Y)) * dInv;
+                var beta = (bYC_YA * (x - vertex2.X) + bXA_XC * (y - vertex2.Y)) * dInv;
                 var gamma = 1 - alpha - beta;
 
+                // Calculate texture coordinates
                 var texX = texCoord0.X * alpha + texCoord1.X * beta + texCoord2.X * gamma;
                 var texY = texCoord0.Y * alpha + texCoord1.Y * beta + texCoord2.Y * gamma;
 
+                // Apply texture based on filtering
                 if (linearFiltering)
                     surface.PutPixel((int)x, (int)y, (int)z, c * texture.GetPixelColorLinearFiltering(texX, texY));
                 else
                     surface.PutPixel((int)x, (int)y, (int)z, c * texture.GetPixelColorNearestFiltering(texX, texY));
-
-
             }
-
-            
         }
-
     }
 }
