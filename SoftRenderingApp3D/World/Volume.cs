@@ -22,7 +22,7 @@ namespace SoftRenderingApp3D {
 
         public Triangle[] Triangles { get; }
 
-        public Vector3 Centroid { get; }
+        // public Vector3 Centroid { get; } Not used anywhere yet.
 
         public Rotation3D Rotation { get; set; }
 
@@ -32,9 +32,20 @@ namespace SoftRenderingApp3D {
 
         public Vector3[] NormVertices { get; set; }
 
-        public Matrix4x4 WorldMatrix() =>
-            Matrix4x4.CreateFromYawPitchRoll(Rotation.YYaw, Rotation.XPitch, Rotation.ZRoll) *
-            Matrix4x4.CreateTranslation(Position) *
-            Matrix4x4.CreateScale(Scale);
+        public Matrix4x4 WorldMatrix() {
+            
+            Rotation3D rotation = Rotation3D.FromEulerAngles(.5f, .2f, .1f); // Create
+            Quaternion quaternion = rotation.Quaternion; // Extract the Quaternion from Rotation3D object
+            
+            // Convert the quaternion rotation to a rotation matrix
+            Matrix4x4 rotationMatrix = Matrix4x4.CreateFromQuaternion(quaternion);
+
+            // Create the translation and scale matrices
+            Matrix4x4 translationMatrix = Matrix4x4.CreateTranslation(Position);
+            Matrix4x4 scaleMatrix = Matrix4x4.CreateScale(Scale);
+
+            // Combine the rotation, translation, and scale matrices
+            return scaleMatrix * rotationMatrix * translationMatrix;
+        }
     }
 }

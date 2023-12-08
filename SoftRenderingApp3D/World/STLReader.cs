@@ -63,42 +63,41 @@ namespace SoftRenderingApp3D {
                 throw new FileLoadException($"Cannot load file format of {path}");
             }
         }
-
-        /**
-        * @brief  This function checks the type of stl file binary or ascii, function is assuming
-        *         given file as proper *.stl file 
-        * @param  none
-        * @retval stlFileType
-        */
-        private FileType GetFileType(string filePath) {
-            FileType stlFileType = FileType.NONE;
-
-            /* check path is exist */
-            if(File.Exists(filePath)) {
-                int lineCount = 0;
-                lineCount = File.ReadLines(filePath).Count(); // number of lines in the file
-
-                string firstLine = File.ReadLines(filePath).First();
-
-                string endLines = File.ReadLines(filePath).Skip(lineCount - 1).Take(1).First() +
-                                  File.ReadLines(filePath).Skip(lineCount - 2).Take(1).First();
-
-                /* check the file is ascii or not */
-                if((firstLine.IndexOf("solid") != -1) &
-                    (endLines.IndexOf("endsolid") != -1)) {
-                    stlFileType = FileType.ASCII;
-                }
-                else {
-                    stlFileType = FileType.BINARY;
-                }
-
+        
+        private FileType GetFileType(string filePath) 
+        {
+            // check if file exists
+            if (!File.Exists(filePath)) 
+            {
+                return FileType.NONE;
             }
-            else {
-                stlFileType = FileType.NONE;
+		
+            // read only the first few bytes from the file
+            byte[] data = new byte[5]; // length of 'solid' which is 5
+            try 
+            {
+                using (FileStream fs = File.Open(filePath, FileMode.Open))
+                {
+                    fs.Read(data, 0, data.Length);
+                }
+            }
+            catch (Exception)
+            {
+                processError = true;
+                throw new FileLoadException($"Error reading file: {filePath}!");
             }
 
+            // convert bytes to string
+            string dataAsString = Encoding.ASCII.GetString(data);
+        
+            if (dataAsString.ToLower().StartsWith("solid")) 
+            {
+                // if file starts with 'solid' it's potentially an ASCII STL file
+                return FileType.ASCII;
+            } 
 
-            return stlFileType;
+            // if not ASCII, then it's potentially a binary STL file
+            return FileType.BINARY;    
         }
 
 
@@ -106,119 +105,93 @@ namespace SoftRenderingApp3D {
         * @brief  *.stl file binary read function
         * @param  filePath
         * @retval meshList
-        */
+        */ 
+        
         private Volume ReadBinaryFile(string filePath) {
+            
             List<Vector3> vertices = new List<Vector3>();
             List<Vector3> normals = new List<Vector3>();
             List<Triangle> triangleIndices = new List<Triangle>();
-
+          
             byte[] fileBytes = File.ReadAllBytes(filePath);
-
             byte[] temp = new byte[4];
-
-            /* 80 bytes title + 4 byte num of triangles + 50 bytes (1 of triangular mesh)  */
-            if(fileBytes.Length > 120) {
-
-                temp[0] = fileBytes[80];
-                temp[1] = fileBytes[81];
-                temp[2] = fileBytes[82];
-                temp[3] = fileBytes[83];
-
+          
+            if(fileBytes.Length > 120) 
+            {
+                System.Buffer.BlockCopy(fileBytes, 80, temp, 0, 4);
                 var numOfMesh = System.BitConverter.ToInt32(temp, 0);
-
                 var byteIndex = 84;
-
                 var index = 0;
 
-                for(int i = 0; i < numOfMesh; i++) {
-                    /* this try-catch block will be reviewed */
-                    try {
-                        /* face normal */
-                        var normalX = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-                        var normalY = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-                        var normalZ = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
+                for(int i = 0; i < numOfMesh; i++) 
+                {
+                    try 
+                    {
+                        normals.Add(GetVector3(fileBytes, ref byteIndex));
+                        vertices.Add(GetVector3(fileBytes, ref byteIndex));
+                        vertices.Add(GetVector3(fileBytes, ref byteIndex));
+                        vertices.Add(GetVector3(fileBytes, ref byteIndex));
 
-                        normals.Add(new Vector3(normalX, normalY, normalZ));
-
-
-                        /* normals of vertex 2 and 3 equals to vertex 1's normals */
-                        normals.Add(new Vector3(normalX, normalY, normalZ));
-                        normals.Add(new Vector3(normalX, normalY, normalZ));
-
-                        /* vertex 1 */
-                        var x = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-                        var y = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-                        var z = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-
-                        vertices.Add(new Vector3(x, y, z));
-
-                        /* vertex 2 */
-                        x = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-                        y = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-                        z = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-
-                        vertices.Add(new Vector3(x, y, z));
-
-                        /* vertex 3 */
-                        x = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-                        y = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-                        z = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-
-                        vertices.Add(new Vector3(x, y, z));
+                        normals.Add(normals[index]);
+                        normals.Add(normals[index]);
 
                         triangleIndices.Add(new Triangle(index, index + 1, index + 2));
-
-                        index += 3;
-
+          
                         byteIndex += 2; // Attribute byte count
+                        index += 3;
                     }
-                    catch {
+                    catch 
+                    {
                         processError = true;
                         break;
                     }
                 }
-
-            }
-            else {
-                // itentionally left blank
             }
 
             if(processError)
                 throw new FileLoadException($"Error reading file: {path}!");
 
             return new Volume(vertices.ToArray(),
-                             triangleIndices.ToArray(),
-                             normals.ToArray(),
-                             null,
-                             null);
+                              triangleIndices.ToArray(),
+                              normals.ToArray(),
+                              null,
+                              null);
         }
 
+    private Vector3 GetVector3(byte[] fileBytes, ref int startIndex)
+    {
+        byte[] buffer = new byte[4];
 
+        System.Buffer.BlockCopy(fileBytes, startIndex, buffer, 0, buffer.Length);
+        float x = BitConverter.ToSingle(buffer, 0);
+        startIndex += buffer.Length;
+
+        System.Buffer.BlockCopy(fileBytes, startIndex, buffer, 0, buffer.Length);
+        float y = BitConverter.ToSingle(buffer, 0);
+        startIndex += buffer.Length;
+
+        System.Buffer.BlockCopy(fileBytes, startIndex, buffer, 0, buffer.Length);
+        float z = BitConverter.ToSingle(buffer, 0);
+        startIndex += buffer.Length;
+
+        return new Vector3(x, y, z);
+    }
+    
         /**
         * @brief  *.stl file ascii read function
         * @param  filePath
         * @retval meshList
         */
         private Volume ReadASCIIFile(string filePath) {
+            
             List<Vector3> vertices = new List<Vector3>();
             List<Vector3> normals = new List<Vector3>();
             List<Triangle> triangleIndices = new List<Triangle>();
 
-            StreamReader txtReader = new StreamReader(filePath);
 
-            string lineString;
+            using(StreamReader txtReader = new StreamReader(filePath)) {
+                
+                string lineString;
 
             while(!txtReader.EndOfStream) {
                 lineString = txtReader.ReadLine().Trim(); /* delete whitespace in front and tail of the string */
@@ -294,6 +267,10 @@ namespace SoftRenderingApp3D {
                     } // while linedata[0]
                 } // if solid
             } // while !endofstream
+                
+            }
+
+            
 
             return new Volume(vertices.ToArray(),
                               triangleIndices.ToArray(),
@@ -301,6 +278,5 @@ namespace SoftRenderingApp3D {
                               null,
                               null);
         }
-
     }
 }

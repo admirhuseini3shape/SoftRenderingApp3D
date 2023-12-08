@@ -164,7 +164,7 @@ namespace SoftRenderingApp3D.App {
                             }
                         break;
                     }
-
+                
                 case "bigtown": {
                         var d = 200; var s = 2;
                         for(var x = -d; x <= d; x += s)
@@ -187,41 +187,58 @@ namespace SoftRenderingApp3D.App {
                     break;
 
                 case "spheres": {
-                        var d = 5; var s = 2; var r = new Random();
-                        for(var x = -d; x <= d; x += s)
-                            for(var y = -d; y <= d; y += s)
-                                for(var z = -d; z <= d; z += s) {
-                                    world.Volumes.Add(
-                                        new IcoSphere(2) {
-                                            Position = new System.Numerics.Vector3(x, y, z),
-                                            Rotation = new Rotation3D(
-                                                (float)r.Next(-90, 90),
-                                                (float)r.Next(-90, 90),
-                                                (float)r.Next(-90, 90)).ToRad()
-                                        });
-                                }
-                        break;
-                    }
+                    var d = 5; var s = 2; var r = new Random();
+                    for (var x = -d; x <= d; x += s) {
+                        for (var y = -d; y <= d; y += s) {
+                            for (var z = -d; z <= d; z += s) {
+                                // Generate random Euler angles
+                                float pitch = (float)r.Next(-90, 90);
+                                float yaw = (float)r.Next(-90, 90);
+                                float roll = (float)r.Next(-90, 90);
 
-                case "cubes": {
-                        var d = 20; var s = 2; var r = new Random();
-                        for(var x = -d; x <= d; x += s)
-                            for(var y = -d; y <= d; y += s)
-                                for(var z = -d; z <= d; z += s) {
-                                    world.Volumes.Add(
-                                        new Cube() {
-                                            Position = new System.Numerics.Vector3(x, y, z),
-                                            Rotation = new Rotation3D(
-                                                (float)r.Next(-90, 90),
-                                                (float)r.Next(-90, 90),
-                                                (float)r.Next(-90, 90)).ToRad()
-                                        });
-                                }
-                        break;
+                                // Convert Euler angles to radians
+                                pitch = MathUtils.ToRad(pitch);
+                                yaw = MathUtils.ToRad(yaw);
+                                roll = MathUtils.ToRad(roll);
+
+                                // Create a quaternion from the Euler angles
+                                Quaternion quaternion = Quaternion.CreateFromYawPitchRoll(yaw, pitch, roll);
+
+                                // Use the quaternion to create a Rotation3D object
+                                Rotation3D rotation = new Rotation3D(quaternion);
+
+                                // Add the sphere to the world
+                                world.Volumes.Add(
+                                    new IcoSphere(2) {
+                                        Position = new System.Numerics.Vector3(x, y, z),
+                                        Rotation = rotation
+                                    }
+                                );
+                            }
+                        }
                     }
+                    break;
+                }
+            
+            // case "cubes": {
+            //         var d = 20; var s = 2; var r = new Random();
+            //         for(var x = -d; x <= d; x += s)
+            //             for(var y = -d; y <= d; y += s)
+            //                 for(var z = -d; z <= d; z += s) {
+            //                     world.Volumes.Add(
+            //                         new Cube() {
+            //                             Position = new System.Numerics.Vector3(x, y, z),
+            //                             Rotation = new Rotation3D(
+            //                                 (float)r.Next(-90, 90),
+            //                                 (float)r.Next(-90, 90),
+            //                                 (float)r.Next(-90, 90)).ToRad()
+            //                         });
+            //                 }
+            //         break;
+            //     }
             }
 
-            world.LightSources.Add(new LightSource { Position = new Vector3(0, 0, 10) });
+            world.LightSources.Add(new LightSource { Position = new Vector3(0, 0, 5) });
 
             // var camObject = new Cube() { Position = arcBallCam.Position };
 

@@ -15,11 +15,27 @@ namespace SoftRenderingApp3D {
                     yield return i;
         }
 
-        public static Vector3 CalculateVertexNormal(this Vector3 vertex, IVolume volume) {
-            var inTriangles = GetTriangleIndexesHaving(vertex, volume);
+        // public static Vector3 CalculateVertexNormal(this Vector3 vertex, IVolume volume) {
+        //     var inTriangles = GetTriangleIndexesHaving(vertex, volume);
+        //     if(!inTriangles.Any())
+        //         return Vector3.Zero;
+        //     var sum = inTriangles.Select(idx => volume.Triangles[idx].CalculateNormal(volume.Vertices)).Distinct().Aggregate((v1, v2) => v1 + v2);
+        //     return Vector3.Normalize(sum);
+        // }
+
+        private static Vector3 CalculateVertexNormal(this Vector3 vertex, IVolume volume) {
+            
+            // The IEnumerable might be enumerated three times: once to check if it's empty,
+            // another time to map the indices to normals, and a last time when summing up the distinct normals.
+            // Adding a list makes it enumerate only once.
+            
+            var inTriangles = GetTriangleIndexesHaving(vertex, volume).ToList(); 
             if(!inTriangles.Any())
                 return Vector3.Zero;
-            var sum = inTriangles.Select(idx => volume.Triangles[idx].CalculateNormal(volume.Vertices)).Distinct().Aggregate((v1, v2) => v1 + v2);
+            
+            // When summing the vertices, there is no point in including the distinct operation as it doesn't change the end result.
+            
+            var sum = inTriangles.Select(idx => volume.Triangles[idx].CalculateNormal(volume.Vertices)).Aggregate((v1, v2) => v1 + v2);
             return Vector3.Normalize(sum);
         }
 

@@ -56,14 +56,17 @@ namespace SoftRenderingApp3D {
             return Vector3.Normalize(P);
         }
 
+        
+        // Normalized quaternion below
+        
         internal Quaternion CalculateQuaternion(Vector3 startV, Vector3 currentV) {
-
             var cross = Vector3.Cross(startV, currentV);
-
-            if(cross.Length() > MathUtils.Epsilon)
-                return new Quaternion(cross, Vector3.Dot(startV, currentV));
-            else
+            if (cross.Length() > MathUtils.Epsilon) {
+                var q = new Quaternion(cross, Vector3.Dot(startV, currentV));
+                return Quaternion.Normalize(q);
+            } else {
                 return Quaternion.Identity;
+            }
         }
     }
 }

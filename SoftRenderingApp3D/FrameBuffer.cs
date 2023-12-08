@@ -7,7 +7,7 @@ namespace SoftRenderingApp3D {
     public class FrameBuffer {
         private readonly int[] emptyZBuffer;
         private readonly int[] emptyBuffer;
-        
+
         private readonly RenderContext renderContext;
         private int[] zBuffer;
 
@@ -22,7 +22,7 @@ namespace SoftRenderingApp3D {
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector3 ToScreen3(Vector4 p) => new Vector3(
-            widthMinus1By2 * (p.X / p.W + 1),  // Using width - 1 to prevent overflow by -1 and 1 NDC coordinates
+            widthMinus1By2 * (p.X / p.W + 1), // Using width - 1 to prevent overflow by -1 and 1 NDC coordinates
             -heightMinus1By2 * (p.Y / p.W - 1), // Using height - 1 to prevent overflow by -1 and 1 NDC coordinates
             Depth * p.Z / p.W);
 
@@ -68,26 +68,52 @@ namespace SoftRenderingApp3D {
         }
 
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DrawLine(Vector3 p0, Vector3 p1, ColorRGB color) {
-
-            var x0 = (int)p0.X; var y0 = (int)p0.Y; var z0 = (int)p0.Z;
-            var x1 = (int)p1.X; var y1 = (int)p1.Y; var z1 = (int)p1.Z;
-
-            var dx = Math.Abs(x1 - x0); var dy = Math.Abs(y1 - y0); var dz = Math.Abs(z1 - z0);
-
-            var sx = x0 < x1 ? 1 : -1; var sy = y0 < y1 ? 1 : -1; var sz = z0 < z1 ? 1 : -1;
-
-            var ex = 0; var ey = 0; var ez = 0;
-
-            var dmax = Math.Max(dx, dy);
-
-            int i = 0;
-            while(i++ < dmax) {
-                ex += dx; if(ex >= dmax) { ex -= dmax; x0 += sx; PutPixel(x0, y0, z0, color); }
-                ey += dy; if(ey >= dmax) { ey -= dmax; y0 += sy; PutPixel(x0, y0, z0, color); }
-                ez += dz; if(ez >= dmax) { ez -= dmax; z0 += sz; PutPixel(x0, y0, z0, color); }
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void DrawLine(Vector3 p0, Vector3 p1, ColorRGB color) {
+                int x0 = (int)p0.X, y0 = (int)p0.Y, z0 = (int)p0.Z;
+                int x1 = (int)p1.X, y1 = (int)p1.Y, z1 = (int)p1.Z;
+        
+                int dx = Math.Abs(x1 - x0), sx = x0 < x1 ? 1 : -1;
+                int dy = -Math.Abs(y1 - y0), sy = y0 < y1 ? 1 : -1;
+                int err = dx + dy, e2;
+        
+                while(true) {
+                    PutPixel(x0, y0, z0, color);
+                    if(x0 == x1 && y0 == y1) break;
+                    e2 = 2 * err;
+                    if(e2 >= dy) {
+                        err += dy;
+                        x0 += sx;
+                    }
+        
+                    if(e2 <= dx) {
+                        err += dx;
+                        y0 += sy;
+                    }
+                }
             }
         }
-    }
+
+    //     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    //     public void DrawLine(Vector3 p0, Vector3 p1, ColorRGB color) {
+    //
+    //         var x0 = (int)p0.X; var y0 = (int)p0.Y; var z0 = (int)p0.Z;
+    //         var x1 = (int)p1.X; var y1 = (int)p1.Y; var z1 = (int)p1.Z;
+    //
+    //         var dx = Math.Abs(x1 - x0); var dy = Math.Abs(y1 - y0); var dz = Math.Abs(z1 - z0);
+    //
+    //         var sx = x0 < x1 ? 1 : -1; var sy = y0 < y1 ? 1 : -1; var sz = z0 < z1 ? 1 : -1;
+    //
+    //         var ex = 0; var ey = 0; var ez = 0;
+    //
+    //         var dmax = Math.Max(dx, dy);
+    //
+    //         int i = 0;
+    //         while(i++ < dmax) {
+    //             ex += dx; if(ex >= dmax) { ex -= dmax; x0 += sx; PutPixel(x0, y0, z0, color); }
+    //             ey += dy; if(ey >= dmax) { ey -= dmax; y0 += sy; PutPixel(x0, y0, z0, color); }
+    //             ez += dz; if(ez >= dmax) { ez -= dmax; z0 += sz; PutPixel(x0, y0, z0, color); }
+    //         }
+    //     }
+    // }
 }
