@@ -111,6 +111,11 @@ namespace SoftRenderingApp3D.App {
             world.Textures.Add(textureReader.ReadImage(@"textures\bone.bmp"));
             world.Textures.Add(textureReader.ReadImage(@"textures\glass_effect.bmp"));
             world.Textures.Add(textureReader.ReadImage(@"textures\bone_high.bmp"));
+            
+            
+            Console.WriteLine($@"Image loaded: {world.Textures[0]}, Dimensions: {world.Textures[0].width} x {world.Textures[0].height}");
+            Console.WriteLine($@"Image loaded: {world.Textures[1]}, Dimensions: {world.Textures[1].width} x {world.Textures[1].height}");
+            Console.WriteLine($@"Image loaded: {world.Textures[2]}, Dimensions: {world.Textures[2].imageData[1]} x {world.Textures[2].height}");
 
 
             switch(id) {

@@ -37,21 +37,21 @@ namespace SoftRenderingApp3D {
             byte[] rgbValues = new byte[dataLength];
             Marshal.Copy(ptr, rgbValues, 0, dataLength);
 
-            // The code below extracts daat from colors and normalizes them
+            
+            // For some reason the RGB values are not normalized. This may cause problems in the future
+            
             
             for (int i = 0; i < bmp.Height; i++) {
                 for (int j = 0; j < bmp.Width; j++) {
                     int position = (i * bitmapData.Stride) + j * bytesPerPixel;
-                    float r = rgbValues[position + 2] / 255f;
-                    float g = rgbValues[position + 1] / 255f;
-                    float b = rgbValues[position] / 255f;
+                    float r = rgbValues[position + 2] ;
+                    float g = rgbValues[position + 1] ;
+                    float b = rgbValues[position] ;
 
                     imageData[i * bmp.Width + j] = new Vector3(r, g, b);
                 }
             }
 
-            // Unlocks data, making it accessible to other proccessess
-            
             bmp.UnlockBits(bitmapData);
 
             return new Texture(imageData, bmp.Width, bmp.Height);
