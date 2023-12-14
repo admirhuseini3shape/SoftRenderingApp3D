@@ -8,7 +8,7 @@ namespace SoftRenderingApp3D {
         
         ColorRGB[] TriangleColors { get; }
         Triangle[] Triangles { get; }
-        Vector3[] Vertices { get; }
+        ColoredVertex[] Vertices { get; }
         Vector3[] NormVertices { get; }
         Vector2[] TexCoordinates { get;  }
 

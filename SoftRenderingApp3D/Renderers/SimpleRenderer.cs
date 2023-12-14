@@ -1,4 +1,5 @@
 ﻿using System;
+using g3;
 using System.Numerics;
 
 namespace SoftRenderingApp3D {
@@ -10,17 +11,10 @@ namespace SoftRenderingApp3D {
             get => renderContext;
             set {
                 renderContext = value;
-                wireFramePainter.RendererContext = value;
             }
         }
 
         public IPainter Painter { get; set; }
-
-        private WireFramePainter wireFramePainter;
-
-        public SimpleRenderer() {
-            wireFramePainter = new WireFramePainter();
-        }
 
         public int[] Render() {
             var stats = RenderContext.Stats;
@@ -41,7 +35,6 @@ namespace SoftRenderingApp3D {
 
             var viewMatrix = camera.ViewMatrix();
             var projectionMatrix = projection.ProjectionMatrix(surface.Width, surface.Height);
-            var world2Projection = viewMatrix * projectionMatrix;
 
             // Allocate arrays to store transformed vertices
             using var worldBuffer = new WorldBuffer(world);
@@ -54,30 +47,63 @@ namespace SoftRenderingApp3D {
             var volumes = world.Volumes;
             var volumeCount = volumes.Count;
             for(var idxVolume = 0; idxVolume < volumeCount; idxVolume++) {
-
                 var vbx = worldBuffer.VertexBuffer[idxVolume];
                 var volume = volumes[idxVolume];
 
                 var worldMatrix = volume.WorldMatrix();
                 var modelViewMatrix = worldMatrix * viewMatrix;
 
-
                 vbx.Volume = volume;
                 vbx.WorldMatrix = worldMatrix;
+                vbx.WorldViewMatrix = modelViewMatrix;
 
                 stats.TotalTriangleCount += volume.Triangles.Length;
 
                 var vertices = volume.Vertices;
                 var viewVertices = vbx.ViewVertices;
 
+                // Initialize the offset vertexBuffer
+                var offsetVbx = worldBuffer.VertexBuffer[idxVolume + 1];
+                var offset = volumes[idxVolume + 1];
+
+                var offsetWorldMatrix = offset.WorldMatrix();
+                var offsetModelViewMatrix = offsetWorldMatrix * viewMatrix;
+
+                offsetVbx.Volume = offset;
+                offsetVbx.WorldMatrix = offsetWorldMatrix;
+                offsetVbx.WorldViewMatrix = offsetModelViewMatrix;
+
+                var offsetViewVertices = offsetVbx.ViewVertices;
+
+
+                var triangleCount = volume.Triangles.Length;
+
                 // Transform and store vertices to View
                 var vertexCount = vertices.Length;
                 for(var idxVertex = 0; idxVertex < vertexCount; idxVertex++) {
-                    viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex], viewMatrix);
+                    viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex].position, viewMatrix);
                 }
 
-                var triangleCount = volume.Triangles.Length;
+                // Transform and store offset vertices
+                var offsetVertexCount = offset.Vertices.Length;
+                for(var idxVertex = 0; idxVertex < offsetVertexCount; idxVertex++) {
+                    offsetViewVertices[idxVertex] = Vector3.Transform(offset.Vertices[idxVertex].position, viewMatrix);
+                }
+
+                vbx.TransformWorld();
+                vbx.TransformWorldView();
+                offsetVbx.TransformWorld();
+                offsetVbx.TransformWorldView();
+                var offsetCount = offset.Triangles.Length;
+
+                if(RenderUtils.recalcSubsurfaceScattering) {
+                    calculateSubsurfaceScattering(vbx);
+                    RenderUtils.recalcSubsurfaceScattering = false;
+                }
+
+                // Render surface mesh
                 for(var idxTriangle = 0; idxTriangle < triangleCount; idxTriangle++) {
+                    // Get triangle
                     var t = volume.Triangles[idxTriangle];
 
                     // Discard if behind far plane
@@ -103,46 +129,105 @@ namespace SoftRenderingApp3D {
 
                     stats.PaintTime();
 
-                    var color = volume.TriangleColors[idxTriangle];
-
-                    if(rendererSettings.ShowTriangles)
-                        wireFramePainter.DrawTriangle(ColorRGB.Magenta, vbx, idxTriangle);
-
-                    if(rendererSettings.ShowTriangleNormals) {
-                        var worldCentroid = t.CalculateCentroid(vbx.WorldVertices);
-
-                        var startPoint = Vector4.Transform(worldCentroid, world2Projection);
-                        var endPoint = Vector4.Transform(worldCentroid + t.CalculateNormal(vbx.WorldVertices), world2Projection);
-
-                        wireFramePainter.DrawLine(surface, ColorRGB.Red, startPoint, endPoint);
-                    }
-
-                    if (!rendererSettings.ShowTextures)
-                        Painter?.DrawTriangle(color, vbx, idxTriangle);
-                    else {
-                        if(Painter.GetType() == typeof(GouraudPainter)) {
-                            // Cast to GouraudPainter, this needs fixing because currently only the GouraudPainter has implemented the function for drawing textures
-                            GouraudPainter painter = (GouraudPainter)Painter;
-                            painter.DrawTriangleTextured(texture, vbx, idxTriangle, rendererSettings.LiearTextureFiltering);
-                        }
-                    }
+                    Painter?.DrawTriangle(vbx, idxTriangle);
 
                     stats.DrawnTriangleCount++;
 
                     stats.CalcTime();
                 }
 
+                // Render subsurface mesh
+                var offsetTriangleCount = offset.Triangles.Length;
+
+                for(var idxTriangle = 0; idxTriangle < offsetTriangleCount; idxTriangle++) {
+                    // Get triangle
+                    var t = offset.Triangles[idxTriangle];
+
+                    // Discard if behind far plane
+                    if(t.IsBehindFarPlane(offsetVbx)) {
+                        stats.BehindViewTriangleCount++;
+                        continue;
+                    }
+
+                    // Discard if back facing 
+                    if(rendererSettings.BackFaceCulling && t.IsFacingBack(offsetVbx)) {
+                        stats.FacingBackTriangleCount++;
+                        continue;
+                    }
+
+                    // Project in frustum
+                    t.TransformProjection(offsetVbx, projectionMatrix);
+
+                    // Discard if outside view frustum
+                    if(t.isOutsideFrustum(offsetVbx)) {
+                        stats.OutOfViewTriangleCount++;
+                        continue;
+                    }
+
+                    var color = offset.TriangleColors[idxTriangle];
+                    var subSurfacePainter = new SubsurfacePainter();
+                    subSurfacePainter.RendererContext = renderContext;
+                    subSurfacePainter.DrawTriangle(offsetVbx, idxTriangle);
+
+                    stats.DrawnTriangleCount++;
+
+                    stats.CalcTime();
+                }
+
+                if(RenderUtils.GaussianBlur)
+                    renderContext.Surface.ApplyGaussianBlurToSubsurface();
+                else
+                    renderContext.Surface.ApplyClearSubsurface();
                 // Only draw one volume, will remove later
                 break;
             }
-
-            if(rendererSettings.ShowXZGrid)
-                RenderUtils.drawGrid(surface, wireFramePainter, world2Projection, -10, 10);
-
-            if(rendererSettings.ShowAxes)
-                RenderUtils.drawAxes(surface, wireFramePainter, world2Projection);
-
             return surface.Screen;
+        }
+
+        
+
+        public DMesh3 GetDMesh3FromVolume(Volume volume) {
+            return DMesh3Builder.Build(volume.Vertices.ToFloatArray(), volume.Triangles.ToIntArray(), volume.NormVertices.ToFloatArray());
+        }
+
+        public void calculateSubsurfaceScattering(VertexBuffer vbx) {
+            DMesh3 originalG3 = GetDMesh3FromVolume(vbx.Volume as Volume);
+
+            var verticesCount = vbx.Volume.Vertices.Length;
+
+            var lightPos = new Vector3(0, 10, 50);
+
+            (vbx.Volume as Volume).InitializeTrianglesColor(ColorRGB.Black);
+
+            var spatial = new DMeshAABBTree3(originalG3);
+            spatial.Build();
+            for(int i = 0; i < verticesCount; i++) {
+                calculateVertexSubsurfaceScattering(vbx.Volume.Vertices[i], lightPos, spatial, originalG3, (vbx.Volume as Volume), i);
+            }
+        }
+
+        public void calculateVertexSubsurfaceScattering(ColoredVertex vertex, Vector3 lightPos, DMeshAABBTree3 spatial, DMesh3 originalG3, Volume volume, int index) {
+            // get direction of light to vertex
+            Vector3 direction = vertex.position - lightPos;
+
+            Ray3d ray = new Ray3d(MiscUtils.Vector3ToVector3d(lightPos), MiscUtils.Vector3ToVector3d(direction));
+            int hit_tid = spatial.FindNearestHitTriangle(ray);
+            // Check if ray misses
+                if(hit_tid != DMesh3.InvalidID) {
+                IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(originalG3, hit_tid, ray);
+                // Calculate distance traveled after passing through the surface
+                double hit_dist = MiscUtils.Vector3ToVector3d(vertex.position).Distance(ray.PointAt(intr.RayParameter));
+                // Calculate the decay of the light
+                float decay = (float)Math.Exp(-hit_dist * RenderUtils.subsurfaceDecay);
+                // Color of the vertex
+                //var color = decay * RenderUtils.surfaceColor;
+                var color = decay * RenderUtils.surfaceColor;
+                volume.Vertices[index].color = color;
+            }
+            else {
+                var color = RenderUtils.surfaceColor;
+                volume.Vertices[index].color = color;
+            }
         }
     }
 }

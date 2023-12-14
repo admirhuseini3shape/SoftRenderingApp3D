@@ -36,7 +36,6 @@ namespace SoftRenderingApp3D {
         private static ArrayPool<Vector4> vector4bag = ArrayPool<Vector4>.Shared;
 
         public IVolume Volume { get; set; }             // Volumes
-        public IVolume Offset { get; set; }
         public Vector3[] ViewVertices { get; }          // Vertices in view
         public Vector3[] WorldVertices { get; }         // Vertices in world
         public Vector3[] WorldNormVertices { get; }     // Vertices normals in world
@@ -45,6 +44,7 @@ namespace SoftRenderingApp3D {
         int size { get; }
 
         public Matrix4x4 WorldMatrix { get; set; }
+        public Matrix4x4 WorldViewMatrix { get; set; }
 
         public VertexBuffer(int vertexCount) {
             this.size = vertexCount;
@@ -53,6 +53,17 @@ namespace SoftRenderingApp3D {
             WorldNormVertices = vector3bag.Rent(vertexCount);
             ProjectionVertices = vector4bag.Rent(vertexCount);
         }
+
+        public void TransformWorld() {
+            for(int i = 0; i < Volume.Vertices.Length; i++)
+                WorldVertices[i] = Vector3.Transform(Volume.Vertices[i].position, WorldMatrix);
+        }
+
+        public void TransformWorldView() {
+            for(int i = 0; i < Volume.Vertices.Length; i++)
+                ViewVertices[i] = Vector3.Transform(Volume.Vertices[i].position, WorldViewMatrix);
+        }
+
 
         public void Dispose() {
             Array.Clear(ViewVertices, 0, size);

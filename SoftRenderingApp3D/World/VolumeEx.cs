@@ -9,13 +9,13 @@ namespace SoftRenderingApp3D {
                 yield return new Vector3(vertices[i], vertices[i + 1], vertices[i + 2]);
         }
 
-        public static IEnumerable<int> GetTriangleIndexesHaving(this Vector3 vertex, IVolume volume) {
+        public static IEnumerable<int> GetTriangleIndexesHaving(this ColoredVertex vertex, IVolume volume) {
             for(var i = 0; i < volume.Triangles.Length; i++)
                 if(volume.Triangles[i].Contains(vertex, volume.Vertices))
                     yield return i;
         }
 
-        public static Vector3 CalculateVertexNormal(this Vector3 vertex, IVolume volume) {
+        public static Vector3 CalculateVertexNormal(this ColoredVertex vertex, IVolume volume) {
             var inTriangles = GetTriangleIndexesHaving(vertex, volume);
             if(!inTriangles.Any())
                 return Vector3.Zero;
@@ -36,6 +36,12 @@ namespace SoftRenderingApp3D {
         public static IEnumerable<Triangle> BuildTriangleIndices(this int[] indices) {
             for(var i = 0; i < indices.Length; i += 3)
                 yield return new Triangle(indices[i], indices[i + 1], indices[i + 2]);
+        }
+
+        public static IEnumerable<ColoredVertex> Vector3ArrayToColoredVertices(this Vector3[] positions) {
+            for (var i = 0; i < positions.Length; i++) {
+                yield return new ColoredVertex(positions[i]);
+            }
         }
     }
 }

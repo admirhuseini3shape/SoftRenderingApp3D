@@ -6,14 +6,14 @@ namespace SoftRenderingApp3D {
 
         public Cube() : base(
             new[] {
-                new Vector3(1, 1, 1) - new Vector3(.5f, .5f, .5f),
-                new Vector3(0, 1, 1) - new Vector3(.5f, .5f, .5f),
-                new Vector3(0, 0, 1) - new Vector3(.5f, .5f, .5f),
-                new Vector3(1, 0, 1) - new Vector3(.5f, .5f, .5f),
-                new Vector3(1, 0, 0) - new Vector3(.5f, .5f, .5f),
-                new Vector3(1, 1, 0) - new Vector3(.5f, .5f, .5f),
-                new Vector3(0, 1, 0) - new Vector3(.5f, .5f, .5f),
-                new Vector3(0, 0, 0) - new Vector3(.5f, .5f, .5f),
+                new ColoredVertex(new Vector3(1, 1, 1) - new Vector3(.5f, .5f, .5f)),
+                new ColoredVertex(new Vector3(0, 1, 1) - new Vector3(.5f, .5f, .5f)),
+                new ColoredVertex(new Vector3(0, 0, 1) - new Vector3(.5f, .5f, .5f)),
+                new ColoredVertex(new Vector3(1, 0, 1) - new Vector3(.5f, .5f, .5f)),
+                new ColoredVertex(new Vector3(1, 0, 0) - new Vector3(.5f, .5f, .5f)),
+                new ColoredVertex(new Vector3(1, 1, 0) - new Vector3(.5f, .5f, .5f)),
+                new ColoredVertex(new Vector3(0, 1, 0) - new Vector3(.5f, .5f, .5f)),
+                new ColoredVertex(new Vector3(0, 0, 0) - new Vector3(.5f, .5f, .5f)),
             },
             new[] {
                 0, 1, 2,

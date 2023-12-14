@@ -75,6 +75,7 @@
     </Compile>
     <Compile Include="Clipping\CohenSutherlandClipping2D.cs" />
     <Compile Include="Clipping\CohenSutherlandClippingHomogeneous.cs" />
+    <Compile Include="Painter\SubsurfacePainter.cs" />
     <Compile Include="RenderContext.cs" />
     <Compile Include="Painter\PaintedVertex.cs" />
     <Compile Include="Painter\PainterUtils.cs" />
@@ -84,9 +85,7 @@
     <Compile Include="Painter\GouraudPainter.cs" />
     <Compile Include="FrameBuffer.cs" />
     <Compile Include="Camera\FlyCam.cs" />
-    <Compile Include="Painter\ClassicPainter.cs" />
     <Compile Include="ColorRGB.cs" />
-    <Compile Include="Painter\FlatPainter.cs" />
     <Compile Include="Painter\IPainter.cs" />
     <Compile Include="Renderers\RendererSettings.cs" />
     <Compile Include="Renderers\RenderUtils.cs" />
@@ -96,9 +95,9 @@
     <Compile Include="Utils\GeomUtils.cs" />
     <Compile Include="Utils\ImageUtils.cs" />
     <Compile Include="Utils\MathUtils.cs" />
-    <Compile Include="Painter\WireFramePainter.cs" />
     <Compile Include="Utils\MiscUtils.cs" />
     <Compile Include="VertexBuffer.cs" />
+    <Compile Include="World\ColoredVertex.cs" />
     <Compile Include="World\Face.cs" />
     <Compile Include="World\Cube.cs" />
     <Compile Include="Camera\ICamera.cs" />
@@ -144,6 +143,9 @@
     <Compile Include="World\Volume.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="geometry3Sharp">
+      <Version>1.0.324</Version>
+    </PackageReference>
     <PackageReference Include="System.Buffers">
       <Version>4.5.0</Version>
     </PackageReference>
