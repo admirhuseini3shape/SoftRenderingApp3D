@@ -5,19 +5,26 @@ using System.Numerics;
 namespace SoftRenderingApp3D {
 
     public class WorldBuffer : IDisposable {
+        
         private static ArrayPool<VertexBuffer> vertexBuffer3bag = ArrayPool<VertexBuffer>.Shared;
 
         public VertexBuffer[] VertexBuffer { get; }
-        int size { get; }
+        int Size { get; }
 
         public WorldBuffer(IWorld w) {
             var volumes = w.Volumes;
-            size = volumes.Count;
+            Size = volumes.Count;
 
-            VertexBuffer = vertexBuffer3bag.Rent(size);
+            VertexBuffer = vertexBuffer3bag.Rent(Size);
 
-            for(var i = 0; i < size; i++) {
+            for(var i = 0; i < Size; i++) {
                 VertexBuffer[i] = new VertexBuffer(volumes[i].Vertices.Length);
+            }
+        }
+        
+        public void AllocateVertexBuffer(int index) {
+            if (index >= 0 && index < Size) {
+                VertexBuffer[index].EnsureAllocated();
             }
         }
 
@@ -26,7 +33,7 @@ namespace SoftRenderingApp3D {
             for(var i = 0; i < nv; i++) {
                 VertexBuffer[i]?.Dispose();
             }
-            Array.Clear(VertexBuffer, 0, size);
+            Array.Clear(VertexBuffer, 0, Size);
             vertexBuffer3bag.Return(VertexBuffer, false);
         }
     }
@@ -36,15 +43,18 @@ namespace SoftRenderingApp3D {
         private static ArrayPool<Vector4> vector4bag = ArrayPool<Vector4>.Shared;
 
         public IVolume Volume { get; set; }             // Volumes
-        public Vector3[] ViewVertices { get; }          // Vertices in view
-        public Vector3[] WorldVertices { get; }         // Vertices in world
-        public Vector3[] WorldNormVertices { get; }     // Vertices normals in world
-        public Vector4[] ProjectionVertices { get; }    // Vertices in frustum
+        public IVolume Offset { get; set; }
+        public Vector3[] ViewVertices { get; private set; }          // Vertices in view
+        public Vector3[] WorldVertices { get; private set; }         // Vertices in world
+        public Vector3[] WorldNormVertices { get; private set; }     // Vertices normals in world
+        public Vector4[] ProjectionVertices { get; private set; }    // Vertices in frustum
 
+        
+        private bool isAllocated = false;
+        
         int size { get; }
 
         public Matrix4x4 WorldMatrix { get; set; }
-        public Matrix4x4 WorldViewMatrix { get; set; }
 
         public VertexBuffer(int vertexCount) {
             this.size = vertexCount;
@@ -53,17 +63,16 @@ namespace SoftRenderingApp3D {
             WorldNormVertices = vector3bag.Rent(vertexCount);
             ProjectionVertices = vector4bag.Rent(vertexCount);
         }
-
-        public void TransformWorld() {
-            for(int i = 0; i < Volume.Vertices.Length; i++)
-                WorldVertices[i] = Vector3.Transform(Volume.Vertices[i].position, WorldMatrix);
+        
+        public void EnsureAllocated() {
+            if (!isAllocated) {
+                ViewVertices = vector3bag.Rent(size);
+                WorldVertices = vector3bag.Rent(size);
+                WorldNormVertices = vector3bag.Rent(size);
+                ProjectionVertices = vector4bag.Rent(size);
+                isAllocated = true;
+            }
         }
-
-        public void TransformWorldView() {
-            for(int i = 0; i < Volume.Vertices.Length; i++)
-                ViewVertices[i] = Vector3.Transform(Volume.Vertices[i].position, WorldViewMatrix);
-        }
-
 
         public void Dispose() {
             Array.Clear(ViewVertices, 0, size);

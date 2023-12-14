@@ -19,7 +19,6 @@ namespace SoftRenderingApp3D {
         public string path; // file path
 
         private enum FileType { NONE, BINARY, ASCII }; // stl file type enumeration
-        private Dictionary<Vector3, int> indices;
         private bool processError;
 
         /**
@@ -32,9 +31,7 @@ namespace SoftRenderingApp3D {
             Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
             path = filePath;
             processError = false;
-            indices = new Dictionary<Vector3, int>();
         }
-
 
 
         /**
@@ -66,42 +63,41 @@ namespace SoftRenderingApp3D {
                 throw new FileLoadException($"Cannot load file format of {path}");
             }
         }
-
-        /**
-        * @brief  This function checks the type of stl file binary or ascii, function is assuming
-        *         given file as proper *.stl file 
-        * @param  none
-        * @retval stlFileType
-        */
-        private FileType GetFileType(string filePath) {
-            FileType stlFileType = FileType.NONE;
-
-            /* check path is exist */
-            if(File.Exists(filePath)) {
-                int lineCount = 0;
-                lineCount = File.ReadLines(filePath).Count(); // number of lines in the file
-
-                string firstLine = File.ReadLines(filePath).First();
-
-                string endLines = File.ReadLines(filePath).Skip(lineCount - 1).Take(1).First() +
-                                  File.ReadLines(filePath).Skip(lineCount - 2).Take(1).First();
-
-                /* check the file is ascii or not */
-                if((firstLine.IndexOf("solid") != -1) &
-                    (endLines.IndexOf("endsolid") != -1)) {
-                    stlFileType = FileType.ASCII;
-                }
-                else {
-                    stlFileType = FileType.BINARY;
-                }
-
+        
+        private FileType GetFileType(string filePath) 
+        {
+            // check if file exists
+            if (!File.Exists(filePath)) 
+            {
+                return FileType.NONE;
             }
-            else {
-                stlFileType = FileType.NONE;
+		
+            // read only the first few bytes from the file
+            byte[] data = new byte[5]; // length of 'solid' which is 5
+            try 
+            {
+                using (FileStream fs = File.Open(filePath, FileMode.Open))
+                {
+                    fs.Read(data, 0, data.Length);
+                }
+            }
+            catch (Exception)
+            {
+                processError = true;
+                throw new FileLoadException($"Error reading file: {filePath}!");
             }
 
+            // convert bytes to string
+            string dataAsString = Encoding.ASCII.GetString(data);
+        
+            if (dataAsString.ToLower().StartsWith("solid")) 
+            {
+                // if file starts with 'solid' it's potentially an ASCII STL file
+                return FileType.ASCII;
+            } 
 
-            return stlFileType;
+            // if not ASCII, then it's potentially a binary STL file
+            return FileType.BINARY;    
         }
 
 
@@ -109,163 +105,99 @@ namespace SoftRenderingApp3D {
         * @brief  *.stl file binary read function
         * @param  filePath
         * @retval meshList
-        */
+        */ 
+        
         private Volume ReadBinaryFile(string filePath) {
+            
             List<Vector3> vertices = new List<Vector3>();
             List<Vector3> normals = new List<Vector3>();
             List<Triangle> triangleIndices = new List<Triangle>();
-
+          
             byte[] fileBytes = File.ReadAllBytes(filePath);
-
             byte[] temp = new byte[4];
-
-            /* 80 bytes title + 4 byte num of triangles + 50 bytes (1 of triangular mesh)  */
-            if(fileBytes.Length > 120) {
-
-                temp[0] = fileBytes[80];
-                temp[1] = fileBytes[81];
-                temp[2] = fileBytes[82];
-                temp[3] = fileBytes[83];
-
+          
+            if(fileBytes.Length > 120) 
+            {
+                System.Buffer.BlockCopy(fileBytes, 80, temp, 0, 4);
                 var numOfMesh = System.BitConverter.ToInt32(temp, 0);
-
                 var byteIndex = 84;
+                var index = 0;
 
-                // Used to index the vertices
-                var vertexIndex = 0;
+                for(int i = 0; i < numOfMesh; i++) 
+                {
+                    try 
+                    {
+                        normals.Add(GetVector3(fileBytes, ref byteIndex));
+                        vertices.Add(GetVector3(fileBytes, ref byteIndex));
+                        vertices.Add(GetVector3(fileBytes, ref byteIndex));
+                        vertices.Add(GetVector3(fileBytes, ref byteIndex));
 
-                for(int i = 0; i < numOfMesh; i++) {
-                    /* this try-catch block will be reviewed */
-                    try {
-                        /* face normal */
-                        var normalX = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-                        var normalY = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-                        var normalZ = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
+                        normals.Add(normals[index]);
+                        normals.Add(normals[index]);
 
-                        /* vertex 1 */
-                        var x = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-                        var y = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-                        var z = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-
-                        var vertex1 = new Vector3(x, y, z);
-
-                        /* vertex 2 */
-                        x = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-                        y = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-                        z = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-
-                        var vertex2 = new Vector3(x, y, z);
-
-                        /* vertex 3 */
-                        x = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-                        y = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-                        z = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
-                        byteIndex += 4;
-
-                        var vertex3 = new Vector3(x, y, z);
-
-                        // Create triangle, check if vertices already exist
-                        int I1, I2, I3 = -1;
-                        // First vertex
-                        if(indices.ContainsKey(vertex1)) {
-                            I1 = indices[vertex1];
-                        }
-                        else {
-                            I1 = vertexIndex;
-                            // Add vertex to dictionary
-                            indices.Add(vertex1, vertexIndex);
-                            // Add vertex to list of vertices
-                            vertices.Add(vertex1);
-                            // Add the normal for the vertex, same for all vertices of a triangle
-                            normals.Add(new Vector3(normalX, normalY, normalZ));
-                            vertexIndex++;
-                        }
-                        // Second vertex
-                        if(indices.ContainsKey(vertex2)) {
-                            I2 = indices[vertex2];
-                        }
-                        else {
-                            I2 = vertexIndex;
-                            // Add vertex to dictionary
-                            indices.Add(vertex2, vertexIndex);
-                            // Add vertex to list of vertices
-                            vertices.Add(vertex2);
-                            // Add the normal for the vertex, same for all vertices of a triangle
-                            normals.Add(new Vector3(normalX, normalY, normalZ));
-                            vertexIndex++;
-                        }
-                        // Third vertex
-                        if(indices.ContainsKey(vertex3)) {
-                            I3 = indices[vertex3];
-                        }
-                        else {
-                            I3 = vertexIndex;
-                            // Add vertex to dictionary
-                            indices.Add(vertex3, vertexIndex);
-                            // Add vertex to list of vertices
-                            vertices.Add(vertex3);
-                            // Add the normal for the vertex, same for all vertices of a triangle
-                            normals.Add(new Vector3(normalX, normalY, normalZ));
-                            vertexIndex++;
-                        }
-
-                        // Add triangle to list of triangles
-                        triangleIndices.Add(new Triangle(I1, I2, I3));
-
+                        triangleIndices.Add(new Triangle(index, index + 1, index + 2));
+          
                         byteIndex += 2; // Attribute byte count
+                        index += 3;
                     }
-                    catch {
+                    catch 
+                    {
                         processError = true;
                         break;
                     }
                 }
-
-            }
-            else {
-                // itentionally left blank
             }
 
             if(processError)
                 throw new FileLoadException($"Error reading file: {path}!");
 
-            return new Volume(vertices.ToArray().Vector3ArrayToColoredVertices().ToArray(),
-                             triangleIndices.ToArray(),
-                             normals.ToArray(),
-                             null,
-                             null);
+            return new Volume(vertices.ToArray(),
+                              triangleIndices.ToArray(),
+                              normals.ToArray(),
+                              null,
+                              null);
         }
 
+    private Vector3 GetVector3(byte[] fileBytes, ref int startIndex)
+    {
+        byte[] buffer = new byte[4];
 
+        System.Buffer.BlockCopy(fileBytes, startIndex, buffer, 0, buffer.Length);
+        float x = BitConverter.ToSingle(buffer, 0);
+        startIndex += buffer.Length;
+
+        System.Buffer.BlockCopy(fileBytes, startIndex, buffer, 0, buffer.Length);
+        float y = BitConverter.ToSingle(buffer, 0);
+        startIndex += buffer.Length;
+
+        System.Buffer.BlockCopy(fileBytes, startIndex, buffer, 0, buffer.Length);
+        float z = BitConverter.ToSingle(buffer, 0);
+        startIndex += buffer.Length;
+
+        return new Vector3(x, y, z);
+    }
+    
         /**
         * @brief  *.stl file ascii read function
         * @param  filePath
         * @retval meshList
         */
         private Volume ReadASCIIFile(string filePath) {
+            
             List<Vector3> vertices = new List<Vector3>();
             List<Vector3> normals = new List<Vector3>();
             List<Triangle> triangleIndices = new List<Triangle>();
 
-            StreamReader txtReader = new StreamReader(filePath);
 
-            string lineString;
+            using(StreamReader txtReader = new StreamReader(filePath)) {
+                
+                string lineString;
 
             while(!txtReader.EndOfStream) {
                 lineString = txtReader.ReadLine().Trim(); /* delete whitespace in front and tail of the string */
                 string[] lineData = lineString.Split(' ');
 
-                var vertexIndex = 0;
+                var index = 0;
 
                 if(lineData[0] == "solid") {
                     while(lineData[0] != "endsolid") {
@@ -283,6 +215,12 @@ namespace SoftRenderingApp3D {
 
                             Vector3 normal = new Vector3(float.Parse(lineData[2]), float.Parse(lineData[3]), float.Parse(lineData[4]));
 
+                            normals.Add(normal);
+
+                            /* normals of vertex 2 and 3 equals to vertex 1's normals */
+                            normals.Add(normal);
+                            normals.Add(normal);
+
                             //----------------------------------------------------------------------
                             lineString = txtReader.ReadLine(); // Just skip the OuterLoop line
                             //----------------------------------------------------------------------
@@ -293,7 +231,7 @@ namespace SoftRenderingApp3D {
                             while(lineString.IndexOf("  ") != -1) lineString = lineString.Replace("  ", " ");
                             lineData = lineString.Split(' ');
 
-                            var vertex1 = new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]), float.Parse(lineData[3])); // x1
+                            vertices.Add(new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]), float.Parse(lineData[3]))); // x1
 
                             // Vertex2
                             lineString = txtReader.ReadLine().Trim();
@@ -301,7 +239,7 @@ namespace SoftRenderingApp3D {
                             while(lineString.IndexOf("  ") != -1) lineString = lineString.Replace("  ", " ");
                             lineData = lineString.Split(' ');
 
-                            var vertex2 = new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]), float.Parse(lineData[3])); // x1
+                            vertices.Add(new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]), float.Parse(lineData[3])));
 
                             // Vertex3
                             lineString = txtReader.ReadLine().Trim();
@@ -309,55 +247,11 @@ namespace SoftRenderingApp3D {
                             while(lineString.IndexOf("  ") != -1) lineString = lineString.Replace("  ", " ");
                             lineData = lineString.Split(' ');
 
-                            var vertex3 = new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]), float.Parse(lineData[3])); // x1
+                            vertices.Add(new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]), float.Parse(lineData[3])));
 
-                            // Create triangle, check if vertices already exist
-                            int I1, I2, I3 = -1;
-                            // First vertex
-                            if(indices.ContainsKey(vertex1)) {
-                                I1 = indices[vertex1];
-                            }
-                            else {
-                                I1 = vertexIndex;
-                                // Add vertex to dictionary
-                                indices.Add(vertex1, vertexIndex);
-                                // Add vertex to list of vertices
-                                vertices.Add(vertex1);
-                                // Add the normal for the vertex, same for all vertices of a triangle
-                                normals.Add(normal);
-                                vertexIndex++;
-                            }
-                            // Second vertex
-                            if(indices.ContainsKey(vertex2)) {
-                                I2 = indices[vertex2];
-                            }
-                            else {
-                                I2 = vertexIndex;
-                                // Add vertex to dictionary
-                                indices.Add(vertex2, vertexIndex);
-                                // Add vertex to list of vertices
-                                vertices.Add(vertex2);
-                                // Add the normal for the vertex, same for all vertices of a triangle
-                                normals.Add(normal);
-                                vertexIndex++;
-                            }
-                            // Third vertex
-                            if(indices.ContainsKey(vertex3)) {
-                                I3 = indices[vertex3];
-                            }
-                            else {
-                                I3 = vertexIndex;
-                                // Add vertex to dictionary
-                                indices.Add(vertex3, vertexIndex);
-                                // Add vertex to list of vertices
-                                vertices.Add(vertex3);
-                                // Add the normal for the vertex, same for all vertices of a triangle
-                                normals.Add(normal);
-                                vertexIndex++;
-                            }
+                            triangleIndices.Add(new Triangle(index, index + 1, index + 2));
 
-                            // Add triangle to list of triangles
-                            triangleIndices.Add(new Triangle(I1, I2, I3));
+                            index += 3;
                         }
                         catch {
                             processError = true;
@@ -373,13 +267,16 @@ namespace SoftRenderingApp3D {
                     } // while linedata[0]
                 } // if solid
             } // while !endofstream
+                
+            }
 
-            return new Volume(vertices.ToArray().Vector3ArrayToColoredVertices().ToArray(),
+            
+
+            return new Volume(vertices.ToArray(),
                               triangleIndices.ToArray(),
                               normals.ToArray(),
                               null,
                               null);
         }
-
     }
 }

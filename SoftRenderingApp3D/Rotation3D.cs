@@ -3,39 +3,52 @@ using System.Numerics;
 
 namespace SoftRenderingApp3D {
 
-    // Must replace with a Quaternion
-
     public struct Rotation3D {
-        const float PI = (float)Math.PI;
+        public Quaternion rotation;
 
-        public Rotation3D(float x, float y, float z) {
-            this.XPitch = x;
-            this.YYaw = y;
-            this.ZRoll = z;
+        // Constructor using Euler angles
+        public Rotation3D(float pitch, float yaw, float roll) {
+            rotation = Quaternion.CreateFromYawPitchRoll(yaw, pitch, roll);
         }
 
-        public Vector3 ToVector() => Vector3.Transform(Vector3.UnitZ, Quaternion.CreateFromYawPitchRoll(YYaw, XPitch, ZRoll));
+        public Quaternion Quaternion { get { return rotation; } }
+        
+        // Constructor using a Quaternion
+        public Rotation3D(Quaternion quaternion) {
+            rotation = quaternion;
+        }
 
-        public float XPitch { get; }
-        public float YYaw { get; }
-        public float ZRoll { get; }
+        // Factory method to create Rotation3D from Euler angles
+        public static Rotation3D FromEulerAngles(float pitch, float yaw, float roll) {
+            return new Rotation3D(Quaternion.CreateFromYawPitchRoll(yaw, pitch, roll));
+        }
 
-        public Rotation3D ToRad() => this * MathUtils.PI_Deg;
+        // Convert Rotation3D to a unit vector representation
+        public Vector3 ToVector() => Vector3.Transform(Vector3.UnitZ, rotation);
+        
+        // Apply rotation to a vector
+        public Vector3 Rotate(Vector3 point) {
+            return Vector3.Transform(point, rotation);
+        }
 
-        public static bool operator ==(Rotation3D p, Rotation3D other) => other.XPitch == p.XPitch && other.YYaw == p.YYaw && other.ZRoll == p.ZRoll;
+        // Combine two rotations
+        public static Rotation3D operator *(Rotation3D a, Rotation3D b) {
+            return new Rotation3D(a.rotation * b.rotation);
+        }
 
-        public static bool operator !=(Rotation3D p, Rotation3D other) => !(other == p);
+        // Inverse rotation
+        public Rotation3D Inverse() {
+            return new Rotation3D(Quaternion.Inverse(rotation));
+        }
 
-        public static Rotation3D operator +(Rotation3D p, Rotation3D other) => new Rotation3D(other.XPitch + p.XPitch, other.YYaw + p.YYaw, other.ZRoll + p.ZRoll);
+        // Interpolation between two rotations
+        public static Rotation3D Slerp(Rotation3D a, Rotation3D b, float t) {
+            return new Rotation3D(Quaternion.Slerp(a.rotation, b.rotation, t));
+        }
 
-        public static Rotation3D operator *(Rotation3D p, float a) => new Rotation3D(p.XPitch * a, p.YYaw * a, p.ZRoll * a);
-
-        public override bool Equals(object obj) => this.GetHashCode() == obj.GetHashCode();
-
-        public override int GetHashCode() => new { XPitch, YYaw, ZRoll }.GetHashCode();
-
+        // Override ToString for debugging purposes
         public override string ToString() {
-            return $"<{XPitch}\t{YYaw}\t{ZRoll}>";
+            return $"Rotation3D: {rotation}";
         }
     }
 }
