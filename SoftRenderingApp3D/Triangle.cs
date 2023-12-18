@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using SoftRenderingApp3D.Buffer;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace SoftRenderingApp3D {
@@ -35,10 +36,10 @@ namespace SoftRenderingApp3D {
         public bool IsFacingBack(VertexBuffer vbx) {
             var viewVertices = vbx.ViewVertices;
             var p0 = viewVertices[I0]; var p1 = viewVertices[I1]; var p2 = viewVertices[I2];
- 
+
             var vCentroid = Vector3.Normalize((p0 + p1 + p2) / 3);
             var vNormal = Vector3.Normalize(Vector3.Cross(p1 - p0, p2 - p0));
-            
+
             return Vector3.Dot(vCentroid, vNormal) >= 0;
         }
 

@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Utils {
     static class MiscUtils {
 
         public static void Fill<T>(this T[] destinationArray, params T[] value) {
@@ -21,7 +21,7 @@ namespace SoftRenderingApp3D {
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static void Swap<T>(ref T a, ref T b) {
-            var temp = b; b = a; a = temp;
+            (b, a) = (a, b);
         }
 
         public static void Benchmark(this Action action, string caption, int l = 10000) {

@@ -2,7 +2,7 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Utils {
 
     // Some code from https://www.davrous.com/2013/06/13/tutorial-series-learning-how-to-write-a-3d-soft-engine-from-scratch-in-c-typescript-or-javascript/
 
@@ -21,14 +21,14 @@ namespace SoftRenderingApp3D {
         // min is the starting point, max the ending point
         // and gradient the % between the 2 points
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static float Lerp(float start, float end, float amount) {
+        public static float Lerp(float start, float end, float amount) {
             return start + (end - start) * amount;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         // Compute the cosine of the angle between the light vector and the normal vector
         // Returns a value between 0 and 1
-        internal static float ComputeNDotL(Vector3 vertexCenter, Vector3 normal, Vector3 lightPosition) => 
+        public static float ComputeNDotL(Vector3 vertexCenter, Vector3 normal, Vector3 lightPosition) =>
             Math.Max(0, Vector3.Dot(
                 Vector3.Normalize(normal),
                 Vector3.Normalize(lightPosition - vertexCenter)));
@@ -36,16 +36,5 @@ namespace SoftRenderingApp3D {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         // Clamping values to keep them between 0 and 1
         public static float Clamp(this float value, float min = 0, float max = 1) => Math.Max(min, Math.Min(value, max));
-        public static double Clamp(this double value, double min = 0, double max = 1) => Math.Max(min, Math.Min(value, max));
-
-
-        public static Vector3 Random(this Vector3 vector) {
-            var rand = new Random();
-            float x = rand.Next();
-            float y = rand.Next();
-            float z = rand.Next();
-
-            return new Vector3(x, y, z);
-        }
     }
 }

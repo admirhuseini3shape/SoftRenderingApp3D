@@ -1,0 +1,225 @@
+﻿using SubsurfaceScattering;
+using SubsurfaceScattering.Renderer;
+using SubsurfaceScattering.Utils;
+using System;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Drawing;
+
+namespace SoftRenderingApp3D {
+
+    public class SubsurfaceScatteringFrameBuffer {
+        private readonly int[] emptyZBuffer;
+        private readonly int[] emptyBuffer;
+        private readonly Vector3[] emptyWorldBuffer;
+
+        private readonly SubsurfaceScatteringRenderContext _subsurfaceScatteringRenderContext;
+        private float[] zBuffer;
+        private float[] zSubsurfaceBuffer;
+        private float[] zCariesBuffer;
+        private Vector3[] WorldBuffer;
+        private Vector3[] SubsurfaceWorldBuffer;
+
+        public int[] Screen { get; }
+        public int[] TempScreen { get; }
+        public int[] SubsurfaceScreen { get; }
+        public int[] BlurScreen { get; set; }
+        public int[] CariesScreen { get; }
+
+        internal int Width { get; }
+        internal int Height { get; }
+        internal int Depth { get; set; } = 65535; // Build a true Z buffer based on Zfar/Znear planes
+
+        private float widthMinus1By2 { get; }
+        private float heightMinus1By2 { get; }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Vector3 ToScreen3(Vector4 p) => new Vector3(
+            widthMinus1By2 * (p.X / p.W + 1),  // Using width - 1 to prevent overflow by -1 and 1 NDC coordinates
+            -heightMinus1By2 * (p.Y / p.W - 1), // Using height - 1 to prevent overflow by -1 and 1 NDC coordinates
+            Depth * p.Z / p.W);
+
+        public SubsurfaceScatteringFrameBuffer(int width, int height, SubsurfaceScatteringRenderContext subsurfaceScatteringRenderContext) {
+            this.emptyWorldBuffer = new Vector3[width * height];
+            this.Screen = new int[width * height];
+            this.TempScreen = new int[width * height];
+            this.CariesScreen = new int[width * height];
+            this.SubsurfaceScreen = new int[width * height];
+
+
+            this.zBuffer = new float[width * height];
+            this.zSubsurfaceBuffer = new float[width * height];
+            this.zCariesBuffer = new float[width * height];
+            this.WorldBuffer = new Vector3[width * height];
+            this.SubsurfaceWorldBuffer = new Vector3[width * height];
+
+            this.emptyBuffer = new int[width * height];
+            this.emptyBuffer.Fill(new ColorRGB(0, 0, 0, 255).Color);
+            this.emptyZBuffer = new int[width * height];
+            this.emptyZBuffer.Fill(Depth);
+            this.emptyWorldBuffer.Fill(Vector3.Zero);
+
+
+            this.Width = width;
+            this.Height = height;
+            this._subsurfaceScatteringRenderContext = subsurfaceScatteringRenderContext;
+            this.widthMinus1By2 = (width - 1) / 2f;
+            this.heightMinus1By2 = (height - 1) / 2f;
+        }
+
+        public void Clear() {
+            Array.Copy(emptyBuffer, Screen, Screen.Length);
+            Array.Copy(emptyBuffer, TempScreen, TempScreen.Length);
+            Array.Copy(emptyBuffer, SubsurfaceScreen, SubsurfaceScreen.Length);
+            Array.Copy(emptyBuffer, CariesScreen, CariesScreen.Length);
+
+
+            Array.Copy(emptyZBuffer, zBuffer, zBuffer.Length);
+            Array.Copy(emptyZBuffer, zSubsurfaceBuffer, zSubsurfaceBuffer.Length);
+            Array.Copy(emptyZBuffer, zCariesBuffer, zCariesBuffer.Length);
+            Array.Copy(emptyWorldBuffer, WorldBuffer, WorldBuffer.Length);
+            Array.Copy(emptyWorldBuffer, SubsurfaceWorldBuffer, SubsurfaceWorldBuffer.Length);
+
+        }
+
+        // Called to put a pixel on screen at a specific X,Y coordinates
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PutPixel(int x, int y, float z, ColorRGB color) {
+#if DEBUG
+            if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0) {
+                throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}, Depth={z}");
+            }
+#endif
+            var index = x + y * Width;
+            if(z >= zBuffer[index]) {
+                _subsurfaceScatteringRenderContext.Stats.BehindZPixelCount++;
+                return;
+            }
+
+            _subsurfaceScatteringRenderContext.Stats.DrawnPixelCount++;
+
+            zBuffer[index] = z;
+
+            color.Alpha = (byte)(SubsurfaceScatteringRenderUtils.surfaceOpacity * 255);
+
+            TempScreen[index] = color.Color;
+            Screen[index] = color.Color;
+        }
+
+        // Called to add the subsurface scattering effect at a specific X,Y coordinate
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
+        public void PutSubsurfacePixel(int x, int y, float z, ColorRGB color, Vector3 world) {
+#if DEBUG
+            if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0) {
+                throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}, Depth={z}");
+            }
+
+            var index = x + y * Width;
+
+            if(z >= zSubsurfaceBuffer[index]) {
+                _subsurfaceScatteringRenderContext.Stats.BehindZPixelCount++;
+                return;
+            }
+
+            _subsurfaceScatteringRenderContext.Stats.DrawnPixelCount++;
+
+            zSubsurfaceBuffer[index] = z;
+            SubsurfaceWorldBuffer[index] = world;
+
+            color.Alpha = (byte)(255);
+
+            zCariesBuffer[index] = z;
+
+            SubsurfaceScreen[index] = color.Color;
+#endif
+        }
+
+        private void CombineAllScreens() {
+            for(int i = 0; i < Height; i++) {
+                for(int j = 0; j < Width; j++) {
+                    var index = j + i * Width;
+                    ColorRGB subsurfacePixelColor = new ColorRGB(Color.FromArgb(SubsurfaceScreen[index]));
+                    ColorRGB surfacePixelColor = new ColorRGB(Color.FromArgb(Screen[index]));
+                    ColorRGB blurPixelColor = new ColorRGB(Color.FromArgb(BlurScreen[index]));
+                    ColorRGB combinedColor = surfacePixelColor + blurPixelColor;
+                    if(SubsurfaceScreen[index] != emptyBuffer[0] && CariesScreen[index] != 1 && !SubsurfaceScatteringRenderUtils.OnlySubsurfaceBlur) {
+                        combinedColor = surfacePixelColor + subsurfacePixelColor;
+                    }
+                    Screen[index] = combinedColor.Color;
+                }
+            }
+        }
+        public void ApplyClearSubsurface() {
+            for(int i = 0; i < Height; i++) {
+                for(int j = 0; j < Width; j++) {
+                    var index = j + i * Width;
+                    // check if subsurface visible at that pixel
+                    //if(zSubsurfaceBuffer[index] != Depth) {
+                    var subsurfacePixelColor = new ColorRGB(Color.FromArgb(SubsurfaceScreen[index]));
+                    ColorRGB surfacePixelColor = new ColorRGB(Color.FromArgb(Screen[index]));
+                    ColorRGB pixelColorWithSubsurface = surfacePixelColor + subsurfacePixelColor;
+                    // Console.WriteLine($"subsurface color: {color}, surface color: {priorPixelColor}, final color: {pixelColorWithSubsurface}");
+                    Screen[index] = pixelColorWithSubsurface.Color;
+                    //}
+                }
+            }
+        }
+        public void PutCariesPixel(int x, int y, float z, ColorRGB color, Vector3 zWorld) {
+            if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0) {
+                throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}, Depth={z}");
+            }
+
+            var index = x + y * Width;
+
+            if(z >= zSubsurfaceBuffer[index]) {
+                _subsurfaceScatteringRenderContext.Stats.BehindZPixelCount++;
+                return;
+            }
+
+            _subsurfaceScatteringRenderContext.Stats.DrawnPixelCount++;
+
+            zCariesBuffer[index] = z;
+
+            CariesScreen[index] = 1;
+        }
+        public void ApplyGaussianBlurToSubsurface() {
+            for(int i = 0; i < Height; i++) {
+                for(int j = 0; j < Width; j++) {
+                    GaussianBlurAtPixel(j, i);
+                }
+            }
+        }
+        public void GaussianBlurAtPixel(int x, int y) {
+            int radius = RenderUtils.BlurRadiusInPixels;
+            ColorRGB result = ColorRGB.Black;
+            for(int i = y - radius; i <= y + radius; i++) {
+                for(int j = x - radius; j <= x + radius; j++) {
+                    if(WithinHeight(i) && WithinWidth(j)) {
+                        var index = j + i * Width;
+                        float gaussianWeight = RenderUtils.Gaussian[j - x + radius, i - y + radius];
+                        ColorRGB gaussianColor = gaussianWeight * new ColorRGB(Color.FromArgb(SubsurfaceScreen[index]));
+                        gaussianColor.Alpha = 255;
+                        result += gaussianColor;
+                    }
+                }
+            }
+            var pixelIndex = x + y * Width;
+            ColorRGB priorPixelColor = new ColorRGB(Color.FromArgb(Screen[pixelIndex]));
+            var newPriorPixelColor = new ColorRGB(priorPixelColor.R, priorPixelColor.G, priorPixelColor.B, (byte)(RenderUtils.surfaceOpacity * 255));
+            var newResult = new ColorRGB(result.R, result.G, result.B, (byte)(RenderUtils.surfaceOpacity * 255));
+            var finalColor = ColorRGB.AlphaBlend(newPriorPixelColor, newResult);
+            Screen[pixelIndex] = finalColor.Color;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
+        public bool WithinHeight(int x) {
+            return x < Height && x >= 0;
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
+        public bool WithinWidth(int x) {
+            return x < Width && x >= 0;
+        }
+    }
+}

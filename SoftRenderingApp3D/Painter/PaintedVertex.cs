@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 
-namespace SoftRenderingApp3D {
-    struct PaintedVertex
+namespace SoftRenderingApp3D.Painter {
+    public struct PaintedVertex
     {
         public Vector3 WorldNormal { get; }
         public Vector3 ScreenPoint { get; }

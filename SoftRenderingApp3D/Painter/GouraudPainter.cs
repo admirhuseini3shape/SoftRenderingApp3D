@@ -1,8 +1,10 @@
-﻿using System;
+﻿using SoftRenderingApp3D.Buffer;
+using SoftRenderingApp3D.Utils;
+using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Painter {
 
     public class GouraudPainter : IPainter {
         public RenderContext RendererContext { get; set; }
@@ -39,20 +41,20 @@ namespace SoftRenderingApp3D {
                 // P0
                 //   P1
                 // P2
-                paintHalfTriangle(yStart, (int)yMiddle - 1, p0, p2, p0, p1, nl0, nl2, nl0, nl1, v0, v1, v2);
-                paintHalfTriangle((int)yMiddle, yEnd, p0, p2, p1, p2, nl0, nl2, nl1, nl2, v0, v1, v2);
+                PaintHalfTriangle(yStart, (int)yMiddle - 1, p0, p2, p0, p1, nl0, nl2, nl0, nl1, v0, v1, v2);
+                PaintHalfTriangle((int)yMiddle, yEnd, p0, p2, p1, p2, nl0, nl2, nl1, nl2, v0, v1, v2);
             }
             else {
                 //   P0
                 // P1 
                 //   P2
-                paintHalfTriangle(yStart, (int)yMiddle - 1, p0, p1, p0, p2, nl0, nl1, nl0, nl2, v0, v1, v2);
-                paintHalfTriangle((int)yMiddle, yEnd, p1, p2, p0, p2, nl1, nl2, nl0, nl2, v0, v1, v2);
+                PaintHalfTriangle(yStart, (int)yMiddle - 1, p0, p1, p0, p2, nl0, nl1, nl0, nl2, v0, v1, v2);
+                PaintHalfTriangle((int)yMiddle, yEnd, p1, p2, p0, p2, nl1, nl2, nl0, nl2, v0, v1, v2);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void paintHalfTriangle(int yStart, int yEnd, Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd, float nla, float nlb, float nlc, float nld, PaintedVertex v0, PaintedVertex v1, PaintedVertex v2) {
+        void PaintHalfTriangle(int yStart, int yEnd, Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd, float nla, float nlb, float nlc, float nld, PaintedVertex v0, PaintedVertex v1, PaintedVertex v2) {
             var mg1 = pa.Y == pb.Y ? 1f : 1 / (pb.Y - pa.Y);
             var mg2 = pd.Y == pc.Y ? 1f : 1 / (pd.Y - pc.Y);
 
@@ -71,12 +73,12 @@ namespace SoftRenderingApp3D {
                 var sz = MathUtils.Lerp(pa.Z, pb.Z, gradient1);
                 var ez = MathUtils.Lerp(pc.Z, pd.Z, gradient2);
 
-                paintScanline(y, sx, ex, sz, ez, sl, el, v0, v1, v2);
+                PaintScanline(y, sx, ex, sz, ez, sl, el, v0, v1, v2);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void paintScanline(float y, float sx, float ex, float sz, float ez, float sl, float el, PaintedVertex v0, PaintedVertex v1, PaintedVertex v2) {
+        void PaintScanline(float y, float sx, float ex, float sz, float ez, float sl, float el, PaintedVertex v0, PaintedVertex v1, PaintedVertex v2) {
             var surface = RendererContext.Surface;
 
             var minX = Math.Max(sx, 0);
@@ -112,23 +114,23 @@ namespace SoftRenderingApp3D {
             var maxG = Math.Max(v0.WorldPoint.color.G, Math.Max(v1.WorldPoint.color.G, v2.WorldPoint.color.G));
             var maxB = Math.Max(v0.WorldPoint.color.B, Math.Max(v1.WorldPoint.color.B, v2.WorldPoint.color.B));
             // interpolate
-            int R = (int)(MathUtils.Clamp((barycentric.X * v0.WorldPoint.color.R + barycentric.Y * v1.WorldPoint.color.R + barycentric.Z * v2.WorldPoint.color.R), 0, maxR));
-            int G = (int)(MathUtils.Clamp((barycentric.X * v0.WorldPoint.color.G + barycentric.Y * v1.WorldPoint.color.G + barycentric.Z * v2.WorldPoint.color.G), 0, maxG));
-            int B = (int)(MathUtils.Clamp((barycentric.X * v0.WorldPoint.color.B + barycentric.Y * v1.WorldPoint.color.B + barycentric.Z * v2.WorldPoint.color.B), 0, maxB));
+            int R = (int)((barycentric.X * v0.WorldPoint.color.R + barycentric.Y * v1.WorldPoint.color.R + barycentric.Z * v2.WorldPoint.color.R).Clamp(0, maxR));
+            int G = (int)((barycentric.X * v0.WorldPoint.color.G + barycentric.Y * v1.WorldPoint.color.G + barycentric.Z * v2.WorldPoint.color.G).Clamp(0, maxG));
+            int B = (int)((barycentric.X * v0.WorldPoint.color.B + barycentric.Y * v1.WorldPoint.color.B + barycentric.Z * v2.WorldPoint.color.B).Clamp(0, maxB));
             ColorRGB finalColor = new ColorRGB((byte)R, (byte)G, (byte)B, 255);
 
-            
+
 
             return finalColor;
         }
 
-         bool CheckIfBarycentricOutsideTriangle(Vector3 barycentric) {
+        bool CheckIfBarycentricOutsideTriangle(Vector3 barycentric) {
             return barycentric.X < 0 || barycentric.X > 1
                 || barycentric.Y < 0 || barycentric.Y > 1
                 || barycentric.Z < 0 || barycentric.Z > 1
                 || (barycentric.X + barycentric.Y + barycentric.Z) > 1;
-         }
-        
+        }
+
         // deals with edge cases in the scanline algorithm
         Vector3 GetAdjustedBarycentric(Vector3 barycentric) {
             if(barycentric.X > 1)
@@ -173,7 +175,7 @@ namespace SoftRenderingApp3D {
             var beta = Vector3.Dot(n, nb) * normFactor;
             var gamma = Vector3.Dot(n, nc) * normFactor;
 
-            return new Vector3((float)(alpha), (float)(beta), (float)(gamma));
+            return new Vector3(alpha, beta, gamma);
         }
 
     }

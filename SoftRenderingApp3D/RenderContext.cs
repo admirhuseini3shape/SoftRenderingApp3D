@@ -1,4 +1,7 @@
-﻿namespace SoftRenderingApp3D {
+﻿using SoftRenderingApp3D.Buffer;
+using SoftRenderingApp3D.DataStructures;
+
+namespace SoftRenderingApp3D {
 
     public class RenderContext {
         public ICamera Camera { get; set; }
@@ -7,7 +10,7 @@
         public RendererSettings RendererSettings { get; set; }
         public Stats Stats { get; set; }
 
-        internal FrameBuffer Surface { get; set; }
+        public FrameBuffer Surface { get; set; }
         internal WorldBuffer WorldBuffer { get; set; }
     }
 }
