@@ -1,5 +1,8 @@
 ﻿using SoftRenderingApp3D;
+using SoftRenderingApp3D.Buffer;
 using SoftRenderingApp3D.DataStructures;
+using SoftRenderingApp3D.Painter;
+using SoftRenderingApp3D.Renderer;
 using SubsurfaceScatteringLibrary.Buffer;
 using SubsurfaceScatteringLibrary.Painter;
 using SubsurfaceScatteringLibrary.Renderer;
@@ -12,22 +15,22 @@ using System.Windows.Forms;
 
 namespace SoftRenderingApp {
     public partial class Panel3D : UserControl {
-        SubsurfaceScatteringRenderContext renderContext { get; }
+        RenderContext RenderContext { get; }
 
         ICamera camera;
         IWorld world;
         IProjection projection;
-        ISubsurfaceScatteringRenderer renderer;
-        ISubsurfaceScatteringPainter painter;
+        IRenderer renderer;
+        IPainter painter;
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public SubsurfaceScatteringRendererSettings RendererSettings {
-            get => rendererSettings;
+        public RendererSettings RendererSettings {
+            get => _rendererSettings;
             set {
-                if(PropertyChangedHelper.ChangeValue<SubsurfaceScatteringRendererSettings>(ref rendererSettings, value)) {
-                    rendererSettings.ShowTriangleNormals = true;
-                    renderContext.RendererSettings = value;
-                    rendererSettings = value;
+                if(PropertyChangedHelper.ChangeValue<RendererSettings>(ref _rendererSettings, value)) {
+                    _rendererSettings.ShowTriangleNormals = true;
+                    RenderContext.RendererSettings = value;
+                    _rendererSettings = value;
                 }
             }
         }
@@ -37,41 +40,41 @@ namespace SoftRenderingApp {
             get => world;
             set {
                 if(PropertyChangedHelper.ChangeValue(ref world, value)) {
-                    renderContext.World = world;
-                    hookPaintEvent();
+                    RenderContext.World = world;
+                    HookPaintEvent();
                 }
             }
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public ISubsurfaceScatteringPainter Painter {
+        public IPainter Painter {
             get => painter;
             set {
-                if(PropertyChangedHelper.ChangeValue<ISubsurfaceScatteringPainter>(ref painter, value)) {
+                if(PropertyChangedHelper.ChangeValue<IPainter>(ref painter, value)) {
                     if(painter != null) {
-                        painter.RendererContext = renderContext;
+                        painter.RendererContext = RenderContext;
                     }
-                    assign(renderer, painter);
+                    Assign(renderer, painter);
                 }
             }
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public ISubsurfaceScatteringRenderer Renderer {
+        public IRenderer Renderer {
             get => renderer;
             set {
                 if(PropertyChangedHelper.ChangeValue(ref renderer, value)) {
-                    renderer.SubsurfaceScatteringRenderContext = renderContext;
-                    assign(renderer, painter);
+                    renderer.RenderContext = RenderContext;
+                    Assign(renderer, painter);
                 }
             }
         }
 
-        void assign(ISubsurfaceScatteringRenderer renderer, ISubsurfaceScatteringPainter painter) {
+        static void Assign(IRenderer renderer, IPainter painter) {
             if(renderer == null)
                 return;
             else
-                renderer.SubsurfaceScatteringPainter = painter;
+                renderer.Painter = painter;
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -83,13 +86,13 @@ namespace SoftRenderingApp {
                 if(PropertyChangedHelper.ChangeValue(ref camera, value)) {
 
                     if(oldCamera != null)
-                        oldCamera.CameraChanged -= cameraChanged;
+                        oldCamera.CameraChanged -= CameraChanged;
 
                     if(camera != null)
-                        camera.CameraChanged += cameraChanged;
+                        camera.CameraChanged += CameraChanged;
 
-                    renderContext.Camera = value;
-                    hookPaintEvent();
+                    RenderContext.Camera = value;
+                    HookPaintEvent();
                 }
             }
         }
@@ -103,21 +106,21 @@ namespace SoftRenderingApp {
                 if(PropertyChangedHelper.ChangeValue(ref projection, value)) {
 
                     if(oldProjection != null)
-                        oldProjection.ProjectionChanged -= projectionChanged;
+                        oldProjection.ProjectionChanged -= ProjectionChanged;
 
                     if(projection != null)
-                        projection.ProjectionChanged += projectionChanged; ;
+                        projection.ProjectionChanged += ProjectionChanged; ;
 
-                    renderContext.Projection = value;
-                    hookPaintEvent();
+                    RenderContext.Projection = value;
+                    HookPaintEvent();
                 }
             }
         }
 
-        void projectionChanged(object sender, EventArgs e) => this.Invalidate();
-        void cameraChanged(object sender, EventArgs e) => this.Invalidate();
+        void ProjectionChanged(object sender, EventArgs e) => this.Invalidate();
+        void CameraChanged(object sender, EventArgs e) => this.Invalidate();
 
-        void hookPaintEvent() {
+        void HookPaintEvent() {
             this.Paint -= Panel3D_Paint;
             if(camera != null && world != null && projection != null) {
                 this.Paint += Panel3D_Paint;
@@ -127,23 +130,23 @@ namespace SoftRenderingApp {
         public Panel3D() {
             InitializeComponent();
 
-            renderContext = new SubsurfaceScatteringRenderContext();
-            renderContext.Stats = new Stats();
+            RenderContext = new RenderContext();
+            RenderContext.Stats = new Stats();
 
-            RendererSettings = new SubsurfaceScatteringRendererSettings() { BackFaceCulling = true };
+            RendererSettings = new RendererSettings() { BackFaceCulling = true };
 
-            Renderer = new SubsurfaceScatteringRenderer();
-            Painter = new GouraudSubsurfaceScatteringPainter();
+            Renderer = new SimpleRenderer();
+            Painter = new GouraudPainter();
 
             this.ResizeRedraw = true;
 
             this.Layout += Panel3D_Layout;
         }
 
-        string format = "Volumes:{0}\nTriangles:{1} - Back:{2} - Out:{3} - Behind:{4}\nPixels:{9} drawn:{5} - Z behind:{6}\nCalc time:{7} - Paint time:{8}";
+        private const string Format = "Volumes:{0}\nTriangles:{1} - Back:{2} - Out:{3} - Behind:{4}\nPixels:{9} drawn:{5} - Z behind:{6}\nCalc time:{7} - Paint time:{8}";
 
         StringBuilder sb = new StringBuilder();
-        private SubsurfaceScatteringRendererSettings rendererSettings;
+        private RendererSettings _rendererSettings;
 
         public int[] Render() {
             return renderer.Render();
@@ -153,25 +156,21 @@ namespace SoftRenderingApp {
 
             var g = e.Graphics;
 
-            // g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
-            // g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighSpeed;
-            // g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighSpeed;
-
-            buildFrame();
+            BuildFrame();
             g.DrawImage(bmp, Point.Empty);
 
             sb.Clear();
-            sb.AppendFormat(format,
+            sb.AppendFormat(Format,
                 world.Volumes.Count,
-                renderContext.Stats.TotalTriangleCount,
-                renderContext.Stats.FacingBackTriangleCount,
-                renderContext.Stats.OutOfViewTriangleCount,
-                renderContext.Stats.BehindViewTriangleCount,
-                renderContext.Stats.DrawnPixelCount,
-                renderContext.Stats.BehindZPixelCount,
-                renderContext.Stats.CalculationTimeMs,
-                renderContext.Stats.PainterTimeMs,
-                renderContext.Stats.DrawnPixelCount + renderContext.Stats.BehindZPixelCount
+                RenderContext.Stats.TotalTriangleCount,
+                RenderContext.Stats.FacingBackTriangleCount,
+                RenderContext.Stats.OutOfViewTriangleCount,
+                RenderContext.Stats.BehindViewTriangleCount,
+                RenderContext.Stats.DrawnPixelCount,
+                RenderContext.Stats.BehindZPixelCount,
+                RenderContext.Stats.CalculationTimeMs,
+                RenderContext.Stats.PainterTimeMs,
+                RenderContext.Stats.DrawnPixelCount + RenderContext.Stats.BehindZPixelCount
             );
 
             TextRenderer.DrawText(g, sb.ToString(), this.Font, Point.Empty, Color.BlueViolet, this.BackColor, TextFormatFlags.ExpandTabs);
@@ -181,13 +180,13 @@ namespace SoftRenderingApp {
             if(this.Size.Height == 0 || this.Size.Width == 0)
                 return;
 
-            renderContext.Surface = new SubsurfaceScatteringFrameBuffer(this.Width, this.Height, renderContext);
+            RenderContext.Surface = new FrameBuffer(this.Width, this.Height, RenderContext);
             bmp = new Bitmap(this.Width, this.Height, PixelFormat.Format32bppPArgb);
         }
 
         Bitmap bmp;
 
-        void buildFrame() {
+        void BuildFrame() {
             var buffer = renderer.Render();
             ImageUtils.FillBitmap(bmp, buffer, this.Width, this.Height);
         }

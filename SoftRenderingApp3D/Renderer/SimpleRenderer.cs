@@ -35,6 +35,7 @@ namespace SoftRenderingApp3D.Renderer {
 
             var viewMatrix = camera.ViewMatrix();
             var projectionMatrix = projection.ProjectionMatrix(surface.Width, surface.Height);
+            var world2Projection = viewMatrix * projectionMatrix;
 
             // Allocate arrays to store transformed vertices
             using var worldBuffer = new WorldBuffer(world);
@@ -47,22 +48,21 @@ namespace SoftRenderingApp3D.Renderer {
             var volumes = world.Volumes;
             var volumeCount = volumes.Count;
             for(var idxVolume = 0; idxVolume < volumeCount; idxVolume++) {
+
                 var vbx = worldBuffer.VertexBuffer[idxVolume];
                 var volume = volumes[idxVolume];
 
                 var worldMatrix = volume.WorldMatrix();
                 var modelViewMatrix = worldMatrix * viewMatrix;
 
+
                 vbx.Volume = volume;
                 vbx.WorldMatrix = worldMatrix;
-                vbx.WorldViewMatrix = modelViewMatrix;
 
                 stats.TotalTriangleCount += volume.Triangles.Length;
 
                 var vertices = volume.Vertices;
                 var viewVertices = vbx.ViewVertices;
-
-                var triangleCount = volume.Triangles.Length;
 
                 // Transform and store vertices to View
                 var vertexCount = vertices.Length;
@@ -70,13 +70,8 @@ namespace SoftRenderingApp3D.Renderer {
                     viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex].position, viewMatrix);
                 }
 
-                vbx.TransformWorld();
-                vbx.TransformWorldView();
-                
-
-                // Render surface mesh
+                var triangleCount = volume.Triangles.Length;
                 for(var idxTriangle = 0; idxTriangle < triangleCount; idxTriangle++) {
-                    // Get triangle
                     var t = volume.Triangles[idxTriangle];
 
                     // Discard if behind far plane
@@ -102,16 +97,26 @@ namespace SoftRenderingApp3D.Renderer {
 
                     stats.PaintTime();
 
-                    Painter?.DrawTriangle(vbx, idxTriangle);
+                    if(!rendererSettings.ShowTextures) {
+                        Painter?.DrawTriangle(vbx, idxTriangle);
+                    }
+                    else {
+                        if(Painter.GetType() == typeof(GouraudPainter)) {
+                            GouraudPainter painter = (GouraudPainter)Painter;
+                            painter.DrawTriangleTextured(texture, vbx, idxTriangle, rendererSettings.LiearTextureFiltering);
+                        }
+                    }
 
                     stats.DrawnTriangleCount++;
 
                     stats.CalcTime();
                 }
+
+                // Only draw one volume, will remove later
+                break;
             }
+
             return surface.Screen;
         }
-
-
     }
 }

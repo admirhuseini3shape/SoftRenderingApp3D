@@ -38,10 +38,6 @@ namespace SubsurfaceScatteringLibrary.Renderer {
             using var worldBuffer = new WorldBuffer(world);
             SubsurfaceScatteringRenderContext.WorldBuffer = worldBuffer;
 
-            // This needs work, this is only for testing
-            var textureIndex = rendererSettings.ActiveTexture % world.Textures.Count;
-            var texture = world.Textures[textureIndex];
-
             var volumes = world.Volumes;
             var volumeCount = volumes.Count;
             for(var idxVolume = 0; idxVolume < volumeCount; idxVolume++) {
