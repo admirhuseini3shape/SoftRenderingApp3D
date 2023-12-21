@@ -50,11 +50,11 @@ namespace SoftRenderingApp3D.Buffer {
         // Called to put a pixel on screen at a specific X,Y coordinates
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PutPixel(int x, int y, int z, ColorRGB color) {
-#if DEBUG
+        #if DEBUG
             if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0) {
                 throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}, Depth={z}");
             }
-#endif
+        #endif
             var index = x + y * Width;
             if(z > zBuffer[index]) {
                 RenderContext.Stats.BehindZPixelCount++;
@@ -67,27 +67,41 @@ namespace SoftRenderingApp3D.Buffer {
 
             Screen[index] = color.Color;
         }
-
-
+        
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DrawLine(Vector3 p0, Vector3 p1, ColorRGB color) {
+        public void DrawLine3d(Vector3 p0, Vector3 p1, ColorRGB color) {
+            
+            // Converts the start and end points from floating point to integer coordinates.
+            int x1 = (int)p0.X; var y1 = (int)p0.Y; var z1 = (int)p0.Z;
+            int x2 = (int)p1.X; var y2 = (int)p1.Y; var z2 = (int)p1.Z;
+            
+            // Calculate the absolute differences in each dimension.
+            int dx = Math.Abs(x2 - x1); int sx = x1 < x2 ? 1 : -1;
+            int dy = Math.Abs(y2 - y1); int sy = y1 < y2 ? 1 : -1;
+            int dz = Math.Abs(z2 - z1); int sz = z1 < z2 ? 1 : -1;
+            
+            // Calculate the major axis.
+            int dm = Math.Max(dx, Math.Max(dy, dz));
 
-            var x0 = (int)p0.X; var y0 = (int)p0.Y; var z0 = (int)p0.Z;
-            var x1 = (int)p1.X; var y1 = (int)p1.Y; var z1 = (int)p1.Z;
-
-            var dx = Math.Abs(x1 - x0); var dy = Math.Abs(y1 - y0); var dz = Math.Abs(z1 - z0);
-
-            var sx = x0 < x1 ? 1 : -1; var sy = y0 < y1 ? 1 : -1; var sz = z0 < z1 ? 1 : -1;
-
-            var ex = 0; var ey = 0; var ez = 0;
-
-            var dmax = Math.Max(dx, dy);
-
-            int i = 0;
-            while(i++ < dmax) {
-                ex += dx; if(ex >= dmax) { ex -= dmax; x0 += sx; PutPixel(x0, y0, z0, color); }
-                ey += dy; if(ey >= dmax) { ey -= dmax; y0 += sy; PutPixel(x0, y0, z0, color); }
-                ez += dz; if(ez >= dmax) { ez -= dmax; z0 += sz; PutPixel(x0, y0, z0, color); }
+            // Initialize the decision variables
+            int i = dm;
+            
+            // Set up the decision variables.
+            x1 = y1 = z1 = dm / 2;
+            
+            // Start the infinite drawing loop.
+            while(true) {
+                // Draw Current Pixel
+                PutPixel(x2, y2, z2, color);
+                
+                // Break the loop if the end point is reached.
+                if (i-- == 0) break;
+                
+                // Update the decision variables and coordinates based on the absolute differences.
+                x2 += dx; if(x2 < 0) { x2 += dm; x1 += sx; }
+                y2 += dy; if(y2 < 0) { y2 += dm; y1 += sy; }
+                z2 += dz; if(z2 < 0) { z2 += dm; z1 += sz; }
             }
         }
     }
