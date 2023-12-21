@@ -1,7 +1,8 @@
-﻿using System;
+﻿using SoftRenderingApp3D.Utils;
+using System;
 using System.Numerics;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Projection {
 
     // Buggy
 

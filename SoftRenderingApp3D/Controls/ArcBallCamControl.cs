@@ -1,9 +1,10 @@
-﻿using System;
+﻿using SoftRenderingApp3D.Camera;
+using System;
 using System.Drawing;
-using System.Windows.Forms;
 using System.Numerics;
+using System.Windows.Forms;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Controls {
     // Must adapt move
 
     public partial class ArcBallCamControl : UserControl {

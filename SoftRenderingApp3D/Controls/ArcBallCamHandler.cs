@@ -1,9 +1,9 @@
-﻿using System.Drawing;
+﻿using SoftRenderingApp3D.Camera;
+using System.Drawing;
 using System.Numerics;
-using System.Threading;
 using System.Windows.Forms;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Controls {
 
     // Must adapt moving
 
