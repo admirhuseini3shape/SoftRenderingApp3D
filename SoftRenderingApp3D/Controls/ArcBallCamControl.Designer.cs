@@ -1,6 +1,6 @@
 ﻿using System.Windows.Forms;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Controls {
     partial class ArcBallCamControl {
         /// <summary> 
         /// Variable nécessaire au concepteur.

@@ -1,6 +1,8 @@
-﻿namespace SoftRenderingApp3D {
+﻿using SoftRenderingApp3D.Buffer;
+
+namespace SoftRenderingApp3D.Painter {
     public interface IPainter {
         RenderContext RendererContext { get; set; }
-        void DrawTriangle(ColorRGB color, VertexBuffer vbx, int triangleIndice);
+        void DrawTriangle(VertexBuffer vbx, int triangleIndex);
     }
 }

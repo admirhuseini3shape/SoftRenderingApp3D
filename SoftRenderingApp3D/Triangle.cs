@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using SoftRenderingApp3D.Buffer;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace SoftRenderingApp3D {
@@ -13,17 +14,17 @@ namespace SoftRenderingApp3D {
         public int I1 { get; }
         public int I2 { get; }
 
-        public Vector3 CalculateCentroid(Vector3[] vertices) => (vertices[I0] + vertices[I1] + vertices[I2]) / 3;
+        public Vector3 CalculateCentroid(ColoredVertex[] vertices) => (vertices[I0].position + vertices[I1].position + vertices[I2].position) / 3;
 
-        public Vector3 CalculateNormal(Vector3[] vertices) {
+        public Vector3 CalculateNormal(ColoredVertex[] vertices) {
             // Avoid division with zero
-            if(vertices[I0] == Vector3.Zero && vertices[I1] == Vector3.Zero && vertices[I2] == Vector3.Zero)
+            if(vertices[I0].position == Vector3.Zero && vertices[I1].position == Vector3.Zero && vertices[I2].position == Vector3.Zero)
                 return Vector3.Zero;
-            var result = Vector3.Normalize(Vector3.Cross(vertices[I1] - vertices[I0], vertices[I2] - vertices[I0]));
+            var result = Vector3.Normalize(Vector3.Cross(vertices[I1].position - vertices[I0].position, vertices[I2].position - vertices[I0].position));
             return (float.IsNaN(result.X) || float.IsNaN(result.Y) || float.IsNaN(result.Z)) ? Vector3.Zero : result;
         }
 
-        public bool Contains(Vector3 vertex, Vector3[] vertices) => vertices[I0] == vertex || vertices[I1] == vertex || vertices[I2] == vertex;
+        public bool Contains(ColoredVertex vertex, ColoredVertex[] vertices) => vertices[I0] == vertex || vertices[I1] == vertex || vertices[I2] == vertex;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsBehindFarPlane(VertexBuffer vbx) {
@@ -35,10 +36,10 @@ namespace SoftRenderingApp3D {
         public bool IsFacingBack(VertexBuffer vbx) {
             var viewVertices = vbx.ViewVertices;
             var p0 = viewVertices[I0]; var p1 = viewVertices[I1]; var p2 = viewVertices[I2];
- 
+
             var vCentroid = Vector3.Normalize((p0 + p1 + p2) / 3);
             var vNormal = Vector3.Normalize(Vector3.Cross(p1 - p0, p2 - p0));
-            
+
             return Vector3.Dot(vCentroid, vNormal) >= 0;
         }
 
@@ -104,7 +105,7 @@ namespace SoftRenderingApp3D {
             if(worldNormVertices[I2] == Vector3.Zero)
                 worldNormVertices[I2] = Vector3.TransformNormal(normVertices[I2], worldMatrix);
 
-            var worldVertices = vbx.WorldVertices;
+            /*var worldVertices = vbx.WorldVertices;
             if(worldVertices[I0] == Vector3.Zero)
                 worldVertices[I0] = Vector3.Transform(worldVertices[I0], worldMatrix);
 
@@ -113,6 +114,7 @@ namespace SoftRenderingApp3D {
 
             if(worldVertices[I2] == Vector3.Zero)
                 worldVertices[I2] = Vector3.Transform(worldVertices[I2], worldMatrix);
+            */
 
             // Check if volume has texture data
             if(vbx.Volume.TexCoordinates != null) {
@@ -131,6 +133,14 @@ namespace SoftRenderingApp3D {
             }
 
 
+        }
+
+        public Vector3 GetCenterCoordinates(VertexBuffer vbx) {
+            var x = (vbx.WorldVertices[I0].X + vbx.WorldVertices[I1].X + vbx.WorldVertices[I2].X) / 3.0f;
+            var y = (vbx.WorldVertices[I0].Y + vbx.WorldVertices[I1].Y + vbx.WorldVertices[I2].Y) / 3.0f;
+            var z = (vbx.WorldVertices[I0].Z + vbx.WorldVertices[I1].Z + vbx.WorldVertices[I2].Z) / 3.0f;
+
+            return new Vector3(x, y, z);
         }
     }
 }

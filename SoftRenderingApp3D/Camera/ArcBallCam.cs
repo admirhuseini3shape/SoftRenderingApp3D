@@ -1,7 +1,8 @@
-﻿using System.Numerics;
+﻿using SoftRenderingApp3D.Utils;
 using System;
+using System.Numerics;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Camera {
 
     // Adapted from https://github.com/dwmkerr/sharpgl/blob/master/source/SharpGL/Core/SharpGL.SceneGraph/Core/ArcBall.cs
 
