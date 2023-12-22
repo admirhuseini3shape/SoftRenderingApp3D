@@ -167,10 +167,13 @@ namespace SubsurfaceScatteringLibrary.Painter {
         // Efficient calculation of barycentric coordinates
         // taken from https://gamedev.stackexchange.com/a/23745
         Vector3 CalculateBarycentricCoordinates(Vector3 p, Vector3 v0, Vector3 v1, Vector3 v2) {
-            var n = Vector3.Cross((v1 - v0), (v2 - v0));
-            var na = Vector3.Cross((v2 - v1), (p - v1));
-            var nb = Vector3.Cross((v0 - v2), (p - v2));
-            var nc = Vector3.Cross((v1 - v0), (p - v0));
+            var edge0 = v1 - v0;
+            var edge1 = v2 - v0;
+            var n = Vector3.Cross(edge0, edge1);
+
+            var na = Vector3.Cross(v2 - v1, p - v1);
+            var nb = Vector3.Cross(-edge1, p - v2); //v0 - v2 == -edge1 
+            var nc = Vector3.Cross(edge0, p - v0);  // Reuse edge0
 
             var normFactor = 1 / (Vector3.Dot(n, n));
 
