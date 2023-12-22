@@ -54,7 +54,7 @@ namespace SoftRenderingApp3D {
          * making G 0 and everything else 1, running a bitwise and operation between them and the values, which
          * of course will result in everything being 1 expect the color value. Now when combining the oringinal value with
          * the mask ,  and adding with or the new value which is shifted by 16 bits, you get a final modifiable value
-         *         * 
+         *
          */
         
         public byte R 
