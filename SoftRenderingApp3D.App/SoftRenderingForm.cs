@@ -1,4 +1,5 @@
-﻿using SoftRenderingApp3D.Camera;
+﻿using SoftrenderingApp3D.App.FormMethods;
+using SoftRenderingApp3D.Camera;
 using SoftRenderingApp3D.Controls;
 using SoftRenderingApp3D.DataStructures;
 using SoftRenderingApp3D.Painter;
@@ -80,162 +81,12 @@ namespace SoftRenderingApp3D.App {
         }
 
         void prepareWorld(string id) {
-            var world = new World();
-
-            ColladaReader colladaReader = new ColladaReader();
-            STLReader stlReader = new STLReader();
-            ITextureReader textureReader = new TextureReaderBMP();
-            world.Textures.Add(textureReader.ReadImage(@"textures\bone.bmp"));
-            world.Textures.Add(textureReader.ReadImage(@"textures\glass_effect.bmp"));
-            world.Textures.Add(textureReader.ReadImage(@"textures\bone_high.bmp"));
 
 
-            switch(id) {
-                case "jaw":
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                    world.Volumes.AddRange(stlReader.ReadFile(@"models\original.stl"));
-                    world.Volumes.AddRange(stlReader.ReadFile(@"models\offset_2.stl"));
-                    arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
-                    break;
-                case "stl-mesh-1":
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                    world.Volumes.AddRange(stlReader.ReadFile(@"models\Planetary_Toy_D80.stl"));
-                    arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
-                    break;
-                case "stl-mesh-2":
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                    world.Volumes.AddRange(stlReader.ReadFile(@"models\Star_Destroyer_Fixed.stl"));
-                    arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
-                    break;
-                case "skull":
-                    panel3D1.RendererSettings.ShowTextures = true;
-                    chkShowTexture.Enabled = true;
-                    chkShowTexture.Checked = true;
-                    world.Volumes.AddRange(colladaReader.ReadFile(@"models\skull.dae"));
-                    arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
-                    break;
+            FormMethods prepareWorld = new FormMethods();
+            var world = prepareWorld.prepareWorld( id , arcBallCam, chkShowTexture, panel3D1);
 
-                case "teapot":
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                    world.Volumes.AddRange(colladaReader.ReadFile(@"models\teapot.dae"));
-                    break;
-
-                case "empty":
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                    break;
-
-                case "town": {
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                        var d = 50; var s = 2;
-                        for(var x = -d; x <= d; x += s)
-                            for(var z = -d; z <= d; z += s) {
-                                world.Volumes.Add(
-                                    new Cube() {
-                                        Position = new Vector3(x, 0, z),
-                                        //Scale = new Vector3(1, r.Next(1, 50), 1)
-                                    });
-                            }
-                        break;
-                    }
-
-                case "littletown": {
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                        var d = 10; var s = 2;
-                        for(var x = -d; x <= d; x += s)
-                            for(var z = -d; z <= d; z += s) {
-                                world.Volumes.Add(
-                                    new Cube() {
-                                        Position = new Vector3(x, 0, z),
-                                        // Scale = new Vector3(1, r.Next(1, 50), 1)
-                                    });
-                            }
-                        break;
-                    }
-
-                case "bigtown": {
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                        var d = 200; var s = 2;
-                        for(var x = -d; x <= d; x += s)
-                            for(var z = -d; z <= d; z += s) {
-                                world.Volumes.Add(
-                                    new Cube() {
-                                        Position = new Vector3(x, 0, z),
-                                        // Scale = new Vector3(1, r.Next(1, 50), 1)
-                                    });
-                            }
-                        break;
-                    }
-
-                case "cube":
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                    world.Volumes.Add(new Cube());
-                    break;
-
-                case "bigcube":
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                    world.Volumes.Add(new Cube() { Scale = new Vector3(100, 100, 100) });
-                    break;
-
-                case "spheres": {
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                        var d = 5; var s = 2; var r = new Random();
-                        for(var x = -d; x <= d; x += s)
-                            for(var y = -d; y <= d; y += s)
-                                for(var z = -d; z <= d; z += s) {
-                                    world.Volumes.Add(
-                                        new IcoSphere(2) {
-                                            Position = new System.Numerics.Vector3(x, y, z),
-                                            Rotation = new Rotation3D(
-                                                (float)r.Next(-90, 90),
-                                                (float)r.Next(-90, 90),
-                                                (float)r.Next(-90, 90)).ToRad()
-                                        });
-                                }
-                        break;
-                    }
-
-                case "cubes": {
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                        var d = 20; var s = 2; var r = new Random();
-                        for(var x = -d; x <= d; x += s)
-                            for(var y = -d; y <= d; y += s)
-                                for(var z = -d; z <= d; z += s) {
-                                    world.Volumes.Add(
-                                        new Cube() {
-                                            Position = new System.Numerics.Vector3(x, y, z),
-                                            Rotation = new Rotation3D(
-                                                (float)r.Next(-90, 90),
-                                                (float)r.Next(-90, 90),
-                                                (float)r.Next(-90, 90)).ToRad()
-                                        });
-                                }
-                        break;
-                    }
-            }
+            
 
             world.LightSources.Add(new LightSource { Position = new Vector3(0, 0, 10) });
 
@@ -245,6 +96,8 @@ namespace SoftRenderingApp3D.App {
             arcBallCam.CameraChanged += MainCam_CameraChanged;
 
             // world.Volumes.Add(camObject);
+            
+            
 
             this.panel3D1.World = world;
 
