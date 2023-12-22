@@ -136,6 +136,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FormMethods\FormMethods.cs" />
     <Compile Include="SoftRenderingForm.cs">
       <SubType>Form</SubType>
     </Compile>

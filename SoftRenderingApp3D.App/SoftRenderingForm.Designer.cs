@@ -135,7 +135,7 @@ namespace SoftRenderingApp3D.App {
             this.arcBallCamControl1.BackColor = System.Drawing.Color.Gainsboro;
             this.arcBallCamControl1.Camera = null;
             this.arcBallCamControl1.Location = new System.Drawing.Point(882, 25);
-            this.arcBallCamControl1.Margin = new System.Windows.Forms.Padding(6, 8, 6, 8);
+            this.arcBallCamControl1.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
             this.arcBallCamControl1.Name = "arcBallCamControl1";
             this.arcBallCamControl1.Size = new System.Drawing.Size(208, 180);
             this.arcBallCamControl1.TabIndex = 1;
