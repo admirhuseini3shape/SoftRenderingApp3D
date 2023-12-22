@@ -1,7 +1,6 @@
-﻿using SoftRenderingApp;
-using SoftRenderingApp3D.Controls;
+﻿using SoftRenderingApp3D.Controls;
 
-namespace SoftRenderingApp3D.App {
+namespace SoftrenderingApp3D.App {
     partial class SoftRenderingForm {
         /// <summary>
         /// Required designer variable.
@@ -39,7 +38,7 @@ namespace SoftRenderingApp3D.App {
             this.btnBench = new System.Windows.Forms.Button();
             this.lblSw = new System.Windows.Forms.Label();
             this.btnChangeTexture = new System.Windows.Forms.Button();
-            this.panel3D1 = new SoftRenderingApp.Panel3D();
+            this.panel3D1 = new Panel3D();
             this.groupBox2.SuspendLayout();
             this.groupBox5.SuspendLayout();
             this.groupBox6.SuspendLayout();

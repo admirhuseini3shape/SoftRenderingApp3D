@@ -1,5 +1,9 @@
 ﻿using SoftRenderingApp3D;
-using SoftRenderingApp3D.DataStructures;
+using SoftRenderingApp3D.Camera;
+using SoftRenderingApp3D.Controls;
+using SoftRenderingApp3D.DataStructures.World;
+using SoftRenderingApp3D.Projection;
+using SoftRenderingApp3D.Utils;
 using SubsurfaceScatteringLibrary.Buffer;
 using SubsurfaceScatteringLibrary.Painter;
 using SubsurfaceScatteringLibrary.Renderer;
@@ -10,7 +14,7 @@ using System.Drawing.Imaging;
 using System.Text;
 using System.Windows.Forms;
 
-namespace SoftRenderingApp {
+namespace SubsurfaceScatteringSoftRenderingApp3D {
     public partial class Panel3D : UserControl {
         SubsurfaceScatteringRenderContext renderContext { get; }
 

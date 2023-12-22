@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
-namespace SoftRenderingApp3D.DataStructures {
+namespace SoftRenderingApp3D.DataStructures.Volume {
     public static class VolumeEx {
         public static IEnumerable<Vector3> BuildVector3s(this float[] vertices) {
             for(var i = 0; i < vertices.Length; i += 3)

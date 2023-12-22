@@ -1,10 +1,11 @@
-﻿using System;
+﻿using SoftRenderingApp3D.DataStructures.Volume;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
-namespace SoftRenderingApp3D.DataStructures {
-    public class IcoSphere : Volume {
+namespace SoftRenderingApp3D.DataStructures.Shapes {
+    public class IcoSphere : Volume.Volume {
 
         IcoSphere(sphere sphere) : base(sphere.points.ToArray().Vector3ArrayToColoredVertices().ToArray(), sphere.faces.ToArray()) {
         }

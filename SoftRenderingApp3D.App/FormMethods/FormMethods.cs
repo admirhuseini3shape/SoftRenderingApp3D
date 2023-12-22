@@ -1,7 +1,10 @@
-﻿using SoftRenderingApp;
-using SoftRenderingApp3D;
+﻿using SoftRenderingApp3D;
 using SoftRenderingApp3D.Camera;
 using SoftRenderingApp3D.DataStructures;
+using SoftRenderingApp3D.DataStructures.FileReaders;
+using SoftRenderingApp3D.DataStructures.Shapes;
+using SoftRenderingApp3D.DataStructures.TextureReaders;
+using SoftRenderingApp3D.DataStructures.World;
 using System.Numerics;
 using System.Windows.Forms;
 

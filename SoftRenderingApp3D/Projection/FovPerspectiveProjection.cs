@@ -1,7 +1,8 @@
-﻿using System;
+﻿using SoftRenderingApp3D.Controls;
+using System;
 using System.Numerics;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Projection {
 
     public class FovPerspectiveProjection : IProjection {
         float zNear;

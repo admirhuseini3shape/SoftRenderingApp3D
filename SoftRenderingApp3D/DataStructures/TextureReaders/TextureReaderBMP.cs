@@ -1,19 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.DataStructures.TextureReaders {
     public class TextureReaderBMP : ITextureReader {
 
         // Reads image data from .bmp file and creates a new texture
-        public Texture ReadImage(string filepath) {
+        public Texture.Texture ReadImage(string filepath) {
 
             if(!File.Exists(filepath)) {
                 throw new FileNotFoundException($"Error reading texture. File {filepath} not found!");
@@ -53,7 +49,7 @@ namespace SoftRenderingApp3D {
 
             bmp.UnlockBits(bitmapData);
 
-            return new Texture(imageData, bmp.Width, bmp.Height);
+            return new Texture.Texture(imageData, bmp.Width, bmp.Height);
         }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System.Numerics;
 
-
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.DataStructures {
     public class ColoredVertex {
 
         public ColoredVertex(Vector3 position) {

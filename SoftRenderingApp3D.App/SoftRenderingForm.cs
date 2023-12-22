@@ -1,15 +1,13 @@
-﻿using SoftrenderingApp3D.App.FormMethods;
-using SoftRenderingApp3D.Camera;
+﻿using SoftRenderingApp3D.Camera;
 using SoftRenderingApp3D.Controls;
-using SoftRenderingApp3D.DataStructures;
-using SoftRenderingApp3D.Painter;
-using SoftRenderingApp3D.Renderer;
+using SoftRenderingApp3D.DataStructures.World;
+using SoftRenderingApp3D.Projection;
 using System;
 using System.Diagnostics;
 using System.Numerics;
 using System.Windows.Forms;
 
-namespace SoftRenderingApp3D.App {
+namespace SoftrenderingApp3D.App {
 
     public partial class SoftRenderingForm : Form {
 
@@ -83,7 +81,7 @@ namespace SoftRenderingApp3D.App {
         void prepareWorld(string id) {
 
 
-            FormMethods prepareWorld = new FormMethods();
+            FormMethods.FormMethods prepareWorld = new FormMethods.FormMethods();
             var world = prepareWorld.prepareWorld( id , arcBallCam, chkShowTexture, panel3D1);
 
             

@@ -1,18 +1,14 @@
-﻿using SoftRenderingApp3D.DataStructures;
-using System;
+﻿using SoftRenderingApp3D.DataStructures.Volume;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
 using System.Globalization;
-using System.Threading;
+using System.IO;
+using System.Linq;
 using System.Numerics;
+using System.Threading;
 
-
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.DataStructures.FileReaders {
     public class STLReader : FileReader {
-        public override IEnumerable<Volume> ReadFile(string fileName) {
+        public override IEnumerable<Volume.Volume> ReadFile(string fileName) {
             this.path = fileName;
             return NewSTLImport();
         }
@@ -53,7 +49,7 @@ namespace SoftRenderingApp3D {
         * @param  none
         * @retval SubsurfaceScatteringVolume
         */
-        public IEnumerable<Volume> NewSTLImport() {
+        public IEnumerable<Volume.Volume> NewSTLImport() {
 
             FileType stlFileType = GetFileType(path);
 
@@ -111,7 +107,7 @@ namespace SoftRenderingApp3D {
         * @param  filePath
         * @retval meshList
         */
-        private Volume ReadBinaryFile(string filePath) {
+        private Volume.Volume ReadBinaryFile(string filePath) {
             List<Vector3> vertices = new List<Vector3>();
             List<Vector3> normals = new List<Vector3>();
             List<Triangle> triangleIndices = new List<Triangle>();
@@ -240,7 +236,7 @@ namespace SoftRenderingApp3D {
             if(processError)
                 throw new FileLoadException($"Error reading file: {path}!");
 
-            return new Volume(vertices.ToArray().Vector3ArrayToColoredVertices().ToArray(),
+            return new Volume.Volume(vertices.ToArray().Vector3ArrayToColoredVertices().ToArray(),
                              triangleIndices.ToArray(),
                              normals.ToArray(),
                              null,
@@ -253,7 +249,7 @@ namespace SoftRenderingApp3D {
         * @param  filePath
         * @retval meshList
         */
-        private Volume ReadASCIIFile(string filePath) {
+        private Volume.Volume ReadASCIIFile(string filePath) {
             List<Vector3> vertices = new List<Vector3>();
             List<Vector3> normals = new List<Vector3>();
             List<Triangle> triangleIndices = new List<Triangle>();
@@ -375,7 +371,7 @@ namespace SoftRenderingApp3D {
                 } // if solid
             } // while !endofstream
 
-            return new Volume(vertices.ToArray().Vector3ArrayToColoredVertices().ToArray(),
+            return new Volume.Volume(vertices.ToArray().Vector3ArrayToColoredVertices().ToArray(),
                               triangleIndices.ToArray(),
                               normals.ToArray(),
                               null,

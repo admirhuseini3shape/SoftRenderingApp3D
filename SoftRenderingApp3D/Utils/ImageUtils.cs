@@ -2,7 +2,7 @@
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Utils {
     public static class ImageUtils {
         
         // Taken from https://stackoverflow.com/a/11740297/24472

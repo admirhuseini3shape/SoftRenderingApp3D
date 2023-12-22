@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.DataStructures.World {
     public interface ILightSource {
         Vector3 Direction { get; set; }
         Vector3 Position { get; set; }

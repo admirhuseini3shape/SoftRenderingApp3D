@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Clipping {
 
     // Buggy
 

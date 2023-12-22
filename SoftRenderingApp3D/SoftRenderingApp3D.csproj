@@ -76,14 +76,14 @@
     </Compile>
     <Compile Include="Clipping\CohenSutherlandClipping2D.cs" />
     <Compile Include="Clipping\CohenSutherlandClippingHomogeneous.cs" />
-    <Compile Include="DataStructures\File Readers\ColladaReader.cs" />
-    <Compile Include="DataStructures\File Readers\FileReader.cs" />
-    <Compile Include="DataStructures\File Readers\STLReader.cs" />
+    <Compile Include="DataStructures\FileReaders\ColladaReader.cs" />
+    <Compile Include="DataStructures\FileReaders\FileReader.cs" />
+    <Compile Include="DataStructures\FileReaders\STLReader.cs" />
     <Compile Include="DataStructures\Shapes\IcoSphere.cs" />
-    <Compile Include="DataStructures\Texture Readers\ITextureReader.cs" />
+    <Compile Include="DataStructures\TextureReaders\ITextureReader.cs" />
     <Compile Include="DataStructures\Shapes\Cube.cs" />
     <Compile Include="DataStructures\Shapes\Face.cs" />
-    <Compile Include="DataStructures\Texture Readers\TextureReaderBMP.cs" />
+    <Compile Include="DataStructures\TextureReaders\TextureReaderBMP.cs" />
     <Compile Include="DataStructures\Texture\Texture.cs" />
     <Compile Include="DataStructures\Volume\IVolume.cs" />
     <Compile Include="DataStructures\Volume\Volume.cs" />

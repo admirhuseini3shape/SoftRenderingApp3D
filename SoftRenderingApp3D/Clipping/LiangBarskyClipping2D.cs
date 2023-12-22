@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Clipping {
 
     // Taken from https://github.com/stil/graf3d/blob/master/Engine/Algorytmy/LineClippingAlgorithm.cs
     // Thank you Stil (https://github.com/stil)

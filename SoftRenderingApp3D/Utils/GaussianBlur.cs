@@ -5,7 +5,7 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Utils {
     public class GaussianBlur {
         private readonly int[] _alpha;
         private readonly int[] _red;

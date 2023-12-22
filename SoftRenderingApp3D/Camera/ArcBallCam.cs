@@ -1,4 +1,5 @@
-﻿using SoftRenderingApp3D.Utils;
+﻿using SoftRenderingApp3D.Controls;
+using SoftRenderingApp3D.Utils;
 using System;
 using System.Numerics;
 

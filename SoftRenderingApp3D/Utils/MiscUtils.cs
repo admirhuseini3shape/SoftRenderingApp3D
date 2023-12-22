@@ -1,4 +1,5 @@
 ﻿using g3;
+using SoftRenderingApp3D.DataStructures;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

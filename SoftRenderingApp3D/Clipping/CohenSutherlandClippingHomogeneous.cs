@@ -2,7 +2,7 @@
 using System;
 using System.Numerics;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Clipping {
 
     // Buggy : this code has a bounce case and shall not be used
 

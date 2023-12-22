@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Controls {
     public partial class SliderIn : Control {
         public event EventHandler ValueChanged;
         public event EventHandler PixelStepChanged;

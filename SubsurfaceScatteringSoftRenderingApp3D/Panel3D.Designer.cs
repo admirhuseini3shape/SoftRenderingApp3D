@@ -1,4 +1,4 @@
-﻿namespace SoftRenderingApp {
+﻿namespace SubsurfaceScatteringSoftRenderingApp3D {
     partial class Panel3D
     {
         /// <summary>

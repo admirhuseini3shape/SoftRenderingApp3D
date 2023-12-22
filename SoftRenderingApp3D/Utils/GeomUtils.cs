@@ -1,9 +1,8 @@
-﻿using SoftRenderingApp3D.Utils;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Utils {
     static class GeomUtils {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector2 ToVector2(this Vector3 p) => new Vector2(p.X, p.Y);

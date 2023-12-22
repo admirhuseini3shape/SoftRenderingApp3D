@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Windows.Forms;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Controls {
 
     // Slider
 

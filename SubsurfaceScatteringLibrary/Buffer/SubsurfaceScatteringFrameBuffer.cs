@@ -1,4 +1,5 @@
 ﻿using SoftRenderingApp3D;
+using SoftRenderingApp3D.Utils;
 using SubsurfaceScatteringLibrary.Renderer;
 using SubsurfaceScatteringLibrary.Utils;
 using System;

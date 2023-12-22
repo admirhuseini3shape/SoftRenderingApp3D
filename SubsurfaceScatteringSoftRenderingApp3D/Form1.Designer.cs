@@ -1,5 +1,4 @@
-﻿using SoftRenderingApp;
-using SoftRenderingApp3D.Controls;
+﻿using SoftRenderingApp3D.Controls;
 
 namespace SubsurfaceScatteringSoftRenderingApp3D {
     partial class Form1 {

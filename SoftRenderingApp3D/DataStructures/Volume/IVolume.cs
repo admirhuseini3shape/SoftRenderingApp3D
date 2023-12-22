@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.DataStructures.Volume {
     public interface IVolume {
         Rotation3D Rotation { get; set; }
         Vector3 Position { get; set; }

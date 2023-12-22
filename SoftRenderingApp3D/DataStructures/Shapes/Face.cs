@@ -1,8 +1,9 @@
-﻿using System.Linq;
+﻿using SoftRenderingApp3D.DataStructures.Volume;
+using System.Linq;
 using System.Numerics;
 
-namespace SoftRenderingApp3D.DataStructures {
-    public class Face : Volume {
+namespace SoftRenderingApp3D.DataStructures.Shapes {
+    public class Face : Volume.Volume {
 
         public Face() : base(
             new[] {

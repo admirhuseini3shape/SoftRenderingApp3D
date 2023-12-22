@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.Clipping {
 
     // Taken from https://fr.mathworks.com/matlabcentral/fileexchange/51550-3d-and-2d-homogeneous-space-line-clipping-using-liang-barsky-algorithm
 

@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Numerics;
 
-namespace SoftRenderingApp3D.DataStructures {
+namespace SoftRenderingApp3D.DataStructures.Volume {
     public class Volume : IVolume {
         public Volume(ColoredVertex[] vertices, Triangle[] triangleIndices, Vector3[] vertexNormals = null, Vector2[] textureCoordinates = null, ColorRGB[] triangleColors = null) {
             Vertices = vertices;

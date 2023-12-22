@@ -1,4 +1,5 @@
 ﻿using SoftRenderingApp3D.Buffer;
+using SoftRenderingApp3D.DataStructures;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 

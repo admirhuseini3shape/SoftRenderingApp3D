@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace SoftRenderingApp3D.App {
+namespace SoftrenderingApp3D.App {
     static class Program {
         /// <summary>
         /// The main entry point for the application.

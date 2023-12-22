@@ -2,6 +2,11 @@
 using SoftRenderingApp3D.Camera;
 using SoftRenderingApp3D.Controls;
 using SoftRenderingApp3D.DataStructures;
+using SoftRenderingApp3D.DataStructures.FileReaders;
+using SoftRenderingApp3D.DataStructures.Volume;
+using SoftRenderingApp3D.DataStructures.World;
+using SoftRenderingApp3D.Projection;
+using SoftRenderingApp3D.Utils;
 using SubsurfaceScatteringLibrary.Renderer;
 using System;
 using System.Numerics;

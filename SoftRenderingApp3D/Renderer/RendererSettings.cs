@@ -1,4 +1,4 @@
-﻿namespace SoftRenderingApp3D {
+﻿namespace SoftRenderingApp3D.Renderer {
     public class RendererSettings {
         public bool BackFaceCulling { get; set; }
         public bool ShowTriangleNormals { get; set; }

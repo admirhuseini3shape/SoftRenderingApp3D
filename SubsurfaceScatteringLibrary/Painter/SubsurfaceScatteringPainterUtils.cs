@@ -1,5 +1,6 @@
 ﻿using SoftRenderingApp3D;
 using SoftRenderingApp3D.Buffer;
+using SoftRenderingApp3D.DataStructures;
 using SoftRenderingApp3D.Painter;
 using SubsurfaceScatteringLibrary.Buffer;
 using SubsurfaceScatteringLibrary.Utils;

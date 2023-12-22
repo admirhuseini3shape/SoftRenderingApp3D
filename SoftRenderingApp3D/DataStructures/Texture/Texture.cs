@@ -1,13 +1,7 @@
-﻿using SoftRenderingApp3D;
-using SoftRenderingApp3D.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using SoftRenderingApp3D.Utils;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace SoftRenderingApp3D {
+namespace SoftRenderingApp3D.DataStructures.Texture {
     public class Texture {
         public Vector3[] imageData { get; private set; }
 
