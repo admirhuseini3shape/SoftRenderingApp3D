@@ -1,4 +1,5 @@
-﻿using SoftRenderingApp3D.Camera;
+﻿using SoftRenderingApp3D.App.DataStructures;
+using SoftRenderingApp3D.Camera;
 using SoftRenderingApp3D.Controls;
 using SoftRenderingApp3D.DataStructures.World;
 using SoftRenderingApp3D.Projection;
@@ -17,18 +18,9 @@ namespace SoftRenderingApp3D.App {
 
             // var v = VolumeFactory.NewImportCollada("Models\\skull.dae").ToList();
 
-            lstDemos.DataSource = new[] {
-                new { display = "Crane", id = "skull" }, new { display = "Teapot", id = "teapot" },
-                new { display = "Cubes", id = "cubes" }, new { display = "Spheres", id = "spheres" },
-                new { display = "Little town", id = "littletown" }, new { display = "Town", id = "town" },
-                new { display = "Big town", id = "bigtown" }, new { display = "Cube", id = "cube" },
-                new { display = "Big cube", id = "bigcube" }, new { display = "Empty", id = "empty" },
-                new { display = "Planetary Toy STL", id = "stl-mesh-1" },
-                new { display = "Star Destroyer STL", id = "stl-mesh-2" }, new { display = "Jaw", id = "jaw" }
-            };
-
-            lstDemos.ValueMember = "id";
-            lstDemos.DisplayMember = "display";
+            lstDemos.DataSource = DisplayModelData.Models;
+            lstDemos.ValueMember = nameof(DisplayModelData.Id);
+            lstDemos.DisplayMember = nameof(DisplayModelData.Display);
 
             lstDemos.DoubleClick += LstDemos_DoubleClick;
 
@@ -69,12 +61,16 @@ namespace SoftRenderingApp3D.App {
             panel3D1.Projection = projection;
             panel3D1.Camera = arcBallCam;
 
-
+            // Deserialize DisplayModelData from a JSON file
             prepareWorld("skull");
         }
 
         private void LstDemos_DoubleClick(object sender, EventArgs e) {
-            prepareWorld(lstDemos.SelectedValue as string);
+             var id =lstDemos.SelectedValue as string; 
+            //var data  = GetDisplayModelData(id);
+            // PrepareWorld(data);
+            // PrepareUI(data);
+            prepareWorld(id);
         }
 
         private void prepareWorld(string id) {

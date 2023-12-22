@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{AE831CFA-82F6-4C94-946B-1D0E126A4319}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>SoftrenderingApp3D.App</RootNamespace>
-    <AssemblyName>SoftrenderingApp3D.App</AssemblyName>
+    <RootNamespace>SoftRenderingApp3D.App</RootNamespace>
+    <AssemblyName>SoftRenderingApp3D.App</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -136,7 +136,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataStructures\DisplayModelData.cs" />
+    <Compile Include="DataStructures\DisplayModelJsonData.cs" />
+    <Compile Include="DataStructures\Enums.cs" />
     <Compile Include="FormMethods\FormMethods.cs" />
+    <Compile Include="FormMethods\ShapeGenerator.cs" />
     <Compile Include="SoftRenderingForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -233,5 +237,6 @@
       <Name>SubsurfaceScatteringLibrary</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

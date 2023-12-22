@@ -64,58 +64,48 @@ namespace SoftRenderingApp3D.App.FormMethods {
                     break;
 
                 case "town": {
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                    var d = 50;
-                    var s = 2;
-                    for(var x = -d; x <= d; x += s)
-                    for(var z = -d; z <= d; z += s) {
-                        world.Volumes.Add(
-                            new Cube {
-                                Position = new Vector3(x, 0, z)
-                                //Scale = new Vector3(1, r.Next(1, 50), 1)
-                            });
+                        panel3D1.RendererSettings.ShowTextures = false;
+                        chkShowTexture.Enabled = false;
+                        chkShowTexture.Checked = false;
+                        ShapeGenerator.CreateTown(world);
+                        break;
                     }
-
-                    break;
-                }
 
                 case "littletown": {
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                    var d = 10;
-                    var s = 2;
-                    for(var x = -d; x <= d; x += s)
-                    for(var z = -d; z <= d; z += s) {
-                        world.Volumes.Add(
-                            new Cube {
-                                Position = new Vector3(x, 0, z)
-                                // Scale = new Vector3(1, r.Next(1, 50), 1)
-                            });
-                    }
+                        panel3D1.RendererSettings.ShowTextures = false;
+                        chkShowTexture.Enabled = false;
+                        chkShowTexture.Checked = false;
+                        var d = 10;
+                        var s = 2;
+                        for(var x = -d; x <= d; x += s)
+                            for(var z = -d; z <= d; z += s) {
+                                world.Volumes.Add(
+                                    new Cube {
+                                        Position = new Vector3(x, 0, z)
+                                        // Scale = new Vector3(1, r.Next(1, 50), 1)
+                                    });
+                            }
 
-                    break;
-                }
+                        break;
+                    }
 
                 case "bigtown": {
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                    var d = 200;
-                    var s = 2;
-                    for(var x = -d; x <= d; x += s)
-                    for(var z = -d; z <= d; z += s) {
-                        world.Volumes.Add(
-                            new Cube {
-                                Position = new Vector3(x, 0, z)
-                                // Scale = new Vector3(1, r.Next(1, 50), 1)
-                            });
-                    }
+                        panel3D1.RendererSettings.ShowTextures = false;
+                        chkShowTexture.Enabled = false;
+                        chkShowTexture.Checked = false;
+                        var d = 200;
+                        var s = 2;
+                        for(var x = -d; x <= d; x += s)
+                            for(var z = -d; z <= d; z += s) {
+                                world.Volumes.Add(
+                                    new Cube {
+                                        Position = new Vector3(x, 0, z)
+                                        // Scale = new Vector3(1, r.Next(1, 50), 1)
+                                    });
+                            }
 
-                    break;
-                }
+                        break;
+                    }
 
                 case "cube":
                     panel3D1.RendererSettings.ShowTextures = false;
@@ -132,50 +122,50 @@ namespace SoftRenderingApp3D.App.FormMethods {
                     break;
 
                 case "spheres": {
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                    var d = 5;
-                    var s = 2;
-                    var r = new Random();
-                    for(var x = -d; x <= d; x += s)
-                    for(var y = -d; y <= d; y += s)
-                    for(var z = -d; z <= d; z += s) {
-                        world.Volumes.Add(
-                            new IcoSphere(2) {
-                                Position = new Vector3(x, y, z),
-                                Rotation = new Rotation3D(
-                                    r.Next(-90, 90),
-                                    r.Next(-90, 90),
-                                    r.Next(-90, 90)).ToRad()
-                            });
-                    }
+                        panel3D1.RendererSettings.ShowTextures = false;
+                        chkShowTexture.Enabled = false;
+                        chkShowTexture.Checked = false;
+                        var d = 5;
+                        var s = 2;
+                        var r = new Random();
+                        for(var x = -d; x <= d; x += s)
+                            for(var y = -d; y <= d; y += s)
+                                for(var z = -d; z <= d; z += s) {
+                                    world.Volumes.Add(
+                                        new IcoSphere(2) {
+                                            Position = new Vector3(x, y, z),
+                                            Rotation = new Rotation3D(
+                                                r.Next(-90, 90),
+                                                r.Next(-90, 90),
+                                                r.Next(-90, 90)).ToRad()
+                                        });
+                                }
 
-                    break;
-                }
+                        break;
+                    }
 
                 case "cubes": {
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                    var d = 20;
-                    var s = 2;
-                    var r = new Random();
-                    for(var x = -d; x <= d; x += s)
-                    for(var y = -d; y <= d; y += s)
-                    for(var z = -d; z <= d; z += s) {
-                        world.Volumes.Add(
-                            new Cube {
-                                Position = new Vector3(x, y, z),
-                                Rotation = new Rotation3D(
-                                    r.Next(-90, 90),
-                                    r.Next(-90, 90),
-                                    r.Next(-90, 90)).ToRad()
-                            });
-                    }
+                        panel3D1.RendererSettings.ShowTextures = false;
+                        chkShowTexture.Enabled = false;
+                        chkShowTexture.Checked = false;
+                        var d = 20;
+                        var s = 2;
+                        var r = new Random();
+                        for(var x = -d; x <= d; x += s)
+                            for(var y = -d; y <= d; y += s)
+                                for(var z = -d; z <= d; z += s) {
+                                    world.Volumes.Add(
+                                        new Cube {
+                                            Position = new Vector3(x, y, z),
+                                            Rotation = new Rotation3D(
+                                                r.Next(-90, 90),
+                                                r.Next(-90, 90),
+                                                r.Next(-90, 90)).ToRad()
+                                        });
+                                }
 
-                    break;
-                }
+                        break;
+                    }
             }
 
             world.LightSources.Add(new LightSource { Position = new Vector3(0, 0, 10) });
