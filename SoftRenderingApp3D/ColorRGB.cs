@@ -45,6 +45,9 @@ namespace SoftRenderingApp3D {
          *
          *  but maybe there was some mistake along the way
          *
+         * Also , the final comparison & 0xffffffff seems a bit redundant, as it checks if the number is a 32bit
+         * value, which is supposed to be anyway.
+         *
          *
          * The current implementation relies on using a mask , which isolates the required color value with an xor
          * operation with 0xFFFFFFFF, 

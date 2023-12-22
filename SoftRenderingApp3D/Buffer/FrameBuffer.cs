@@ -69,6 +69,7 @@ namespace SoftRenderingApp3D.Buffer {
         }
         
         
+        // Bresenham's line algorithm .
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DrawLine3d(Vector3 p0, Vector3 p1, ColorRGB color) {
             
