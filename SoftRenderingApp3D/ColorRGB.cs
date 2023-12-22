@@ -13,19 +13,83 @@ namespace SoftRenderingApp3D {
         const int ARGBGreenShift = 8;
         const int ARGBBlueShift = 0;
 
-        long value;
+        UInt32 value; // since rgb is 32bit, why yse 64 bit long?
 
         public ColorRGB(byte r, byte g, byte b) => value = (unchecked((uint)(r << ARGBRedShift | g << ARGBGreenShift | b << ARGBBlueShift | 255 << ARGBAlphaShift))) & 0xffffffff;
         public ColorRGB(byte r, byte g, byte b, byte Alpha) => value = (unchecked((uint)(r << ARGBRedShift | g << ARGBGreenShift | b << ARGBBlueShift | Alpha << ARGBAlphaShift))) & 0xffffffff;
-
         public ColorRGB(Color color) => value = (unchecked((uint)(color.R << ARGBRedShift | color.G << ARGBGreenShift | color.B << ARGBBlueShift | color.A << ARGBAlphaShift))) & 0xffffffff;
+        
+        
+        
+        // public byte G { get => (byte)((value >> ARGBGreenShift) & 0xFF); set => this.value = (unchecked((uint)(R << ARGBRedShift | value << ARGBGreenShift | B << ARGBBlueShift | Alpha << ARGBAlphaShift))) & 0xffffffff; }
+        /*
+         * The code above seems to have a certain issue. What I think it was trying to do was to shift all values in
+         * their respective 32bit fields, so it would shift everything. e.g
+         * Assume a ARGB value of :
+         *
+         *  A        R        G        B
+         * 11111111 00000000 11111111 11111111 - Initial Values , the values are shifted to their respective positions and added with the operations,
+         *
+         * but when performing value << ARGBGreenShift/8, it will destory the structure, the final result would become
+         *
+         * 00000000 11111111 11111111 00000000, which doesnt isolate the green component at all. 
+         * 
+         *I think the original implementation tried to use a snippet from the  https://referencesource.microsoft.com/#System.Drawing/commonui/System/Drawing/Color.cs,
+         *
+         *  private static long MakeArgb(byte alpha, byte red, byte green, byte blue) {
+            return(long)(unchecked((uint)(red << ARGBRedShift |
+                         green << ARGBGreenShift | 
+                         blue << ARGBBlueShift | 
+                         alpha << ARGBAlphaShift))) & 0xffffffff;
+            }
+         *
+         *  but maybe there was some mistake along the way
+         *
+         *
+         * The current implementation relies on using a mask , which isolates the required color value with an xor
+         * operation with 0xFFFFFFFF, 
+         * making G 0 and everything else 1, running a bitwise and operation between them and the values, which
+         * of course will result in everything being 1 expect the color value. Now when combining the oringinal value with
+         * the mask ,  and adding with or the new value which is shifted by 16 bits, you get a final modifiable value
+         */
+        
+        public byte R 
+        {
+            get => (byte)((value >> ARGBRedShift) & 0xFF);
+            set 
+            {
+                uint mask = 0xFFFFFFFF ^ (0xFFu << ARGBRedShift); // Mask to clear the Red component
+                this.value = (this.value & mask) | ((uint)value << ARGBRedShift); // Set new Red value
+            }
+        }
+        public byte G 
+        {
+            get => (byte)((value >> ARGBGreenShift) & 0xFF);
+            set 
+            {
+                uint mask = 0xFFFFFFFF ^ (0xFFu << ARGBGreenShift); // Mask to clear the Green component
+                this.value = (this.value & mask) | ((uint)value << ARGBGreenShift); // Set new Green value
+            }
+        }
+        public byte B 
+        {
+            get => (byte)((value >> ARGBBlueShift) & 0xFF);
+            set 
+            {
+                uint mask = 0xFFFFFFFF ^ (0xFFu << ARGBBlueShift); // Mask to clear the Blue component
+                this.value = (this.value & mask) | ((uint)value << ARGBBlueShift); // Set new Blue value
+            }
+        }
 
-
-        public byte R { get => (byte)((value >> ARGBRedShift) & 0xFF); set => this.value = (unchecked((uint)(value << ARGBRedShift | G << ARGBGreenShift | B << ARGBBlueShift | Alpha << ARGBAlphaShift))) & 0xffffffff; }
-        public byte G { get => (byte)((value >> ARGBGreenShift) & 0xFF); set => this.value = (unchecked((uint)(R << ARGBRedShift | value << ARGBGreenShift | B << ARGBBlueShift | Alpha << ARGBAlphaShift))) & 0xffffffff; }
-        public byte B { get => (byte)((value >> ARGBBlueShift) & 0xFF); set => this.value = (unchecked((uint)(R << ARGBRedShift | G << ARGBGreenShift | value << ARGBBlueShift | Alpha << ARGBAlphaShift))) & 0xffffffff; }
-
-        public byte Alpha { get { return (byte)((value >> ARGBAlphaShift) & 0xFF); } set => this.value = (unchecked((uint)(R << ARGBRedShift | G << ARGBGreenShift | B << ARGBBlueShift | value << ARGBAlphaShift))) & 0xffffffff; }
+        public byte Alpha 
+        {
+            get => (byte)((value >> ARGBAlphaShift) & 0xFF);
+            set 
+            {
+                uint mask = 0xFFFFFFFF ^ (0xFFu << ARGBAlphaShift); // Mask to clear the Alpha component
+                this.value = (this.value & mask) | ((uint)value << ARGBAlphaShift); // Set new Alpha value
+            }
+        }
 
         public int Color { get => (int)value; }
 
