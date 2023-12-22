@@ -1,6 +1,7 @@
-﻿using SoftRenderingApp3D.Controls;
+﻿using SoftRenderingApp3D.App;
+using SoftRenderingApp3D.Controls;
 
-namespace SoftrenderingApp3D.App {
+namespace SoftRenderingApp3D.App {
     partial class SoftRenderingForm {
         /// <summary>
         /// Required designer variable.

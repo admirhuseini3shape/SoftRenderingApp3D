@@ -6,21 +6,27 @@ using System.Numerics;
 
 namespace SoftRenderingApp3D.DataStructures.Shapes {
     public class IcoSphere : Volume.Volume {
-
-        IcoSphere(sphere sphere) : base(sphere.points.ToArray().Vector3ArrayToColoredVertices().ToArray(), sphere.faces.ToArray()) {
+        private IcoSphere(sphere sphere) : base(sphere.points.ToArray().Vector3ArrayToColoredVertices().ToArray(),
+            sphere.faces.ToArray()) {
         }
 
         public IcoSphere(int recursionLevel) : this(new sphere(recursionLevel)) {
         }
 
-        class sphere {
+        private class sphere {
+            private int index;
+
+            private Dictionary<long, int> middlePointIndexCache;
+
             public sphere(int recursionLevel) {
                 create(recursionLevel);
             }
 
-            // return index of point in the middle of p1 and p2
-            int getMiddlePoint(int p1, int p2) {
+            public List<Vector3> points { get; } = new List<Vector3>();
+            public List<Triangle> faces { get; private set; } = new List<Triangle>();
 
+            // return index of point in the middle of p1 and p2
+            private int getMiddlePoint(int p1, int p2) {
                 // first check if we have it already
                 var firstIsSmaller = p1 < p2;
                 long smallerIndex = firstIsSmaller ? p1 : p2;
@@ -47,18 +53,12 @@ namespace SoftRenderingApp3D.DataStructures.Shapes {
                 return i;
             }
 
-            int index;
-
-            Dictionary<long, int> middlePointIndexCache;
-            public List<Vector3> points { get; } = new List<Vector3>();
-            public List<Triangle> faces { get; private set; } = new List<Triangle>();
-
-            int addVertex(Vector3 p) {
+            private int addVertex(Vector3 p) {
                 points.Add(Vector3.Normalize(p));
                 return index++;
             }
 
-            void create(int recursionLevel) {
+            private void create(int recursionLevel) {
                 middlePointIndexCache = new Dictionary<long, int>();
                 index = 0;
 

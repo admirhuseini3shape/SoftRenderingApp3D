@@ -3,16 +3,8 @@ using SoftRenderingApp3D.Painter;
 using System.Numerics;
 
 namespace SoftRenderingApp3D.Renderer {
-
     public class SimpleRenderer : IRenderer {
-        private RenderContext renderContext;
-
-        public RenderContext RenderContext {
-            get => renderContext;
-            set {
-                renderContext = value;
-            }
-        }
+        public RenderContext RenderContext { get; set; }
 
         public IPainter Painter { get; set; }
 
@@ -39,7 +31,7 @@ namespace SoftRenderingApp3D.Renderer {
 
             // Allocate arrays to store transformed vertices
             using var worldBuffer = new WorldBuffer(world);
-            renderContext.WorldBuffer = worldBuffer;
+            RenderContext.WorldBuffer = worldBuffer;
 
             // This needs work, this is only for testing
             var textureIndex = rendererSettings.activeTexture % world.Textures.Count;
@@ -48,7 +40,6 @@ namespace SoftRenderingApp3D.Renderer {
             var volumes = world.Volumes;
             var volumeCount = volumes.Count;
             for(var idxVolume = 0; idxVolume < volumeCount; idxVolume++) {
-
                 var vbx = worldBuffer.VertexBuffer[idxVolume];
                 var volume = volumes[idxVolume];
 
@@ -102,8 +93,9 @@ namespace SoftRenderingApp3D.Renderer {
                     }
                     else {
                         if(Painter.GetType() == typeof(GouraudPainter)) {
-                            GouraudPainter painter = (GouraudPainter)Painter;
-                            painter.DrawTriangleTextured(texture, vbx, idxTriangle, rendererSettings.LiearTextureFiltering);
+                            var painter = (GouraudPainter)Painter;
+                            painter.DrawTriangleTextured(texture, vbx, idxTriangle,
+                                rendererSettings.LiearTextureFiltering);
                         }
                     }
 

@@ -5,26 +5,36 @@ using System.Numerics;
 using System.Windows.Forms;
 
 namespace SoftRenderingApp3D.Controls {
-
     // Buggy
 
     public class FlyCamHandler {
-        FlyCam camera;
+        private FlyCam camera;
+
+        private Control control;
+        private bool down;
+        private bool left;
+
+        private bool leftB;
+
+        private Point mouse;
+        private bool right;
+        private bool rightB;
+
+        private bool up;
 
         public FlyCamHandler(Control control, FlyCam camera) {
             Control = control;
             Camera = camera;
         }
 
-        Control control;
-
         public Control Control {
-            get => control;
+            get {
+                return control;
+            }
             set {
                 var oldControl = control;
 
                 if(PropertyChangedHelper.ChangeValue(ref control, value)) {
-
                     if(oldControl != null) {
                         oldControl.MouseDown -= control_MouseDown;
                         oldControl.MouseMove -= control_MouseMove;
@@ -46,56 +56,69 @@ namespace SoftRenderingApp3D.Controls {
             }
         }
 
+        public FlyCam Camera {
+            get {
+                return camera;
+            }
+            set {
+                PropertyChangedHelper.ChangeValue(ref camera, value);
+            }
+        }
+
         private void Control_MouseWheel(object sender, MouseEventArgs e) {
             const float c = 1f;
 
-            if(e.Delta > 0)
+            if(e.Delta > 0) {
                 move(0, 0, 1f * c);
-            else
+            }
+            else {
                 move(0, 0, -1f * c);
+            }
         }
 
         private void Control_MouseLeave(object sender, EventArgs e) {
-            var frm = this.control;
+            var frm = control;
             frm.KeyDown -= Frm_KeyDown;
             frm.KeyUp -= Frm_KeyUp;
         }
 
         private void Control_MouseEnter(object sender, EventArgs e) {
-            var frm = this.control;
+            var frm = control;
             frm.KeyDown += Frm_KeyDown;
             frm.KeyUp += Frm_KeyUp;
         }
 
-        bool up; bool down; bool left; bool right;
-
-        void Frm_KeyUp(object sender, KeyEventArgs e) {
+        private void Frm_KeyUp(object sender, KeyEventArgs e) {
             handleKeyCode(e, false);
             handleMove();
         }
 
-        void Frm_KeyDown(object sender, KeyEventArgs e) {
+        private void Frm_KeyDown(object sender, KeyEventArgs e) {
             handleKeyCode(e, true);
             handleMove();
         }
 
-        void handleMove() {
-            if(up)
+        private void handleMove() {
+            if(up) {
                 move(0, 0, 1);
-            else if(down)
+            }
+            else if(down) {
                 move(0, 0, -1);
+            }
 
-            if(left)
+            if(left) {
                 move(1, 0, 0);
-            else if(right)
+            }
+            else if(right) {
                 move(-1, 0, 0);
+            }
         }
 
-        void move(float dx, float dy, float dz) {
+        private void move(float dx, float dy, float dz) {
             camera.Position += Vector3.Transform(new Vector3(dx, dy, dz), camera.Rotation);
         }
 
-        void rotate(float p, float y, float r) {
+        private void rotate(float p, float y, float r) {
             camera.Rotation = Quaternion.CreateFromYawPitchRoll(y, p, r) * camera.Rotation;
         }
 
@@ -118,11 +141,6 @@ namespace SoftRenderingApp3D.Controls {
             }
         }
 
-        bool leftB;
-        bool rightB;
-
-        Point mouse;
-
         private void Control_MouseUp(object sender, MouseEventArgs e) {
             ControlHelper.getMouseButtons(out leftB, out rightB);
         }
@@ -132,24 +150,20 @@ namespace SoftRenderingApp3D.Controls {
             mouse = e.Location;
         }
 
-        void control_MouseMove(object sender, MouseEventArgs e) {
+        private void control_MouseMove(object sender, MouseEventArgs e) {
             if(rightB) {
                 const float c = .01f;
                 var delta = Point.Subtract(mouse, (Size)e.Location);
                 move(-delta.X * c, delta.Y * c, 0);
                 mouse = e.Location;
             }
+
             if(leftB) {
                 const float c = .01f;
                 var delta = Point.Subtract(mouse, (Size)e.Location);
                 rotate(-delta.Y * c, delta.X * c, 0);
                 mouse = e.Location;
             }
-        }
-
-        public FlyCam Camera {
-            get => camera;
-            set => PropertyChangedHelper.ChangeValue(ref camera, value);
         }
     }
 }

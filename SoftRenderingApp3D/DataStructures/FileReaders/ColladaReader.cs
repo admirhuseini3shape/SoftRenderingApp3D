@@ -8,7 +8,6 @@ using System.Xml.Linq;
 
 namespace SoftRenderingApp3D.DataStructures.FileReaders {
     public class ColladaReader : FileReader {
-
         // Collada import is a brittle hack and need a serious work
 
         public static IEnumerable<Volume.Volume> ImportCollada(string fileName) {
@@ -18,16 +17,21 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
             foreach(var xvolume in xvolumes) {
                 var xid = xvolume.Attribute("id").Value;
 
-                string svertices = xvolume.Descendants().First(e => e.Attribute("id")?.Value == $"{xid}-positions-array").Value;
-                var vertices = svertices.Split(" ".ToArray(), StringSplitOptions.RemoveEmptyEntries).Select(x => float.Parse(x, CultureInfo.InvariantCulture)).ToArray().BuildVector3s().ToArray();
+                var svertices = xvolume.Descendants().First(e => e.Attribute("id")?.Value == $"{xid}-positions-array")
+                    .Value;
+                var vertices = svertices.Split(" ".ToArray(), StringSplitOptions.RemoveEmptyEntries)
+                    .Select(x => float.Parse(x, CultureInfo.InvariantCulture)).ToArray().BuildVector3s().ToArray();
 
-                string snormals = xvolume.Descendants().First(e => e.Attribute("id")?.Value == $"{xid}-normals-array").Value;
-                var normals = snormals.Split(" ".ToArray(), StringSplitOptions.RemoveEmptyEntries).Select(x => float.Parse(x, CultureInfo.InvariantCulture)).ToArray().BuildVector3s().ToArray();
+                var snormals = xvolume.Descendants().First(e => e.Attribute("id")?.Value == $"{xid}-normals-array")
+                    .Value;
+                var normals = snormals.Split(" ".ToArray(), StringSplitOptions.RemoveEmptyEntries)
+                    .Select(x => float.Parse(x, CultureInfo.InvariantCulture)).ToArray().BuildVector3s().ToArray();
 
-                string striangles = xvolume.Descendants(XName.Get("p", ns)).First().Value;
-                var triangles = striangles.Split(" ".ToArray(), StringSplitOptions.RemoveEmptyEntries).Select(x => int.Parse(x, CultureInfo.InvariantCulture)).ToArray().BuildTriangleIndices().ToArray();
+                var striangles = xvolume.Descendants(XName.Get("p", ns)).First().Value;
+                var triangles = striangles.Split(" ".ToArray(), StringSplitOptions.RemoveEmptyEntries)
+                    .Select(x => int.Parse(x, CultureInfo.InvariantCulture)).ToArray().BuildTriangleIndices().ToArray();
 
-                yield return new Volume.Volume(vertices.Vector3ArrayToColoredVertices().ToArray(), triangles, normals, null);
+                yield return new Volume.Volume(vertices.Vector3ArrayToColoredVertices().ToArray(), triangles, normals);
             }
         }
 
@@ -47,13 +51,15 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                 if(polylist != null) {
                     var polylist_vcount = parseArray<int>(polylist.Element(ns + "vcount")?.Value);
 
-                    if(!polylist_vcount.Any() || polylist_vcount.Distinct().Any(v => v != 3))
+                    if(!polylist_vcount.Any() || polylist_vcount.Distinct().Any(v => v != 3)) {
                         throw new Exception();
+                    }
 
                     var polylist_p = parseArray<int>(polylist.Element(ns + "p")?.Value);
                     getSource(polylist, "VERTEX", out var polylist_vertex_id, out _);
 
-                    var vertices = mesh.Elements(ns + "vertices").FirstOrDefault(e => e.Attribute("id")?.Value == polylist_vertex_id);
+                    var vertices = mesh.Elements(ns + "vertices")
+                        .FirstOrDefault(e => e.Attribute("id")?.Value == polylist_vertex_id);
                     getSource(vertices, "POSITION", out var vertices_position_id, out _);
                     getSource(vertices, "NORMAL", out var vertices_normal_id, out _);
 
@@ -69,8 +75,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                         vertices_position.ToArray().Vector3ArrayToColoredVertices().ToArray(),
                         polylist_p.ToArray().BuildTriangleIndices().ToArray(),
                         vertices_normal.ToArray(),
-                        texture_coordinates.ToArray(),
-                        null);
+                        texture_coordinates.ToArray());
                 }
 
                 var triangles = mesh.Element(ns + "triangles");
@@ -83,7 +88,8 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                     getSource(triangles, "VERTEX", out var triangles_vertex_id, out var triangle_vertex_offset);
                     // getSource(triangles, "NORMAL", out var triangles_normal_id, out _);
 
-                    var vertices = mesh.Elements(ns + "vertices").FirstOrDefault(e => e.Attribute("id")?.Value == triangles_vertex_id);
+                    var vertices = mesh.Elements(ns + "vertices")
+                        .FirstOrDefault(e => e.Attribute("id")?.Value == triangles_vertex_id);
                     getSource(vertices, "POSITION", out var vertices_position_id, out _);
 
                     var vertices_position = getArraySource<Vector3>(mesh, vertices_position_id);
@@ -91,30 +97,33 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
 
                     yield return new Volume.Volume(
                         vertices_position.ToArray().Vector3ArrayToColoredVertices().ToArray(),
-                        getTriangles(triangles_p, stride).ToArray(),
-                        null, // triangles_normal.ToArray(),
-                        null);
+                        getTriangles(triangles_p, stride).ToArray());
                 }
             }
         }
 
-        static IEnumerable<Triangle> getTriangles(int[] array, int stride, int offset = 0) {
+        private static IEnumerable<Triangle> getTriangles(int[] array, int stride, int offset = 0) {
             var l = array.Length / stride;
-            for(var i = 0; i < l; i++)
-                yield return new Triangle(array[i * stride + offset], array[i * stride + 4 + offset], array[i * stride + 8 + offset]);
+            for(var i = 0; i < l; i++) {
+                yield return new Triangle(array[i * stride + offset], array[i * stride + 4 + offset],
+                    array[i * stride + 8 + offset]);
+            }
         }
 
-        static IEnumerable<T> parseArray<T>(string value) {
-            return value?.Split(new[] { ' ', '\n' }, StringSplitOptions.RemoveEmptyEntries)?.Select(v => (T)Convert.ChangeType(v, typeof(T), CultureInfo.InvariantCulture)) ?? Enumerable.Empty<T>();
+        private static IEnumerable<T> parseArray<T>(string value) {
+            return value?.Split(new[] { ' ', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                       ?.Select(v => (T)Convert.ChangeType(v, typeof(T), CultureInfo.InvariantCulture)) ??
+                   Enumerable.Empty<T>();
         }
 
-        static void getSource(XElement element, string semantic, out string id, out int offset) {
-            var e = element?.Elements(element?.GetDefaultNamespace() + "input")?.FirstOrDefault(e => string.Equals(e.Attribute("semantic")?.Value, semantic));
+        private static void getSource(XElement element, string semantic, out string id, out int offset) {
+            var e = element?.Elements(element?.GetDefaultNamespace() + "input")
+                ?.FirstOrDefault(e => string.Equals(e.Attribute("semantic")?.Value, semantic));
             id = e?.Attribute("source")?.Value?.TrimStart('#');
             offset = int.Parse(e?.Attribute("offset")?.Value ?? "0");
         }
 
-        static IEnumerable<T> getArraySource<T>(XElement mesh, string id) {
+        private static IEnumerable<T> getArraySource<T>(XElement mesh, string id) {
             var ns = mesh.GetDefaultNamespace();
 
             var data = mesh
@@ -126,15 +135,16 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
             var floats = parseArray<float>(data).ToArray();
 
             if(typeof(T) == typeof(Vector3)) {
-                for(var i = 0; i < floats.Length; i += 3)
+                for(var i = 0; i < floats.Length; i += 3) {
                     yield return (T)(object)new Vector3(floats[i], floats[i + 1], floats[i + 2]);
+                }
             }
 
             if(typeof(T) == typeof(Vector2)) {
-                for(var i = 0; i < floats.Length; i += 2)
+                for(var i = 0; i < floats.Length; i += 2) {
                     yield return (T)(object)new Vector2(floats[i], floats[i + 1]);
+                }
             }
-
         }
 
         public override IEnumerable<Volume.Volume> ReadFile(string fileName) {

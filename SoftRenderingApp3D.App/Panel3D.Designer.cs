@@ -1,4 +1,4 @@
-﻿namespace SoftrenderingApp3D.App {
+﻿namespace SoftRenderingApp3D.App {
     partial class Panel3D
     {
         /// <summary>

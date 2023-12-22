@@ -9,7 +9,6 @@ using System;
 using System.Numerics;
 
 namespace SubsurfaceScatteringLibrary.Renderer {
-
     public class SubsurfaceScatteringRenderer : ISubsurfaceScatteringRenderer {
         public SubsurfaceScatteringRenderContext SubsurfaceScatteringRenderContext { get; set; }
 
@@ -76,13 +75,13 @@ namespace SubsurfaceScatteringLibrary.Renderer {
                 // Transform and store vertices to View
                 var vertexCount = vertices.Length;
                 for(var idxVertex = 0; idxVertex < vertexCount; idxVertex++) {
-                    viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex].position, (Matrix4x4)viewMatrix);
+                    viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex].position, viewMatrix);
                 }
 
                 // Transform and store offset vertices
                 var offsetVertexCount = offset.Vertices.Length;
                 for(var idxVertex = 0; idxVertex < offsetVertexCount; idxVertex++) {
-                    offsetViewVertices[idxVertex] = Vector3.Transform(offset.Vertices[idxVertex].position, (Matrix4x4)viewMatrix);
+                    offsetViewVertices[idxVertex] = Vector3.Transform(offset.Vertices[idxVertex].position, viewMatrix);
                 }
 
                 vbx.TransformWorld();
@@ -172,10 +171,13 @@ namespace SubsurfaceScatteringLibrary.Renderer {
 
                 // Caries ==================================================
                 if(!SubsurfaceScatteringRenderUtils.Caries) {
-                    if(SubsurfaceScatteringRenderUtils.GaussianBlur)
+                    if(SubsurfaceScatteringRenderUtils.GaussianBlur) {
                         SubsurfaceScatteringRenderContext.Surface.ApplyGaussianBlurToSubsurface();
-                    else
+                    }
+                    else {
                         SubsurfaceScatteringRenderContext.Surface.ApplyClearSubsurface();
+                    }
+
                     break;
                 }
 
@@ -198,7 +200,7 @@ namespace SubsurfaceScatteringLibrary.Renderer {
                 // Transform and store vertices to View
                 var cariesVertexCount = cariesVertices.Length;
                 for(var idxVertex = 0; idxVertex < cariesVertexCount; idxVertex++) {
-                    cariesViewVertices[idxVertex] = Vector3.Transform(cariesVertices[idxVertex].position, (Matrix4x4)viewMatrix);
+                    cariesViewVertices[idxVertex] = Vector3.Transform(cariesVertices[idxVertex].position, viewMatrix);
                 }
 
                 cariesVbx.TransformWorld();
@@ -239,26 +241,29 @@ namespace SubsurfaceScatteringLibrary.Renderer {
                     stats.CalcTime();
                 }
 
-                if(SubsurfaceScatteringRenderUtils.GaussianBlur)
+                if(SubsurfaceScatteringRenderUtils.GaussianBlur) {
                     SubsurfaceScatteringRenderContext.Surface.ApplyGaussianBlurToSubsurface();
-                else
+                }
+                else {
                     SubsurfaceScatteringRenderContext.Surface.ApplyClearSubsurface();
+                }
 
                 // Only draw one subsurfaceScatteringVolume, will remove later
                 break;
             }
+
             return surface.Screen;
         }
 
         public DMesh3 GetDMesh3FromVolume(Volume subsurfaceScatteringVolume) {
             return DMesh3Builder.Build(
-                subsurfaceScatteringVolume.Vertices.ToFloatArray(), 
-                subsurfaceScatteringVolume.Triangles.ToIntArray(), 
+                subsurfaceScatteringVolume.Vertices.ToFloatArray(),
+                subsurfaceScatteringVolume.Triangles.ToIntArray(),
                 subsurfaceScatteringVolume.NormVertices.ToFloatArray());
         }
 
         public void CalculateSubsurfaceScattering(VertexBuffer vbx) {
-            DMesh3 originalG3 = GetDMesh3FromVolume(vbx.Volume as Volume);
+            var originalG3 = GetDMesh3FromVolume(vbx.Volume as Volume);
 
             var verticesCount = vbx.Volume.Vertices.Length;
 
@@ -268,24 +273,28 @@ namespace SubsurfaceScatteringLibrary.Renderer {
 
             var spatial = new DMeshAABBTree3(originalG3);
             spatial.Build();
-            for(int i = 0; i < verticesCount; i++) {
-                CalculateVertexSubsurfaceScattering(vbx.Volume.Vertices[i], lightPos, spatial, originalG3, (vbx.Volume as Volume), i);
+            for(var i = 0; i < verticesCount; i++) {
+                CalculateVertexSubsurfaceScattering(vbx.Volume.Vertices[i], lightPos, spatial, originalG3,
+                    vbx.Volume as Volume, i);
             }
         }
 
-        public void CalculateVertexSubsurfaceScattering(ColoredVertex vertex, Vector3 lightPos, DMeshAABBTree3 spatial, DMesh3 originalG3, Volume subsurfaceScatteringVolume, int index) {
+        public void CalculateVertexSubsurfaceScattering(ColoredVertex vertex, Vector3 lightPos, DMeshAABBTree3 spatial,
+            DMesh3 originalG3, Volume subsurfaceScatteringVolume, int index) {
             // get direction of light to vertex
-            Vector3 direction = vertex.position - lightPos;
+            var direction = vertex.position - lightPos;
 
-            Ray3d ray = new Ray3d(SubsurfaceScatteringMiscUtils.Vector3ToVector3d(lightPos), SubsurfaceScatteringMiscUtils.Vector3ToVector3d(direction));
-            int hit_tid = spatial.FindNearestHitTriangle(ray);
+            var ray = new Ray3d(SubsurfaceScatteringMiscUtils.Vector3ToVector3d(lightPos),
+                SubsurfaceScatteringMiscUtils.Vector3ToVector3d(direction));
+            var hit_tid = spatial.FindNearestHitTriangle(ray);
             // Check if ray misses
             if(hit_tid != DMesh3.InvalidID) {
-                IntrRay3Triangle3 intr = MeshQueries.TriangleIntersection(originalG3, hit_tid, ray);
+                var intr = MeshQueries.TriangleIntersection(originalG3, hit_tid, ray);
                 // Calculate distance traveled after passing through the surface
-                double hit_dist = SubsurfaceScatteringMiscUtils.Vector3ToVector3d(vertex.position).Distance(ray.PointAt(intr.RayParameter));
+                var hit_dist = SubsurfaceScatteringMiscUtils.Vector3ToVector3d(vertex.position)
+                    .Distance(ray.PointAt(intr.RayParameter));
                 // Calculate the decay of the light
-                float decay = (float)Math.Exp(-hit_dist * SubsurfaceScatteringRenderUtils.subsurfaceDecay);
+                var decay = (float)Math.Exp(-hit_dist * SubsurfaceScatteringRenderUtils.subsurfaceDecay);
                 // Color of the vertex
                 //var color = decay * SubsurfaceScatteringRenderUtils.surfaceColor;
                 var color = decay * SubsurfaceScatteringRenderUtils.surfaceColor;
@@ -296,6 +305,5 @@ namespace SubsurfaceScatteringLibrary.Renderer {
                 subsurfaceScatteringVolume.Vertices[index].color = color;
             }
         }
-
     }
 }

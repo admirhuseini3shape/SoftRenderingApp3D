@@ -3,11 +3,10 @@ using System;
 using System.Numerics;
 
 namespace SoftRenderingApp3D.Projection {
-
     public class FovPerspectiveProjection : IProjection {
-        float zNear;
-        float zFar;
-        float fOV;
+        private float fOV;
+        private float zFar;
+        private float zNear;
 
         public FovPerspectiveProjection(float fOV, float zNear, float zFar) {
             this.zNear = zNear;
@@ -53,6 +52,8 @@ namespace SoftRenderingApp3D.Projection {
 
         public event EventHandler ProjectionChanged;
 
-        public Matrix4x4 ProjectionMatrix(float width, float height) => Matrix4x4.CreatePerspectiveFieldOfView(fOV, width / height, zNear, zFar);
+        public Matrix4x4 ProjectionMatrix(float width, float height) {
+            return Matrix4x4.CreatePerspectiveFieldOfView(fOV, width / height, zNear, zFar);
+        }
     }
 }

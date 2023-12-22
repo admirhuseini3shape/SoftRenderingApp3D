@@ -1,4 +1,5 @@
 ﻿using SoftRenderingApp3D.DataStructures.Volume;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -8,15 +9,9 @@ using System.Threading;
 
 namespace SoftRenderingApp3D.DataStructures.FileReaders {
     public class STLReader : FileReader {
-        public override IEnumerable<Volume.Volume> ReadFile(string fileName) {
-            this.path = fileName;
-            return NewSTLImport();
-        }
+        private readonly Dictionary<Vector3, int> indices;
 
         public string path; // file path
-
-        private enum FileType { NONE, BINARY, ASCII }; // stl file type enumeration
-        private Dictionary<Vector3, int> indices;
         private bool processError;
 
         /**
@@ -32,6 +27,10 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
             indices = new Dictionary<Vector3, int>();
         }
 
+        public override IEnumerable<Volume.Volume> ReadFile(string fileName) {
+            path = fileName;
+            return NewSTLImport();
+        }
 
 
         /**
@@ -50,8 +49,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
         * @retval SubsurfaceScatteringVolume
         */
         public IEnumerable<Volume.Volume> NewSTLImport() {
-
-            FileType stlFileType = GetFileType(path);
+            var stlFileType = GetFileType(path);
 
             if(stlFileType == FileType.ASCII) {
                 yield return ReadASCIIFile(path);
@@ -65,33 +63,32 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
         }
 
         /**
-        * @brief  This function checks the type of stl file binary or ascii, function is assuming
-        *         given file as proper *.stl file 
-        * @param  none
-        * @retval stlFileType
-        */
+         * @brief  This function checks the type of stl file binary or ascii, function is assuming
+         * given file as proper *.stl file 
+         * @param  none
+         * @retval stlFileType
+         */
         private FileType GetFileType(string filePath) {
-            FileType stlFileType = FileType.NONE;
+            var stlFileType = FileType.NONE;
 
             /* check path is exist */
             if(File.Exists(filePath)) {
-                int lineCount = 0;
+                var lineCount = 0;
                 lineCount = File.ReadLines(filePath).Count(); // number of lines in the file
 
-                string firstLine = File.ReadLines(filePath).First();
+                var firstLine = File.ReadLines(filePath).First();
 
-                string endLines = File.ReadLines(filePath).Skip(lineCount - 1).Take(1).First() +
-                                  File.ReadLines(filePath).Skip(lineCount - 2).Take(1).First();
+                var endLines = File.ReadLines(filePath).Skip(lineCount - 1).Take(1).First() +
+                               File.ReadLines(filePath).Skip(lineCount - 2).Take(1).First();
 
                 /* check the file is ascii or not */
                 if((firstLine.IndexOf("solid") != -1) &
-                    (endLines.IndexOf("endsolid") != -1)) {
+                   (endLines.IndexOf("endsolid") != -1)) {
                     stlFileType = FileType.ASCII;
                 }
                 else {
                     stlFileType = FileType.BINARY;
                 }
-
             }
             else {
                 stlFileType = FileType.NONE;
@@ -108,66 +105,113 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
         * @retval meshList
         */
         private Volume.Volume ReadBinaryFile(string filePath) {
-            List<Vector3> vertices = new List<Vector3>();
-            List<Vector3> normals = new List<Vector3>();
-            List<Triangle> triangleIndices = new List<Triangle>();
+            var vertices = new List<Vector3>();
+            var normals = new List<Vector3>();
+            var triangleIndices = new List<Triangle>();
 
-            byte[] fileBytes = File.ReadAllBytes(filePath);
+            var fileBytes = File.ReadAllBytes(filePath);
 
-            byte[] temp = new byte[4];
+            var temp = new byte[4];
 
             /* 80 bytes title + 4 byte num of triangles + 50 bytes (1 of triangular mesh)  */
             if(fileBytes.Length > 120) {
-
                 temp[0] = fileBytes[80];
                 temp[1] = fileBytes[81];
                 temp[2] = fileBytes[82];
                 temp[3] = fileBytes[83];
 
-                var numOfMesh = System.BitConverter.ToInt32(temp, 0);
+                var numOfMesh = BitConverter.ToInt32(temp, 0);
 
                 var byteIndex = 84;
 
                 // Used to index the vertices
                 var vertexIndex = 0;
 
-                for(int i = 0; i < numOfMesh; i++) {
+                for(var i = 0; i < numOfMesh; i++) {
                     /* this try-catch block will be reviewed */
                     try {
                         /* face normal */
-                        var normalX = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
+                        var normalX = BitConverter.ToSingle(
+                            new[] {
+                                fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2],
+                                fileBytes[byteIndex + 3]
+                            }, 0);
                         byteIndex += 4;
-                        var normalY = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
+                        var normalY = BitConverter.ToSingle(
+                            new[] {
+                                fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2],
+                                fileBytes[byteIndex + 3]
+                            }, 0);
                         byteIndex += 4;
-                        var normalZ = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
+                        var normalZ = BitConverter.ToSingle(
+                            new[] {
+                                fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2],
+                                fileBytes[byteIndex + 3]
+                            }, 0);
                         byteIndex += 4;
 
                         /* vertex 1 */
-                        var x = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
+                        var x = BitConverter.ToSingle(
+                            new[] {
+                                fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2],
+                                fileBytes[byteIndex + 3]
+                            }, 0);
                         byteIndex += 4;
-                        var y = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
+                        var y = BitConverter.ToSingle(
+                            new[] {
+                                fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2],
+                                fileBytes[byteIndex + 3]
+                            }, 0);
                         byteIndex += 4;
-                        var z = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
+                        var z = BitConverter.ToSingle(
+                            new[] {
+                                fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2],
+                                fileBytes[byteIndex + 3]
+                            }, 0);
                         byteIndex += 4;
 
                         var vertex1 = new Vector3(x, y, z);
 
                         /* vertex 2 */
-                        x = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
+                        x = BitConverter.ToSingle(
+                            new[] {
+                                fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2],
+                                fileBytes[byteIndex + 3]
+                            }, 0);
                         byteIndex += 4;
-                        y = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
+                        y = BitConverter.ToSingle(
+                            new[] {
+                                fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2],
+                                fileBytes[byteIndex + 3]
+                            }, 0);
                         byteIndex += 4;
-                        z = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
+                        z = BitConverter.ToSingle(
+                            new[] {
+                                fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2],
+                                fileBytes[byteIndex + 3]
+                            }, 0);
                         byteIndex += 4;
 
                         var vertex2 = new Vector3(x, y, z);
 
                         /* vertex 3 */
-                        x = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
+                        x = BitConverter.ToSingle(
+                            new[] {
+                                fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2],
+                                fileBytes[byteIndex + 3]
+                            }, 0);
                         byteIndex += 4;
-                        y = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
+                        y = BitConverter.ToSingle(
+                            new[] {
+                                fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2],
+                                fileBytes[byteIndex + 3]
+                            }, 0);
                         byteIndex += 4;
-                        z = System.BitConverter.ToSingle(new byte[] { fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2], fileBytes[byteIndex + 3] }, 0);
+                        z = BitConverter.ToSingle(
+                            new[] {
+                                fileBytes[byteIndex], fileBytes[byteIndex + 1], fileBytes[byteIndex + 2],
+                                fileBytes[byteIndex + 3]
+                            }, 0);
                         byteIndex += 4;
 
                         var vertex3 = new Vector3(x, y, z);
@@ -188,6 +232,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                             normals.Add(new Vector3(normalX, normalY, normalZ));
                             vertexIndex++;
                         }
+
                         // Second vertex
                         if(indices.ContainsKey(vertex2)) {
                             I2 = indices[vertex2];
@@ -202,6 +247,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                             normals.Add(new Vector3(normalX, normalY, normalZ));
                             vertexIndex++;
                         }
+
                         // Third vertex
                         if(indices.ContainsKey(vertex3)) {
                             I3 = indices[vertex3];
@@ -227,20 +273,16 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                         break;
                     }
                 }
-
-            }
-            else {
-                // itentionally left blank
             }
 
-            if(processError)
+            // itentionally left blank
+            if(processError) {
                 throw new FileLoadException($"Error reading file: {path}!");
+            }
 
             return new Volume.Volume(vertices.ToArray().Vector3ArrayToColoredVertices().ToArray(),
-                             triangleIndices.ToArray(),
-                             normals.ToArray(),
-                             null,
-                             null);
+                triangleIndices.ToArray(),
+                normals.ToArray());
         }
 
 
@@ -250,17 +292,17 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
         * @retval meshList
         */
         private Volume.Volume ReadASCIIFile(string filePath) {
-            List<Vector3> vertices = new List<Vector3>();
-            List<Vector3> normals = new List<Vector3>();
-            List<Triangle> triangleIndices = new List<Triangle>();
+            var vertices = new List<Vector3>();
+            var normals = new List<Vector3>();
+            var triangleIndices = new List<Triangle>();
 
-            StreamReader txtReader = new StreamReader(filePath);
+            var txtReader = new StreamReader(filePath);
 
             string lineString;
 
             while(!txtReader.EndOfStream) {
                 lineString = txtReader.ReadLine().Trim(); /* delete whitespace in front and tail of the string */
-                string[] lineData = lineString.Split(' ');
+                var lineData = lineString.Split(' ');
 
                 var vertexIndex = 0;
 
@@ -278,7 +320,8 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                         try {
                             // FaceNormal 
 
-                            Vector3 normal = new Vector3(float.Parse(lineData[2]), float.Parse(lineData[3]), float.Parse(lineData[4]));
+                            var normal = new Vector3(float.Parse(lineData[2]), float.Parse(lineData[3]),
+                                float.Parse(lineData[4]));
 
                             //----------------------------------------------------------------------
                             lineString = txtReader.ReadLine(); // Just skip the OuterLoop line
@@ -287,26 +330,38 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                             // Vertex1
                             lineString = txtReader.ReadLine().Trim();
                             /* reduce spaces until string has proper format for split */
-                            while(lineString.IndexOf("  ") != -1) lineString = lineString.Replace("  ", " ");
+                            while(lineString.IndexOf("  ") != -1) {
+                                lineString = lineString.Replace("  ", " ");
+                            }
+
                             lineData = lineString.Split(' ');
 
-                            var vertex1 = new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]), float.Parse(lineData[3])); // x1
+                            var vertex1 = new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]),
+                                float.Parse(lineData[3])); // x1
 
                             // Vertex2
                             lineString = txtReader.ReadLine().Trim();
                             /* reduce spaces until string has proper format for split */
-                            while(lineString.IndexOf("  ") != -1) lineString = lineString.Replace("  ", " ");
+                            while(lineString.IndexOf("  ") != -1) {
+                                lineString = lineString.Replace("  ", " ");
+                            }
+
                             lineData = lineString.Split(' ');
 
-                            var vertex2 = new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]), float.Parse(lineData[3])); // x1
+                            var vertex2 = new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]),
+                                float.Parse(lineData[3])); // x1
 
                             // Vertex3
                             lineString = txtReader.ReadLine().Trim();
                             /* reduce spaces until string has proper format for split */
-                            while(lineString.IndexOf("  ") != -1) lineString = lineString.Replace("  ", " ");
+                            while(lineString.IndexOf("  ") != -1) {
+                                lineString = lineString.Replace("  ", " ");
+                            }
+
                             lineData = lineString.Split(' ');
 
-                            var vertex3 = new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]), float.Parse(lineData[3])); // x1
+                            var vertex3 = new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]),
+                                float.Parse(lineData[3])); // x1
 
                             // Create triangle, check if vertices already exist
                             int I1, I2, I3 = -1;
@@ -324,6 +379,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                                 normals.Add(normal);
                                 vertexIndex++;
                             }
+
                             // Second vertex
                             if(indices.ContainsKey(vertex2)) {
                                 I2 = indices[vertex2];
@@ -338,6 +394,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                                 normals.Add(normal);
                                 vertexIndex++;
                             }
+
                             // Third vertex
                             if(indices.ContainsKey(vertex3)) {
                                 I3 = indices[vertex3];
@@ -365,18 +422,15 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                         lineString = txtReader.ReadLine(); // Just skip the endloop
                         //----------------------------------------------------------------------
                         lineString = txtReader.ReadLine(); // Just skip the endfacet
-
-
                     } // while linedata[0]
                 } // if solid
             } // while !endofstream
 
             return new Volume.Volume(vertices.ToArray().Vector3ArrayToColoredVertices().ToArray(),
-                              triangleIndices.ToArray(),
-                              normals.ToArray(),
-                              null,
-                              null);
+                triangleIndices.ToArray(),
+                normals.ToArray());
         }
 
+        private enum FileType { NONE, BINARY, ASCII } // stl file type enumeration
     }
 }

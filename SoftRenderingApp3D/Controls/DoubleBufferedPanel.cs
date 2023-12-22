@@ -2,6 +2,8 @@
 
 namespace SoftRenderingApp3D.Controls {
     public class DoubleBufferedPanel : Panel {
-        public DoubleBufferedPanel() => this.DoubleBuffered = true;
+        public DoubleBufferedPanel() {
+            DoubleBuffered = true;
+        }
     }
 }

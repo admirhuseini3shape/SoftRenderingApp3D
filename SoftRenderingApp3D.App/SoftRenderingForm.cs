@@ -7,12 +7,10 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Windows.Forms;
 
-namespace SoftrenderingApp3D.App {
-
+namespace SoftRenderingApp3D.App {
     public partial class SoftRenderingForm : Form {
-
-        ArcBallCam arcBallCam;
-        FlyCam flyCam;
+        private readonly ArcBallCam arcBallCam;
+        private FlyCam flyCam;
 
         public SoftRenderingForm() {
             InitializeComponent();
@@ -20,19 +18,13 @@ namespace SoftrenderingApp3D.App {
             // var v = VolumeFactory.NewImportCollada("Models\\skull.dae").ToList();
 
             lstDemos.DataSource = new[] {
-                new { display = "Crane", id = "skull" },
-                new { display = "Teapot", id = "teapot" },
-                new { display = "Cubes", id = "cubes" },
-                new { display = "Spheres", id = "spheres" },
-                new { display = "Little town", id = "littletown" },
-                new { display = "Town", id = "town" },
-                new { display = "Big town", id = "bigtown" },
-                new { display = "Cube", id = "cube" },
-                new { display = "Big cube", id = "bigcube" },
-                new { display = "Empty", id = "empty" },
-                new { display = "Planetary Toy STL", id = "stl-mesh-1"},
-                new { display = "Star Destroyer STL", id = "stl-mesh-2"},
-                new { display = "Jaw", id = "jaw"}
+                new { display = "Crane", id = "skull" }, new { display = "Teapot", id = "teapot" },
+                new { display = "Cubes", id = "cubes" }, new { display = "Spheres", id = "spheres" },
+                new { display = "Little town", id = "littletown" }, new { display = "Town", id = "town" },
+                new { display = "Big town", id = "bigtown" }, new { display = "Cube", id = "cube" },
+                new { display = "Big cube", id = "bigcube" }, new { display = "Empty", id = "empty" },
+                new { display = "Planetary Toy STL", id = "stl-mesh-1" },
+                new { display = "Star Destroyer STL", id = "stl-mesh-2" }, new { display = "Jaw", id = "jaw" }
             };
 
             lstDemos.ValueMember = "id";
@@ -43,8 +35,14 @@ namespace SoftrenderingApp3D.App {
             chkShowTexture.Checked = panel3D1.RendererSettings.ShowTextures;
             chkLinearFiltering.Checked = panel3D1.RendererSettings.LiearTextureFiltering;
 
-            chkShowTexture.CheckedChanged += (s, e) => { panel3D1.RendererSettings.ShowTextures = chkShowTexture.Checked; panel3D1.Invalidate(); };
-            chkLinearFiltering.CheckedChanged += (s, e) => { panel3D1.RendererSettings.LiearTextureFiltering = chkLinearFiltering.Checked; panel3D1.Invalidate(); };
+            chkShowTexture.CheckedChanged += (s, e) => {
+                panel3D1.RendererSettings.ShowTextures = chkShowTexture.Checked;
+                panel3D1.Invalidate();
+            };
+            chkLinearFiltering.CheckedChanged += (s, e) => {
+                panel3D1.RendererSettings.LiearTextureFiltering = chkLinearFiltering.Checked;
+                panel3D1.Invalidate();
+            };
 
             btnBench.Click += (s, e) => {
                 var sw = Stopwatch.StartNew();
@@ -52,8 +50,9 @@ namespace SoftrenderingApp3D.App {
                 arcBallCam.Rotation = Quaternion.Identity;
                 for(var i = 0; i < 10; i++) {
                     arcBallCam.Rotation *= Quaternion.CreateFromYawPitchRoll(.1f, .1f, .1f);
-                    this.panel3D1.Render();
+                    panel3D1.Render();
                 }
+
                 sw.Stop();
                 lblSw.Text = sw.ElapsedMilliseconds.ToString();
             };
@@ -63,12 +62,12 @@ namespace SoftrenderingApp3D.App {
             arcBallCam = new ArcBallCam { Position = new Vector3(0, 0, -25) };
             flyCam = new FlyCam { Position = new Vector3(0, 0, -25) };
 
-            var arcBallCamHandler = new ArcBallCamHandler(this.panel3D1, arcBallCam);
+            var arcBallCamHandler = new ArcBallCamHandler(panel3D1, arcBallCam);
 
-            this.arcBallCamControl1.Camera = arcBallCam;
+            arcBallCamControl1.Camera = arcBallCam;
 
-            this.panel3D1.Projection = projection;
-            this.panel3D1.Camera = arcBallCam;
+            panel3D1.Projection = projection;
+            panel3D1.Camera = arcBallCam;
 
 
             prepareWorld("skull");
@@ -78,13 +77,10 @@ namespace SoftrenderingApp3D.App {
             prepareWorld(lstDemos.SelectedValue as string);
         }
 
-        void prepareWorld(string id) {
+        private void prepareWorld(string id) {
+            var prepareWorld = new FormMethods.FormMethods();
+            var world = prepareWorld.prepareWorld(id, arcBallCam, chkShowTexture, panel3D1);
 
-
-            FormMethods.FormMethods prepareWorld = new FormMethods.FormMethods();
-            var world = prepareWorld.prepareWorld( id , arcBallCam, chkShowTexture, panel3D1);
-
-            
 
             world.LightSources.Add(new LightSource { Position = new Vector3(0, 0, 10) });
 
@@ -94,12 +90,11 @@ namespace SoftrenderingApp3D.App {
             arcBallCam.CameraChanged += MainCam_CameraChanged;
 
             // world.Volumes.Add(camObject);
-            
-            
 
-            this.panel3D1.World = world;
 
-            this.panel3D1.Invalidate();
+            panel3D1.World = world;
+
+            panel3D1.Invalidate();
 
             void MainCam_CameraChanged(object cam, EventArgs _1) {
                 // camObject.Position = ((ArcBallCam)cam).Position;
@@ -108,7 +103,7 @@ namespace SoftrenderingApp3D.App {
         }
 
         private void btnChangeTexture_Click(object sender, EventArgs e) {
-            this.panel3D1.RendererSettings.ChangeActiveTexture();
+            panel3D1.RendererSettings.ChangeActiveTexture();
         }
     }
 }

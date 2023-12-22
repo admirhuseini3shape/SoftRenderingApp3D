@@ -4,57 +4,99 @@ using System.Windows.Forms;
 
 namespace SoftRenderingApp3D.Controls {
     public partial class SliderIn : Control {
-        public event EventHandler ValueChanged;
-        public event EventHandler PixelStepChanged;
+        private readonly float inc = 0.1f;
+        private float pixelStep = 1;
+
+        private float value;
+
+        private float xHit;
+        private float xValueHit;
+
+        private float yHit;
+        private float yValueHit;
+
+        public SliderIn() {
+            InitializeComponent();
+            DoubleBuffered = true;
+
+            Orientation = Orientation.Horizontal;
+
+            Paint += SuperSlider_Paint;
+
+            MouseDown += SuperSlider_MouseDown;
+            MouseMove += SuperSlider_MouseMove;
+            MouseWheel += SuperSlider_MouseWheel;
+
+            Layout += SuperSlider_Layout;
+        }
 
         public Orientation Orientation {
             get;
             set;
         }
 
-        public SliderIn() {
-            InitializeComponent();
-            this.DoubleBuffered = true;
+        public float TickEvery { get; set; } = 10;
+        public float NumberEvery { get; set; } = 20;
 
-            this.Orientation = Orientation.Horizontal;
-
-            this.Paint += SuperSlider_Paint;
-
-            this.MouseDown += SuperSlider_MouseDown;
-            this.MouseMove += SuperSlider_MouseMove;
-            this.MouseWheel += SuperSlider_MouseWheel;
-
-            this.Layout += SuperSlider_Layout;
+        public float Value {
+            get {
+                return value;
+            }
+            set {
+                if(PropertyChangedHelper.ChangeValue(ref this.value, value)) {
+                    ValueChanged?.Invoke(this, EventArgs.Empty);
+                    Invalidate();
+                }
+            }
         }
+
+        public float PixelStep {
+            get {
+                return pixelStep;
+            }
+            set {
+                if(PropertyChangedHelper.ChangeValue(ref pixelStep, value)) {
+                    PixelStepChanged?.Invoke(this, EventArgs.Empty);
+                    Invalidate();
+                }
+            }
+        }
+
+        public float Min { get; set; } = -180;
+        public float Max { get; set; } = 180;
+        public event EventHandler ValueChanged;
+        public event EventHandler PixelStepChanged;
 
         private void SuperSlider_Layout(object sender, LayoutEventArgs e) {
-            this.Invalidate();
+            Invalidate();
         }
 
-        readonly float inc = 0.1f;
-
         private void SuperSlider_MouseWheel(object sender, MouseEventArgs e) {
-            float v = PixelStep;
-            if(e.Delta > 0)
+            var v = PixelStep;
+            if(e.Delta > 0) {
                 v += inc;
-            else if(PixelStep > inc)
+            }
+            else if(PixelStep > inc) {
                 v -= inc;
+            }
 
             PixelStep = (float)Math.Round(v, 2);
 
-            this.Invalidate();
+            Invalidate();
         }
 
         private void SuperSlider_MouseMove(object sender, MouseEventArgs e) {
             if(e.Button == MouseButtons.Left) {
                 switch(Orientation) {
                     case Orientation.Horizontal:
-                        Value = Math.Min(Max, Math.Max(Min, xValueHit - ((e.X - xHit) * PixelStep)));
+                        Value = Math.Min(Max, Math.Max(Min, xValueHit - (e.X - xHit) * PixelStep));
                         break;
                     case Orientation.Vertical:
-                        Value = Math.Min(Max, Math.Max(Min, yValueHit - ((e.Y - yHit) * PixelStep)));
+                        Value = Math.Min(Max, Math.Max(Min, yValueHit - (e.Y - yHit) * PixelStep));
                         break;
-                };
+                }
+
+                ;
             }
         }
 
@@ -72,37 +114,27 @@ namespace SoftRenderingApp3D.Controls {
             }
         }
 
-        float xHit;
-        float xValueHit;
-
-        float yHit;
-        float yValueHit;
-
-        float value = 0;
-        float pixelStep = 1;
-
-        void drawIndexH(float x, Graphics g) {
-            g.DrawLine(Pens.Red, new PointF(x - 1, 0), new PointF(x - 1, this.Height));
-            g.DrawLine(Pens.Red, new PointF(x + 1, 0), new PointF(x + 1, this.Height));
+        private void drawIndexH(float x, Graphics g) {
+            g.DrawLine(Pens.Red, new PointF(x - 1, 0), new PointF(x - 1, Height));
+            g.DrawLine(Pens.Red, new PointF(x + 1, 0), new PointF(x + 1, Height));
         }
 
-        void drawIndexV(float y, Graphics g) {
-            g.DrawLine(Pens.Red, new PointF(0, y - 1), new PointF(this.Width, y - 1));
-            g.DrawLine(Pens.Red, new PointF(0, y + 1), new PointF(this.Width, y + 1));
+        private void drawIndexV(float y, Graphics g) {
+            g.DrawLine(Pens.Red, new PointF(0, y - 1), new PointF(Width, y - 1));
+            g.DrawLine(Pens.Red, new PointF(0, y + 1), new PointF(Width, y + 1));
         }
 
-        float transform(float v) {
-            return Orientation switch
-            {
-                Orientation.Horizontal => this.Width / 2f + v / PixelStep - Value / PixelStep,
-                Orientation.Vertical => this.Height / 2f + v / PixelStep - Value / PixelStep,
-                _ => throw new Exception(),
+        private float transform(float v) {
+            return Orientation switch {
+                Orientation.Horizontal => Width / 2f + v / PixelStep - Value / PixelStep,
+                Orientation.Vertical => Height / 2f + v / PixelStep - Value / PixelStep,
+                _ => throw new Exception()
             };
         }
 
         private void SuperSlider_Paint(object sender, PaintEventArgs e) {
             var g = e.Graphics;
-            using var f = new Font(this.Font.FontFamily, 7f);
+            using var f = new Font(Font.FontFamily, 7f);
 
             switch(Orientation) {
                 case Orientation.Horizontal:
@@ -114,8 +146,10 @@ namespace SoftRenderingApp3D.Controls {
                     for(var i = Min; i <= Max; i += NumberEvery) {
                         var label = $"{i}";
                         var x = transform(i);
-                        g.DrawString(label, f, Brushes.Gray, x, 12, new StringFormat { Alignment = StringAlignment.Center });
+                        g.DrawString(label, f, Brushes.Gray, x, 12,
+                            new StringFormat { Alignment = StringAlignment.Center });
                     }
+
                     drawIndexH(transform(Value), g);
                     break;
 
@@ -126,47 +160,18 @@ namespace SoftRenderingApp3D.Controls {
                     }
 
 
-
                     for(var i = Min; i <= Max; i += NumberEvery) {
                         var label = $"{i}";
                         var y = transform(i);
-                        g.DrawString(label, f, Brushes.Gray, 12, y - 1, new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center });
+                        g.DrawString(label, f, Brushes.Gray, 12, y - 1,
+                            new StringFormat {
+                                Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center
+                            });
                     }
 
                     drawIndexV(transform(Value), g);
                     break;
             }
-
         }
-
-        public float TickEvery { get; set; } = 10;
-        public float NumberEvery { get; set; } = 20;
-
-        public float Value {
-            get {
-                return value;
-            }
-            set {
-                if(PropertyChangedHelper.ChangeValue(ref this.value, value)) {
-                    ValueChanged?.Invoke(this, EventArgs.Empty);
-                    this.Invalidate();
-                }
-            }
-        }
-
-        public float PixelStep {
-            get {
-                return pixelStep;
-            }
-            set {
-                if(PropertyChangedHelper.ChangeValue(ref pixelStep, value)) {
-                    PixelStepChanged?.Invoke(this, EventArgs.Empty);
-                    this.Invalidate();
-                }
-            }
-        }
-
-        public float Min { get; set; } = -180;
-        public float Max { get; set; } = 180;
     }
 }

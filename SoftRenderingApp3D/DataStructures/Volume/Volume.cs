@@ -3,7 +3,8 @@ using System.Numerics;
 
 namespace SoftRenderingApp3D.DataStructures.Volume {
     public class Volume : IVolume {
-        public Volume(ColoredVertex[] vertices, Triangle[] triangleIndices, Vector3[] vertexNormals = null, Vector2[] textureCoordinates = null, ColorRGB[] triangleColors = null) {
+        public Volume(ColoredVertex[] vertices, Triangle[] triangleIndices, Vector3[] vertexNormals = null,
+            Vector2[] textureCoordinates = null, ColorRGB[] triangleColors = null) {
             Vertices = vertices;
             Triangles = triangleIndices;
 
@@ -14,10 +15,7 @@ namespace SoftRenderingApp3D.DataStructures.Volume {
             Scale = Vector3.One;
         }
 
-        public void InitializeTrianglesColor(ColorRGB color) {
-            TriangleColors = Enumerable.Repeat(color, Triangles.Length).ToArray();
-
-        }
+        public Vector3 Centroid { get; }
 
         public ColoredVertex[] Vertices { get; }
 
@@ -28,8 +26,6 @@ namespace SoftRenderingApp3D.DataStructures.Volume {
 
         public Triangle[] Triangles { get; }
 
-        public Vector3 Centroid { get; }
-
         public Rotation3D Rotation { get; set; }
 
         public Vector3 Position { get; set; }
@@ -38,9 +34,14 @@ namespace SoftRenderingApp3D.DataStructures.Volume {
 
         public Vector3[] NormVertices { get; set; }
 
-        public Matrix4x4 WorldMatrix() =>
-            Matrix4x4.CreateFromYawPitchRoll(Rotation.YYaw, Rotation.XPitch, Rotation.ZRoll) *
-            Matrix4x4.CreateTranslation(Position) *
-            Matrix4x4.CreateScale(Scale);
+        public Matrix4x4 WorldMatrix() {
+            return Matrix4x4.CreateFromYawPitchRoll(Rotation.YYaw, Rotation.XPitch, Rotation.ZRoll) *
+                   Matrix4x4.CreateTranslation(Position) *
+                   Matrix4x4.CreateScale(Scale);
+        }
+
+        public void InitializeTrianglesColor(ColorRGB color) {
+            TriangleColors = Enumerable.Repeat(color, Triangles.Length).ToArray();
+        }
     }
 }
