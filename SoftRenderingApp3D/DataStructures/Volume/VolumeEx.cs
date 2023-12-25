@@ -5,18 +5,22 @@ using System.Numerics;
 
 namespace SoftRenderingApp3D.DataStructures.Volume {
     public static class VolumeEx {
-        public static IEnumerable<Vector3> BuildVector3s(this float[] vertices) {
-            for(var i = 0; i < vertices.Length; i += 3) {
-                yield return new Vector3(vertices[i], vertices[i + 1], vertices[i + 2]);
+        public static List<Vector3> BuildVector3s(this float[] vertices) {
+            var vectorList = new List<Vector3>(vertices.Length / 3);
+            for (var i = 0; i < vertices.Length; i += 3) {
+                vectorList.Add(new Vector3(vertices[i], vertices[i + 1], vertices[i + 2]));
             }
+            return vectorList;
         }
 
-        private static IEnumerable<int> GetTriangleIndexesHaving(this ColoredVertex vertex, IVolume volume) {
-            for(var i = 0; i < volume.Triangles.Length; i++) {
-                if(volume.Triangles[i].Contains(vertex, volume.Vertices)) {
-                    yield return i;
+        private static List<int> GetTriangleIndexesHaving(this ColoredVertex vertex, IVolume volume) {
+            var indexList = new List<int>();
+            for (var i = 0; i < volume.Triangles.Length; i++) {
+                if (volume.Triangles[i].Contains(vertex, volume.Vertices)) {
+                    indexList.Add(i);
                 }
             }
+            return indexList;
         }
 
         public static Vector3 CalculateVertexNormal(this ColoredVertex vertex, IVolume volume) {
