@@ -44,12 +44,13 @@ namespace SoftRenderingApp3D.Utils {
 
         public static IEnumerable<Vector3d> ToVector3dList(this Vector3[] array) {
             var resultList = new List<Vector3d>();
-            foreach(var vector in array) {
-                resultList.Add(Vector3ToVector3d(vector));
+            for (var i = 0; i < array.Length; i++){
+                resultList.Add(Vector3ToVector3d(array[i]));
             }
-
             return resultList;
         }
+        
+        
 
         public static float[] ToFloatArray(this Vector3[] array) {
             var resultArray = new float[array.Length * 3];

@@ -11,8 +11,7 @@ namespace SoftRenderingApp3D {
         private const int ARGBGreenShift = 8;
         private const int ARGBBlueShift = 0;
 
-        private UInt32 value; // since rgb is 32bit, why yse 64 bit long?
-
+        private UInt32 value; 
         public ColorRGB(byte r, byte g, byte b) {
             value = unchecked((uint)((r << ARGBRedShift) | (g << ARGBGreenShift) | (b << ARGBBlueShift) |
                                      (255 << ARGBAlphaShift))) & 0xffffffff;
@@ -27,44 +26,7 @@ namespace SoftRenderingApp3D {
             value = unchecked((uint)((color.R << ARGBRedShift) | (color.G << ARGBGreenShift) |
                                      (color.B << ARGBBlueShift) | (color.A << ARGBAlphaShift))) & 0xffffffff;
         }
-
-
-        // public byte G { get => (byte)((value >> ARGBGreenShift) & 0xFF); set => this.value = (unchecked((uint)(R << ARGBRedShift | value << ARGBGreenShift | B << ARGBBlueShift | Alpha << ARGBAlphaShift))) & 0xffffffff; }
-        /*
-         * The code above seems to have a certain issue. What I think it was trying to do was to shift all values in
-         * their respective 32bit fields, so it would shift everything. e.g
-         * Assume a ARGB value of :
-         *
-         *  A        R        G        B
-         * 11111111 00000000 11111111 11111111 - Initial Values , the values are shifted to their respective positions and added with the operations,
-         *
-         * but when performing value << ARGBGreenShift/8, it will destory the structure, the final result would become
-         *
-         * 00000000 11111111 11111111 00000000, which doesnt isolate the green component at all. 
-         * 
-         *I think the original implementation tried to use a snippet from the  https://referencesource.microsoft.com/#System.Drawing/commonui/System/Drawing/Color.cs,
-         *
-         *  private static long MakeArgb(byte alpha, byte red, byte green, byte blue) {
-            return(long)(unchecked((uint)(red << ARGBRedShift |
-                         green << ARGBGreenShift | 
-                         blue << ARGBBlueShift | 
-                         alpha << ARGBAlphaShift))) & 0xffffffff;
-            }
-         *
-         *  but maybe there was some mistake along the way
-         *
-         * Also , the final comparison & 0xffffffff seems a bit redundant, as it checks if the number is a 32bit
-         * value, which is supposed to be anyway.
-         *
-         *
-         * The current implementation relies on using a mask , which isolates the required color value with an xor
-         * operation with 0xFFFFFFFF, 
-         * making G 0 and everything else 1, running a bitwise and operation between them and the values, which
-         * of course will result in everything being 1 expect the color value. Now when combining the oringinal value with
-         * the mask ,  and adding with or the new value which is shifted by 16 bits, you get a final modifiable value
-         *
-         */
-
+        
         public byte R {
             get {
                 return (byte)((value >> ARGBRedShift) & 0xFF);

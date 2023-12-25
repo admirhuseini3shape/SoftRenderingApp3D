@@ -11,7 +11,7 @@ namespace SoftRenderingApp3D.DataStructures.Volume {
             }
         }
 
-        public static IEnumerable<int> GetTriangleIndexesHaving(this ColoredVertex vertex, IVolume volume) {
+        private static IEnumerable<int> GetTriangleIndexesHaving(this ColoredVertex vertex, IVolume volume) {
             for(var i = 0; i < volume.Triangles.Length; i++) {
                 if(volume.Triangles[i].Contains(vertex, volume.Vertices)) {
                     yield return i;
@@ -19,31 +19,35 @@ namespace SoftRenderingApp3D.DataStructures.Volume {
             }
         }
 
-        public static Vector3 CalculateVertexNormal(this ColoredVertex vertex, IVolume volume) {
+        private static Vector3 CalculateVertexNormal(this ColoredVertex vertex, IVolume volume) {
             var inTriangles = GetTriangleIndexesHaving(vertex, volume);
             if(!inTriangles.Any()) {
                 return Vector3.Zero;
             }
 
             var sum = new Vector3(0, 0, 0);
-            foreach(var idx in inTriangles) {
+            for(var idx = 0; idx < volume.Triangles.Length; idx++) {
                 sum += volume.Triangles[idx].CalculateNormal(volume.Vertices);
             }
-
             return Vector3.Normalize(sum);
         }
 
-        public static IEnumerable<Vector3> CalculateVertexNormals(this IVolume volume) {
-            foreach(var vertex in volume.Vertices) {
-                yield return CalculateVertexNormal(vertex, volume);
+        public static List<Vector3> CalculateVertexNormals(this IVolume volume) {
+            List<Vector3> result = new List<Vector3>();
+            for(var i = 0; i < volume.Vertices.Length; i++) {
+                result.Add(CalculateVertexNormal(volume.Vertices[i], volume));
             }
+            return result;
         }
-
-        public static IEnumerable<Vector3> CalculateTriangleNormals(this IVolume volume) {
-            foreach(var triangleIndices in volume.Triangles) {
-                yield return triangleIndices.CalculateNormal(volume.Vertices);
+        
+        public static List<Vector3> CalculateTriangleNormals(this IVolume volume) {
+            var result = new List<Vector3>();
+            for(var i = 0; i < volume.Triangles.Length; i++) {
+                result.Add(volume.Triangles[i].CalculateNormal(volume.Vertices));
             }
+            return result;
         }
+            
 
         public static IEnumerable<Triangle> BuildTriangleIndices(this int[] indices) {
             for(var i = 0; i < indices.Length; i += 3) {
