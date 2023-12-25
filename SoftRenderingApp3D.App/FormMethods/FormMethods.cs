@@ -1,4 +1,5 @@
-﻿using SoftRenderingApp3D.Camera;
+﻿using SoftRenderingApp3D.App.DataStructures;
+using SoftRenderingApp3D.Camera;
 using SoftRenderingApp3D.DataStructures.FileReaders;
 using SoftRenderingApp3D.DataStructures.Shapes;
 using SoftRenderingApp3D.DataStructures.TextureReaders;
@@ -10,8 +11,13 @@ using System.Windows.Forms;
 namespace SoftRenderingApp3D.App.FormMethods {
     public class FormMethods {
         public World prepareWorld(string id, ArcBallCam arcBallCam, CheckBox chkShowTexture, Panel3D panel3D1) {
+            
+            ObjectSerializer objectSerializer = new ObjectSerializer();
+            
+            DisplayModelJsonData model = objectSerializer.DeserializeObjectFromFile("C:\\Users\\Saiti\\RiderProjects\\SoftRenderingApp3D\\SoftRenderingApp3D.App\\Textures\\jsonModel.json");
+            
             var world = new World();
-
+            
             var colladaReader = new ColladaReader();
             var stlReader = new STLReader();
             ITextureReader textureReader = new TextureReaderBMP();
@@ -20,6 +26,12 @@ namespace SoftRenderingApp3D.App.FormMethods {
             world.Textures.Add(textureReader.ReadImage(@"textures\bone_high.bmp"));
 
             switch(id) {
+                case "teapot":
+                    panel3D1.RendererSettings.ShowTextures = false;
+                    chkShowTexture.Enabled = model.ShowTexture;
+                    chkShowTexture.Checked = model.ShowTexture;
+                    world.Volumes.AddRange(colladaReader.ReadFile(@"models\teapot.dae"));
+                    break;
                 case "jaw":
                     panel3D1.RendererSettings.ShowTextures = false;
                     chkShowTexture.Enabled = false;
@@ -49,14 +61,6 @@ namespace SoftRenderingApp3D.App.FormMethods {
                     world.Volumes.AddRange(colladaReader.ReadFile(@"models\skull.dae"));
                     arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
                     break;
-
-                case "teapot":
-                    panel3D1.RendererSettings.ShowTextures = false;
-                    chkShowTexture.Enabled = false;
-                    chkShowTexture.Checked = false;
-                    world.Volumes.AddRange(colladaReader.ReadFile(@"models\teapot.dae"));
-                    break;
-
                 case "empty":
                     panel3D1.RendererSettings.ShowTextures = false;
                     chkShowTexture.Enabled = false;
