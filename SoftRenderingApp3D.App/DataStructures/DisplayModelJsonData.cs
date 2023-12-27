@@ -10,12 +10,13 @@ namespace SoftRenderingApp3D.App.DataStructures {
         public Enums.TextureType Texture { get; set; }
         public Enums.DisplayModelType DisplayModelType { get; set; }
         public string GeneratingFunctionName { get; set; }
+        public string ReaderType { get; set; }
         
         
 
         public DisplayModelJsonData(string id, bool hasTexture, bool showTexture, string inputFileName,
                 float initialZoomLevel, Enums.TextureType texture, Enums.DisplayModelType displayModelType,
-                string generatingFunctionName) 
+                string generatingFunctionName, string readerType) 
         {
             Id = id;
             HasTexture = hasTexture;
@@ -25,6 +26,7 @@ namespace SoftRenderingApp3D.App.DataStructures {
             Texture = texture;  
             DisplayModelType = displayModelType;
             GeneratingFunctionName = generatingFunctionName;
+            ReaderType = readerType;
         }
     }
 }

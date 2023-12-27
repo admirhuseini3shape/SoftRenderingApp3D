@@ -2,5 +2,6 @@
   "Id": "teapot",
   "DisplayModelType": "ColladaFiles",
   "showTextures": false,
-  "inputFileName": "models/teapot.dae"
+  "inputFileName": "models/teapot.dae",
+  "readerType": "colladaReader"
 }

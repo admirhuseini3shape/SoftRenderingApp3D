@@ -3,6 +3,7 @@ using SoftRenderingApp3D.Camera;
 using SoftRenderingApp3D.DataStructures.FileReaders;
 using SoftRenderingApp3D.DataStructures.Shapes;
 using SoftRenderingApp3D.DataStructures.TextureReaders;
+using SoftRenderingApp3D.DataStructures.Volume;
 using SoftRenderingApp3D.DataStructures.World;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,17 @@ using System.Windows.Forms;
 
 namespace SoftRenderingApp3D.App.FormMethods {
     public class FormMethods {
+        
+        private readonly Dictionary<string, FileReader> readers;
+
+        public FormMethods()
+        {
+            readers = new Dictionary<string, FileReader>
+            {
+                { "colladaReader", new ColladaReader() },
+                { "stlReader", new STLReader() }
+            };
+        }
         
         public List<DisplayModelJsonData> DeserializeAllModelConfigs(string directoryPath)
         {
@@ -41,8 +53,6 @@ namespace SoftRenderingApp3D.App.FormMethods {
             world.Textures.Add(textureReader.ReadImage(@"textures\bone.bmp"));
             world.Textures.Add(textureReader.ReadImage(@"textures\glass_effect.bmp"));
             world.Textures.Add(textureReader.ReadImage(@"textures\bone_high.bmp"));
-
-            
             
             foreach(var model in models ) {
                 
@@ -51,7 +61,7 @@ namespace SoftRenderingApp3D.App.FormMethods {
                         panel3D1.RendererSettings.ShowTextures = model.ShowTexture;
                         chkShowTexture.Enabled = model.ShowTexture;
                         chkShowTexture.Checked = model.ShowTexture;
-                        world.Volumes.AddRange(colladaReader.ReadFile(model.InputFileName));
+                        world.Volumes.AddRange(readers[model.ReaderType].ReadFile(model.InputFileName));
                         break;
                     // case "jaw":
                     //     panel3D1.RendererSettings.ShowTextures = false;
