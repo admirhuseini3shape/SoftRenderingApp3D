@@ -1,0 +1,6 @@
+﻿{
+  "Id": "teapot",
+  "DisplayModelType": "ColladaFiles",
+  "showTextures": false,
+  "inputFileName": "models/teapot.dae"
+}
