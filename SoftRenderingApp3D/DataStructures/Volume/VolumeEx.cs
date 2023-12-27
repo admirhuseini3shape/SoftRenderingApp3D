@@ -38,7 +38,7 @@ namespace SoftRenderingApp3D.DataStructures.Volume {
         }
 
         public static List<Vector3> CalculateVertexNormals(this IVolume volume) {
-            List<Vector3> result = new List<Vector3>();
+            var result = new List<Vector3>();
             for(var i = 0; i < volume.Vertices.Length; i++) {
                 result.Add(CalculateVertexNormal(volume.Vertices[i], volume));
             }
