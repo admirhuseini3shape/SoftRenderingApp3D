@@ -5,10 +5,9 @@ using SubsurfaceScatteringLibrary.Renderer;
 using System;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using MathUtils = SoftRenderingApp3D.Utils.MathUtils;
 
 namespace SubsurfaceScatteringLibrary.Painter {
-    class CariesSubsurfaceScatteringPainter : ISubsurfaceScatteringPainter {
+    internal class CariesSubsurfaceScatteringPainter : ISubsurfaceScatteringPainter {
         public SubsurfaceScatteringRenderContext RendererContext { get; set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -19,15 +18,20 @@ namespace SubsurfaceScatteringLibrary.Painter {
             var zWorld = vbx.Volume.Triangles[triangleIndex].CalculateCentroid(vbx.Volume.Vertices);
 
             var surface = RendererContext.Surface;
-            SubsurfaceScatteringPainterUtils.SortTrianglePoints(vbx, surface, triangleIndex, out var v0, out var v1, out var v2, out var index0, out var index1, out var index2);
+            SubsurfaceScatteringPainterUtils.SortTrianglePoints(vbx, surface, triangleIndex, out var v0, out var v1,
+                out var v2, out var index0, out var index1, out var index2);
 
-            var p0 = v0.ScreenPoint; var p1 = v1.ScreenPoint; var p2 = v2.ScreenPoint;
+            var p0 = v0.ScreenPoint;
+            var p1 = v1.ScreenPoint;
+            var p2 = v2.ScreenPoint;
 
             var yStart = (int)Math.Max(p0.Y, 0);
             var yEnd = (int)Math.Min(p2.Y, surface.Height - 1);
 
             // Out if clipped
-            if(yStart > yEnd) return;
+            if(yStart > yEnd) {
+                return;
+            }
 
             var yMiddle = (int)p1.Y.Clamp(yStart, yEnd);
 
@@ -52,13 +56,14 @@ namespace SubsurfaceScatteringLibrary.Painter {
                 //   P0
                 // P1 
                 //   P2
-                paintHalfTriangle(yStart, (int)yMiddle - 1, p0, p1, p0, p2, nl0, nl1, nl0, nl2, zWorld);
-                paintHalfTriangle((int)yMiddle, yEnd, p1, p2, p0, p2, nl1, nl2, nl0, nl2, zWorld);
+                paintHalfTriangle(yStart, yMiddle - 1, p0, p1, p0, p2, nl0, nl1, nl0, nl2, zWorld);
+                paintHalfTriangle(yMiddle, yEnd, p1, p2, p0, p2, nl1, nl2, nl0, nl2, zWorld);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void paintHalfTriangle(int yStart, int yEnd, Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd, float nla, float nlb, float nlc, float nld, Vector3 zWorld) {
+        private void paintHalfTriangle(int yStart, int yEnd, Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd, float nla,
+            float nlb, float nlc, float nld, Vector3 zWorld) {
             var mg1 = pa.Y == pb.Y ? 1f : 1 / (pb.Y - pa.Y);
             var mg2 = pd.Y == pc.Y ? 1f : 1 / (pd.Y - pc.Y);
 
@@ -69,7 +74,9 @@ namespace SubsurfaceScatteringLibrary.Painter {
                 var sx = MathUtils.Lerp(pa.X, pb.X, gradient1);
                 var ex = MathUtils.Lerp(pc.X, pd.X, gradient2);
 
-                if(sx >= ex) continue;
+                if(sx >= ex) {
+                    continue;
+                }
 
                 var sl = MathUtils.Lerp(nla, nlb, gradient1);
                 var el = MathUtils.Lerp(nlc, nld, gradient2);
@@ -82,7 +89,8 @@ namespace SubsurfaceScatteringLibrary.Painter {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void paintScanline(float y, float sx, float ex, float sz, float ez, float sl, float el, Vector3 zWorld) {
+        private void paintScanline(float y, float sx, float ex, float sz, float ez, float sl, float el,
+            Vector3 zWorld) {
             var surface = RendererContext.Surface;
 
             var minX = Math.Max(sx, 0);
@@ -104,6 +112,5 @@ namespace SubsurfaceScatteringLibrary.Painter {
                 surface.PutCariesPixel((int)x, (int)y, z, finalColor, zWorld);
             }
         }
-
     }
 }

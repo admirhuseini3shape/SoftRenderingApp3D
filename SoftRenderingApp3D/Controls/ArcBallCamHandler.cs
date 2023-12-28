@@ -1,36 +1,40 @@
 ﻿using SoftRenderingApp3D.Camera;
+using SoftRenderingApp3D.Utils;
 using System.Drawing;
 using System.Numerics;
 using System.Windows.Forms;
 
 namespace SoftRenderingApp3D.Controls {
-
     // Must adapt moving
 
     public class ArcBallCamHandler {
-        ArcBallCam camera;
+        private ArcBallCam camera;
 
-        Point oldMousePosition;
-        Vector3 oldCameraPosition;
+        private Control control;
+        private bool left;
+        private Vector3 oldCameraPosition;
 
-        Quaternion oldCameraRotation;
+        private Quaternion oldCameraRotation;
 
-        float yCoeff = 10f;
+        private Point oldMousePosition;
+
+        private bool right;
+
+        private readonly float yCoeff = 10f;
 
         public ArcBallCamHandler(Control control, ArcBallCam camera) {
             Control = control;
             Camera = camera;
         }
 
-        Control control;
-
         public Control Control {
-            get => control;
+            get {
+                return control;
+            }
             set {
                 var oldControl = control;
 
                 if(PropertyChangedHelper.ChangeValue(ref control, value)) {
-
                     if(oldControl != null) {
                         oldControl.MouseDown -= control_MouseDown;
                         oldControl.MouseMove -= control_MouseMove;
@@ -46,14 +50,20 @@ namespace SoftRenderingApp3D.Controls {
             }
         }
 
+        public ArcBallCam Camera {
+            get {
+                return camera;
+            }
+            set {
+                PropertyChangedHelper.ChangeValue(ref camera, value);
+            }
+        }
+
         private void Control_MouseUp(object sender, MouseEventArgs e) {
             left = false;
             right = false;
             control.Cursor = Cursors.Default;
         }
-
-        bool right;
-        bool left;
 
         private void control_MouseDown(object sender, MouseEventArgs e) {
             ControlHelper.getMouseButtons(out left, out right);
@@ -61,7 +71,7 @@ namespace SoftRenderingApp3D.Controls {
 
             if(left && right) {
                 oldCameraPosition = camera.Position;
-                control.Cursor = Cursors.SizeNS ;
+                control.Cursor = Cursors.SizeNS;
             }
             else if(left) {
                 oldCameraRotation = camera.Rotation;
@@ -73,7 +83,7 @@ namespace SoftRenderingApp3D.Controls {
             }
         }
 
-        void control_MouseMove(object sender, MouseEventArgs e) {
+        private void control_MouseMove(object sender, MouseEventArgs e) {
             if(left && right) {
                 var deltaY = oldMousePosition.Y - e.Location.Y;
                 camera.Position = oldCameraPosition + new Vector3(0, 0, deltaY / yCoeff);
@@ -90,13 +100,8 @@ namespace SoftRenderingApp3D.Controls {
             }
             else if(right) {
                 var deltaPosition = new Vector3(e.Location.ToVector2() - oldMousePosition.ToVector2(), 0);
-                camera.Position = oldCameraPosition + (deltaPosition * new Vector3(1, -1, 1)) / 100;
+                camera.Position = oldCameraPosition + deltaPosition * new Vector3(1, -1, 1) / 100;
             }
-        }
-
-        public ArcBallCam Camera {
-            get => camera;
-            set => PropertyChangedHelper.ChangeValue(ref camera, value);
         }
     }
 }

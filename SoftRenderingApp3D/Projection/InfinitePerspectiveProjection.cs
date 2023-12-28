@@ -3,14 +3,17 @@ using System;
 using System.Numerics;
 
 namespace SoftRenderingApp3D.Projection {
-
     // Buggy
 
     public class InfinitePerspectiveProjection : IProjection {
-        public event EventHandler ProjectionChanged;
+        private float fOV;
 
-        float zNear;
-        float fOV;
+        private float zNear;
+
+        public InfinitePerspectiveProjection(float fovDegree, float zNear) {
+            this.zNear = zNear;
+            fOV = fovDegree;
+        }
 
         public float ZNear {
             get {
@@ -18,8 +21,9 @@ namespace SoftRenderingApp3D.Projection {
             }
 
             set {
-                if(zNear == value)
+                if(zNear == value) {
                     return;
+                }
 
                 zNear = value;
 
@@ -32,8 +36,9 @@ namespace SoftRenderingApp3D.Projection {
                 return fOV;
             }
             set {
-                if(fOV == value)
+                if(fOV == value) {
                     return;
+                }
 
                 fOV = value;
 
@@ -41,10 +46,7 @@ namespace SoftRenderingApp3D.Projection {
             }
         }
 
-        public InfinitePerspectiveProjection(float fovDegree, float zNear) {
-            this.zNear = zNear;
-            this.fOV = fovDegree;
-        }
+        public event EventHandler ProjectionChanged;
 
         public Matrix4x4 ProjectionMatrix(float w, float h) {
             var f = fOV.ToRad();
@@ -53,7 +55,7 @@ namespace SoftRenderingApp3D.Projection {
                 0, f, 0, 0,
                 0, 0, 0, -zNear,
                 0, 0, -1, 0
-           );
+            );
         }
     }
 }

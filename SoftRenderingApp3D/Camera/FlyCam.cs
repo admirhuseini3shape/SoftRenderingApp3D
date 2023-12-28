@@ -1,23 +1,21 @@
 ﻿using System;
 using System.Numerics;
 
-namespace SoftRenderingApp3D {
-
+namespace SoftRenderingApp3D.Camera {
     // Buggy
 
     public class FlyCam : ICamera {
-        private Quaternion rotation = Quaternion.Identity;
         private Vector3 position;
-
-        public event EventHandler CameraChanged;
-
-        public Matrix4x4 ViewMatrix() => Matrix4x4.CreateTranslation(position) * Matrix4x4.CreateFromQuaternion(rotation);
+        private Quaternion rotation = Quaternion.Identity;
 
         public Vector3 Position {
-            get => position;
+            get {
+                return position;
+            }
             set {
-                if(position == value)
+                if(position == value) {
                     return;
+                }
 
                 position = value;
 
@@ -26,15 +24,24 @@ namespace SoftRenderingApp3D {
         }
 
         public Quaternion Rotation {
-            get => rotation;
+            get {
+                return rotation;
+            }
             set {
-                if(rotation == value)
+                if(rotation == value) {
                     return;
+                }
 
                 rotation = value;
 
                 CameraChanged?.Invoke(this, EventArgs.Empty);
             }
+        }
+
+        public event EventHandler CameraChanged;
+
+        public Matrix4x4 ViewMatrix() {
+            return Matrix4x4.CreateTranslation(position) * Matrix4x4.CreateFromQuaternion(rotation);
         }
 
         public override string ToString() {

@@ -1,4 +1,4 @@
-﻿namespace SoftRenderingApp3D {
+﻿namespace SoftRenderingApp3D.Controls {
     partial class Slider {
         /// <summary> 
         /// Variable nécessaire au concepteur.
@@ -24,7 +24,7 @@
         /// </summary>
         private void InitializeComponent() {
             this.label1 = new System.Windows.Forms.Label();
-            this.superSlider1 = new SoftRenderingApp3D.SliderIn();
+            this.superSlider1 = new SliderIn();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 

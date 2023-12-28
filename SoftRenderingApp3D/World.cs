@@ -1,4 +1,6 @@
-﻿using SoftRenderingApp3D.DataStructures;
+﻿using SoftRenderingApp3D.DataStructures.Texture;
+using SoftRenderingApp3D.DataStructures.Volume;
+using SoftRenderingApp3D.DataStructures.World;
 using System.Collections.Generic;
 
 namespace SoftRenderingApp3D {

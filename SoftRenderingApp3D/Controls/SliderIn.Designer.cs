@@ -1,4 +1,4 @@
-﻿namespace SoftRenderingApp3D {
+﻿namespace SoftRenderingApp3D.Controls {
     partial class SliderIn {
         /// <summary> 
         /// Variable nécessaire au concepteur.

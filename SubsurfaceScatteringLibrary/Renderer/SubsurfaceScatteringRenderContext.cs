@@ -1,10 +1,11 @@
 ﻿using SoftRenderingApp3D;
 using SoftRenderingApp3D.Buffer;
-using SoftRenderingApp3D.DataStructures;
+using SoftRenderingApp3D.Camera;
+using SoftRenderingApp3D.DataStructures.World;
+using SoftRenderingApp3D.Projection;
 using SubsurfaceScatteringLibrary.Buffer;
 
 namespace SubsurfaceScatteringLibrary.Renderer {
-
     public class SubsurfaceScatteringRenderContext {
         public ICamera Camera { get; set; }
         public IWorld World { get; set; }

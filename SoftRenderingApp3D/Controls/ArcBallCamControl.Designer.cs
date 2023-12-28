@@ -26,7 +26,7 @@ namespace SoftRenderingApp3D.Controls {
         /// </summary>
         private void InitializeComponent() {
             this.panel1 = new DoubleBufferedPanel();
-            this.slider1 = new SoftRenderingApp3D.SliderIn();
+            this.slider1 = new SliderIn();
             this.SuspendLayout();
             // 
             // panel1

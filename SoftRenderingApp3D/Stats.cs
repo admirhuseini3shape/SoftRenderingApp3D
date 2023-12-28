@@ -1,22 +1,29 @@
 ﻿using System.Diagnostics;
 
 namespace SoftRenderingApp3D {
-
     public class Stats {
-        public int TotalTriangleCount = 0;
-        public int DrawnTriangleCount = 0;
-        public int FacingBackTriangleCount = 0;
-        public int OutOfViewTriangleCount = 0;
-        public int BehindViewTriangleCount = 0;
+        private readonly Stopwatch calcSw = new Stopwatch();
+        private readonly Stopwatch paintSw = new Stopwatch();
+        public int BehindViewTriangleCount;
+        public int BehindZPixelCount;
 
-        public int DrawnPixelCount = 0;
-        public int BehindZPixelCount = 0;
+        public int DrawnPixelCount;
+        public int DrawnTriangleCount;
+        public int FacingBackTriangleCount;
+        public int OutOfViewTriangleCount;
+        public int TotalTriangleCount;
 
-        public long CalculationTimeMs { get => calcSw.ElapsedMilliseconds; }
-        public long PainterTimeMs { get => paintSw.ElapsedMilliseconds; }
+        public long CalculationTimeMs {
+            get {
+                return calcSw.ElapsedMilliseconds;
+            }
+        }
 
-        readonly Stopwatch calcSw = new Stopwatch();
-        readonly Stopwatch paintSw = new Stopwatch();
+        public long PainterTimeMs {
+            get {
+                return paintSw.ElapsedMilliseconds;
+            }
+        }
 
         public void PaintTime() {
             calcSw.Stop();

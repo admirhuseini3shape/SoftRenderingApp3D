@@ -4,13 +4,27 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace SoftRenderingApp3D.Buffer {
-
     public class FrameBuffer {
-        private readonly int[] emptyZBuffer;
         private readonly int[] emptyBuffer;
+        private readonly int[] emptyZBuffer;
 
         private readonly RenderContext RenderContext;
-        private int[] zBuffer;
+        private readonly int[] zBuffer;
+
+        public FrameBuffer(int width, int height, RenderContext renderContext) {
+            Screen = new int[width * height];
+            zBuffer = new int[width * height];
+
+            emptyBuffer = new int[width * height];
+            emptyZBuffer = new int[width * height];
+            emptyZBuffer.Fill(Depth);
+
+            Width = width;
+            Height = height;
+            RenderContext = renderContext;
+            widthMinus1By2 = (width - 1) / 2f;
+            heightMinus1By2 = (height - 1) / 2f;
+        }
 
         public int[] Screen { get; }
 
@@ -22,24 +36,11 @@ namespace SoftRenderingApp3D.Buffer {
         private float heightMinus1By2 { get; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector3 ToScreen3(Vector4 p) => new Vector3(
-            widthMinus1By2 * (p.X / p.W + 1),  // Using width - 1 to prevent overflow by -1 and 1 NDC coordinates
-            -heightMinus1By2 * (p.Y / p.W - 1), // Using height - 1 to prevent overflow by -1 and 1 NDC coordinates
-            Depth * p.Z / p.W);
-
-        public FrameBuffer(int width, int height, RenderContext renderContext) {
-            this.Screen = new int[width * height];
-            this.zBuffer = new int[width * height];
-
-            this.emptyBuffer = new int[width * height];
-            this.emptyZBuffer = new int[width * height];
-            this.emptyZBuffer.Fill(Depth);
-
-            this.Width = width;
-            this.Height = height;
-            this.RenderContext = renderContext;
-            this.widthMinus1By2 = (width - 1) / 2f;
-            this.heightMinus1By2 = (height - 1) / 2f;
+        public Vector3 ToScreen3(Vector4 p) {
+            return new Vector3(
+                widthMinus1By2 * (p.X / p.W + 1), // Using width - 1 to prevent overflow by -1 and 1 NDC coordinates
+                -heightMinus1By2 * (p.Y / p.W - 1), // Using height - 1 to prevent overflow by -1 and 1 NDC coordinates
+                Depth * p.Z / p.W);
         }
 
         public void Clear() {
@@ -69,25 +70,62 @@ namespace SoftRenderingApp3D.Buffer {
         }
 
 
+        // Bresenham's line algorithm .
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DrawLine(Vector3 p0, Vector3 p1, ColorRGB color) {
+        public void DrawLine3d(Vector3 p0, Vector3 p1, ColorRGB color) {
+            // Converts the start and end points from floating point to integer coordinates.
+            var x1 = (int)p0.X;
+            var y1 = (int)p0.Y;
+            var z1 = (int)p0.Z;
+            var x2 = (int)p1.X;
+            var y2 = (int)p1.Y;
+            var z2 = (int)p1.Z;
 
-            var x0 = (int)p0.X; var y0 = (int)p0.Y; var z0 = (int)p0.Z;
-            var x1 = (int)p1.X; var y1 = (int)p1.Y; var z1 = (int)p1.Z;
+            // Calculate the absolute differences in each dimension.
+            var dx = Math.Abs(x2 - x1);
+            var sx = x1 < x2 ? 1 : -1;
+            var dy = Math.Abs(y2 - y1);
+            var sy = y1 < y2 ? 1 : -1;
+            var dz = Math.Abs(z2 - z1);
+            var sz = z1 < z2 ? 1 : -1;
 
-            var dx = Math.Abs(x1 - x0); var dy = Math.Abs(y1 - y0); var dz = Math.Abs(z1 - z0);
+            // Calculate the major axis.
+            var dm = Math.Max(dx, Math.Max(dy, dz));
 
-            var sx = x0 < x1 ? 1 : -1; var sy = y0 < y1 ? 1 : -1; var sz = z0 < z1 ? 1 : -1;
+            // Initialize the decision variables
+            var i = dm;
 
-            var ex = 0; var ey = 0; var ez = 0;
+            // Set up the decision variables.
+            x1 = y1 = z1 = dm / 2;
 
-            var dmax = Math.Max(dx, dy);
+            // Start the infinite drawing loop.
+            while(true) {
+                // Draw Current Pixel
+                PutPixel(x2, y2, z2, color);
 
-            int i = 0;
-            while(i++ < dmax) {
-                ex += dx; if(ex >= dmax) { ex -= dmax; x0 += sx; PutPixel(x0, y0, z0, color); }
-                ey += dy; if(ey >= dmax) { ey -= dmax; y0 += sy; PutPixel(x0, y0, z0, color); }
-                ez += dz; if(ez >= dmax) { ez -= dmax; z0 += sz; PutPixel(x0, y0, z0, color); }
+                // Break the loop if the end point is reached.
+                if(i-- == 0) {
+                    break;
+                }
+
+                // Update the decision variables and coordinates based on the absolute differences.
+                x2 += dx;
+                if(x2 < 0) {
+                    x2 += dm;
+                    x1 += sx;
+                }
+
+                y2 += dy;
+                if(y2 < 0) {
+                    y2 += dm;
+                    y1 += sy;
+                }
+
+                z2 += dz;
+                if(z2 < 0) {
+                    z2 += dm;
+                    z1 += sz;
+                }
             }
         }
     }

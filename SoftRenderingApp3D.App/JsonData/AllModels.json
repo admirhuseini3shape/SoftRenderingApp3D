@@ -1,0 +1,113 @@
+﻿[
+    {
+        "Id": "skull",
+        "DisplayName": "Skull",
+        "DisplayModelType": "ColladaFiles",
+        "InputFileName": "models\\skull.dae",
+        "ShowTexture": true,
+        "HasTexture": true,
+        "ReaderType": "ColladaReader",
+        "InitialZoomLevel": -5
+    },
+    {
+        "Id": "teapot",
+        "DisplayName": "Teapot",
+        "DisplayModelType": "ColladaFiles",
+        "InputFileName": "models\\teapot.dae",
+        "ShowTexture": false,
+        "HasTexture": false,
+        "ReaderType": "ColladaReader"
+    },
+    {
+        "Id": "jaw",
+        "DisplayName": "Jaw",
+        "DisplayModelType": "StlFiles",
+        "InputFileName": "models\\jaw.stl",
+        "ShowTextures": false,
+        "HasTexture": false,
+        "ReaderType": "StlReader",
+        "InitialZoomLevel": -80
+    },
+	{
+        "Id": "gearToy",
+        "DisplayName": "Gear Toy",
+        "DisplayModelType": "StlFiles",
+        "InputFileName": "models\\Planetary_Toy_D801.stl",
+        "ShowTextures": false,
+        "HasTexture": false,
+        "ReaderType": "StlReader",
+        "InitialZoomLevel": -150
+    },
+	{
+        "Id": "starDestroyer",
+        "DisplayName": "Star Destroyer",
+        "DisplayModelType": "StlFiles",
+        "InputFileName": "models\\Star_Destroyer_Fixed.stl",
+        "ShowTextures": false,
+        "HasTexture": false,
+        "ReaderType": "StlReader",
+        "InitialZoomLevel": -150
+    },
+    {
+        "Id": "town",
+        "DisplayName": "Town",
+        "DisplayModelType": "GeneratingFunction",
+        "ShowTexture": false,
+        "HasTexture": false,
+        "GeneratingFunctionName": "CreateTown"
+    },
+    {
+        "Id": "littletown",
+        "DisplayName": "Little Town",
+        "DisplayModelType": "GeneratingFunction",
+        "ShowTexture": false,
+        "HasTexture": false,
+        "GeneratingFunctionName": "CreateLittleTown"
+    },
+    {
+        "Id": "bigtown",
+        "DisplayName": "Big Town",
+        "DisplayModelType": "GeneratingFunction",
+        "ShowTexture": false,
+        "HasTexture": false,
+        "GeneratingFunctionName": "CreateBigTown"
+    },
+    {
+        "Id": "cube",
+        "DisplayName": "Cube",
+        "DisplayModelType": "GeneratingFunction",
+        "ShowTexture": false,
+        "HasTexture": false,
+        "GeneratingFunctionName": "CreateCube"
+    },
+    {
+        "Id": "bigcube",
+        "DisplayName": "Big Cube",
+        "DisplayModelType": "GeneratingFunction",
+        "ShowTexture": false,
+        "HasTexture": false,
+        "GeneratingFunctionName": "CreateBigCube"
+    },
+    {
+        "Id": "cubes",
+        "DisplayName": "Cubes",
+        "DisplayModelType": "GeneratingFunction",
+        "ShowTexture": false,
+        "HasTexture": false,
+        "GeneratingFunctionName": "CreateCubes"
+    },
+    {
+        "Id": "sphere",
+        "DisplayName": "Sphere",
+        "DisplayModelType": "GeneratingFunction",
+        "ShowTexture": false,
+        "HasTexture": false,
+        "GeneratingFunctionName": "CreateSphere"
+    },
+    {
+        "Id": "empty",
+        "DisplayName": "Empty",
+        "ShowTexture": false,
+        "HasTexture": false
+    }
+]

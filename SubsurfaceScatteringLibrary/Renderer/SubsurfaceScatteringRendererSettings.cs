@@ -1,5 +1,6 @@
 ﻿namespace SubsurfaceScatteringLibrary.Renderer {
     public class SubsurfaceScatteringRendererSettings {
+        public bool blur = false;
         public bool BackFaceCulling { get; set; }
         public bool ShowTriangleNormals { get; set; }
         public bool ShowTriangles { get; set; }
@@ -14,7 +15,5 @@
         public void ChangeActiveTexture() {
             ActiveTexture += 1;
         }
-
-        public bool blur = false;
     }
 }

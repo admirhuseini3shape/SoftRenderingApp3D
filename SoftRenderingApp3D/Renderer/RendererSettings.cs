@@ -1,5 +1,6 @@
-﻿namespace SoftRenderingApp3D {
+﻿namespace SoftRenderingApp3D.Renderer {
     public class RendererSettings {
+        public bool blur = false;
         public bool BackFaceCulling { get; set; }
         public bool ShowTriangleNormals { get; set; }
         public bool ShowTriangles { get; set; }
@@ -14,7 +15,5 @@
         public void ChangeActiveTexture() {
             activeTexture += 1;
         }
-
-        public bool blur = false;
     }
 }

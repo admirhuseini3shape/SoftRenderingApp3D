@@ -2,23 +2,14 @@
 using System.ComponentModel;
 using System.Windows.Forms;
 
-namespace SoftRenderingApp3D {
-
+namespace SoftRenderingApp3D.Controls {
     // Slider
 
     public partial class Slider : UserControl {
-        public event EventHandler ValueChanged {
-            add {
-                superSlider1.ValueChanged += value;
-            }
-            remove {
-                superSlider1.ValueChanged -= value;
-            }
-        }
-
         public Slider() {
             InitializeComponent();
-            textBox1.DataBindings.Add(nameof(TextBox.Text), superSlider1, "Value", false, DataSourceUpdateMode.OnPropertyChanged);
+            textBox1.DataBindings.Add(nameof(TextBox.Text), superSlider1, "Value", false,
+                DataSourceUpdateMode.OnPropertyChanged);
         }
 
         [EditorBrowsable(EditorBrowsableState.Always)]
@@ -26,23 +17,48 @@ namespace SoftRenderingApp3D {
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         [Bindable(true)]
         public override string Text {
-            get => label1.Text;
-            set => label1.Text = value;
+            get {
+                return label1.Text;
+            }
+            set {
+                label1.Text = value;
+            }
         }
 
         public float Value {
-            get => superSlider1.Value;
-            set => superSlider1.Value = value;
+            get {
+                return superSlider1.Value;
+            }
+            set {
+                superSlider1.Value = value;
+            }
         }
 
         public float Min {
-            get => superSlider1.Min;
-            set => superSlider1.Min = value;
+            get {
+                return superSlider1.Min;
+            }
+            set {
+                superSlider1.Min = value;
+            }
         }
 
         public float Max {
-            get => superSlider1.Max;
-            set => superSlider1.Max= value;
+            get {
+                return superSlider1.Max;
+            }
+            set {
+                superSlider1.Max = value;
+            }
+        }
+
+        public event EventHandler ValueChanged {
+            add {
+                superSlider1.ValueChanged += value;
+            }
+            remove {
+                superSlider1.ValueChanged -= value;
+            }
         }
     }
 }
