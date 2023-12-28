@@ -165,12 +165,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DataStructures\DisplayModelData.cs" />
-    <Compile Include="DataStructures\DisplayModelJsonData.cs" />
     <Compile Include="DataStructures\Enums.cs" />
-    <Compile Include="DataStructures\JsonDeserializer.cs" />
-    <Compile Include="FormMethods\FileDeserializer.cs" />
-    <Compile Include="FormMethods\FormMethods.cs" />
-    <Compile Include="FormMethods\ShapeGenerator.cs" />
+    <Compile Include="Utils\JsonHelpers.cs" />
+    <Compile Include="Utils\DisplayModelHelpers.cs" />
+    <Compile Include="Utils\ShapeGenerator.cs" />
     <Compile Include="SoftRenderingForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -198,13 +196,10 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="Models\offset_2.stl">
+    <Content Include="JsonData\AllModels.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Models\offset_3.stl">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Models\original.stl">
+    </Content>
+    <None Include="Models\jaw.stl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Models\Planetary_Toy_D80.stl">
@@ -249,13 +244,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="JsonData\jaw.json" />
-    <Content Include="JsonData\teapot.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="JsonData\skull.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="Textures\bone.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

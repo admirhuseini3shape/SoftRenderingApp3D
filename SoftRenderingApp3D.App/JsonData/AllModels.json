@@ -1,0 +1,91 @@
+﻿[
+    {
+        "Id": "skull",
+		"DisplayName": "Skull",
+        "DisplayModelType": "ColladaFiles",
+        "inputFileName": "models\\skull.dae",
+        "showTexture": true,
+        "hasTexture": true,
+        "readerType": "ColladaReader"
+    },
+    {
+        "Id": "teapot",
+		"DisplayName": "Teapot",
+        "DisplayModelType": "ColladaFiles",
+        "inputFileName": "models\\teapot.dae",
+        "showTexture": false,
+        "hasTexture": false,
+        "readerType": "ColladaReader"
+    },
+    {
+        "Id": "jaw",
+		"DisplayName": "Jaw",
+        "DisplayModelType": "StlFiles",
+        "InputFileName": "models\\jaw.stl",
+        "showTextures": true,
+        "hasTexture": false,
+        "readerType": "StlReader"
+    },
+	{
+        "Id": "town",
+		"DisplayName": "Town",
+        "DisplayModelType": "GeneratingFunction",
+        "showTexture": false,
+        "hasTexture": false,
+        "GeneratingFunctionName": "CreateTown"
+    },
+	{
+        "Id": "littletown",
+		"DisplayName": "Little Town",
+        "DisplayModelType": "GeneratingFunction",
+        "showTexture": false,
+        "hasTexture": false,
+        "GeneratingFunctionName": "CreateLittleTown"
+    },
+	{
+        "Id": "bigtown",
+		"DisplayName": "Big Town",
+        "DisplayModelType": "GeneratingFunction",
+        "showTexture": false,
+        "hasTexture": false,
+        "GeneratingFunctionName": "CreateBigTown"
+    },
+	{
+        "Id": "cube",
+		"DisplayName": "Cube",
+        "DisplayModelType": "GeneratingFunction",
+        "showTexture": false,
+        "hasTexture": false,
+        "GeneratingFunctionName": "CreateCube"
+    },
+	{
+        "Id": "bigcube",
+		"DisplayName": "Big Cube",
+        "DisplayModelType": "GeneratingFunction",
+        "showTexture": false,
+        "hasTexture": false,
+        "GeneratingFunctionName": "CreateBigCube"
+    },
+	{
+        "Id": "cubes",
+		"DisplayName": "Cubes",
+        "DisplayModelType": "GeneratingFunction",
+        "showTexture": false,
+        "hasTexture": false,
+        "GeneratingFunctionName": "CreateCubes"
+    },
+	{
+        "Id": "sphere",
+		"DisplayName": "Sphere",
+        "DisplayModelType": "GeneratingFunction",
+        "showTexture": false,
+        "hasTexture": false,
+        "GeneratingFunctionName": "CreateSphere"
+    },
+	{
+        "Id": "empty",
+		"DisplayName": "Empty",
+        "showTexture": false,
+        "hasTexture": false
+    }
+]

@@ -1,29 +1,29 @@
 ﻿using SoftRenderingApp3D.App.DataStructures;
+using SoftRenderingApp3D.App.Utils;
 using SoftRenderingApp3D.Camera;
 using SoftRenderingApp3D.Controls;
 using SoftRenderingApp3D.DataStructures.World;
 using SoftRenderingApp3D.Projection;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
+using System.Linq;
 using System.Numerics;
-using System.Reflection;
 using System.Windows.Forms;
 
 namespace SoftRenderingApp3D.App {
-    
+
     public partial class SoftRenderingForm : Form {
         private readonly ArcBallCam arcBallCam;
         private FlyCam flyCam;
-        
+        private readonly List<DisplayModelData> displayModels;
+
         public SoftRenderingForm() {
+
             InitializeComponent();
 
-            // var v = VolumeFactory.NewImportCollada("Models\\skull.dae").ToList();
-
-            lstDemos.DataSource = DisplayModelData.Models;
-            lstDemos.ValueMember = nameof(DisplayModelData.Id);
-            lstDemos.DisplayMember = nameof(DisplayModelData.Display);
+            displayModels = JsonHelpers.GetDisplayModelsFromJson();
+            PopulateLstDemos(displayModels);
 
             lstDemos.DoubleClick += LstDemos_DoubleClick;
 
@@ -62,25 +62,47 @@ namespace SoftRenderingApp3D.App {
 
             panel3D1.Projection = projection;
             panel3D1.Camera = arcBallCam;
-            
-            prepareWorld(lstDemos.SelectedValue as string);
-            
-            Console.WriteLine(lstDemos.SelectedValue);
+
+            LstDemos_DoubleClick(this, null);
         }
 
-        private void LstDemos_DoubleClick(object sender, EventArgs e) {
-             var id =lstDemos.SelectedValue as string; 
-             Console.WriteLine("Selected model ID: " + id);
-            //var data  = GetDisplayModelData(id);
-            // PrepareWorld(data);
-            // PrepareUI(data);
-            prepareWorld(id);
+        private void PopulateLstDemos(IEnumerable<DisplayModelData> data) {
+            var dataSource = data
+                .Select(x => new { x.Id, x.DisplayName })
+                .ToList();
+            lstDemos.DataSource = dataSource;
+            lstDemos.ValueMember = nameof(DisplayModelData.Id);
+            lstDemos.DisplayMember = nameof(DisplayModelData.DisplayName);
         }
 
-        private void prepareWorld(string id) {
-            var prepareWorld = new FormMethods.FormMethods();
-            var world = prepareWorld.prepareWorld(id, arcBallCam, chkShowTexture, panel3D1);
-            
+        private void LstDemos_DoubleClick(object sender, EventArgs e) 
+        {
+            var id = lstDemos.SelectedValue as string;
+            var currentModel = displayModels.FirstOrDefault(x => x.Id == id);
+            if(currentModel == null)
+                return;
+
+            var world = DisplayModelHelpers.GenerateWorld(currentModel);
+
+            switch(id) {
+                case "skull":
+                    arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
+                    break;
+
+                case "jaw":
+                    arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
+                    break;
+            }
+
+            chkShowTexture.Enabled = currentModel.HasTexture;
+            panel3D1.RendererSettings.ShowTextures = currentModel.ShowTexture;
+            chkShowTexture.Checked = currentModel.ShowTexture;
+
+            PrepareWorld(world);
+        }
+
+        private void PrepareWorld(IWorld world) {
+
             world.LightSources.Add(new LightSource { Position = new Vector3(0, 0, 10) });
 
             // var camObject = new Cube() { Position = arcBallCam.Position };

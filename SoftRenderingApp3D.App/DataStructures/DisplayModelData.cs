@@ -1,29 +1,31 @@
-﻿using System.Collections.Generic;
-
-namespace SoftRenderingApp3D.App.DataStructures {
+﻿namespace SoftRenderingApp3D.App.DataStructures {
     public class DisplayModelData {
-        public string Display { get; }
-        public string Id { get; }
+        public string Id { get; set; }
+        public string DisplayName { get; set; }
+        public bool HasTexture { get; set; }
+        public bool ShowTexture { get; set; }
+        public string InputFileName { get; set; }
+        public float InitialZoomLevel { get; set; }
+        public Enums.TextureType Texture { get; set; }
+        public Enums.DisplayModelType DisplayModelType { get; set; }
+        public string GeneratingFunctionName { get; set; }
+        public string ReaderType { get; set; }
+        
+        
 
-        public DisplayModelData(string display, string id) {
-            Display = display;
+        public DisplayModelData(string id, bool hasTexture, bool showTexture, string inputFileName,
+                float initialZoomLevel, Enums.TextureType texture, Enums.DisplayModelType displayModelType,
+                string generatingFunctionName, string readerType) 
+        {
             Id = id;
+            HasTexture = hasTexture;
+            ShowTexture = showTexture;
+            InputFileName = inputFileName;
+            InitialZoomLevel = initialZoomLevel;
+            Texture = texture;  
+            DisplayModelType = displayModelType;
+            GeneratingFunctionName = generatingFunctionName;
+            ReaderType = readerType;
         }
-
-        public static readonly List<DisplayModelData> Models = new List<DisplayModelData>() {
-            new DisplayModelData("Crane",             "skull"     ),
-            new DisplayModelData("Teapot",            "teapot"    ),
-            new DisplayModelData("Cubes",             "cubes"     ),
-            new DisplayModelData("Spheres",           "spheres"   ),
-            new DisplayModelData("Little town",       "littletown"),
-            new DisplayModelData("Town",              "town"      ),
-            new DisplayModelData("Big town",          "bigtown"   ),
-            new DisplayModelData("Cube",              "cube"      ),
-            new DisplayModelData("Big cube",          "bigcube"   ),
-            new DisplayModelData("Empty",             "empty"     ),
-            new DisplayModelData("Planetary Toy STL", "stl-mesh-1"),
-            new DisplayModelData("Star Destroyer STL","stl-mesh-2"),
-            new DisplayModelData("Jaw",               "jaw"       )
-        };
     }
 }

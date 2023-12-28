@@ -1,8 +1,0 @@
-﻿{
-  "Id": "jaw",
-  "DisplayModelType" : "StlFiles",
-  "InputFileName" : "models\\jaw.stl",
-  "showTextures" : true,
-  "hasTexture" : false,
-  "readerType" : "stlReader"
-}

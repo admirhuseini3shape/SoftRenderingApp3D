@@ -1,8 +1,0 @@
-﻿{
-  "Id": "teapot",
-  "DisplayModelType": "ColladaFiles",
-  "inputFileName": "models\\teapot.dae",
-  "showTexture": false,
-  "hasTexture": false,
-  "readerType": "colladaReader"
-}

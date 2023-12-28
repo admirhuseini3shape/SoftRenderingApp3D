@@ -1,8 +1,9 @@
-﻿using System.Runtime.InteropServices;
+﻿namespace SoftRenderingApp3D.App.Utils {
+    public static class Constants {
+        public const string JsonFileName = "AllModels.json";
+        public const string JsonDataFolder = "JsonData";
 
-namespace SoftRenderingApp3D.App.Utils {
-    public class Constants {
-        public class GeneratingFunctions {
+        public static class GeneratingFunctions {
             public const string CreateTown = "CreateTown";
             public const string CreateCubes = "CreateCubes";
             public const string CreateCube = "CreateCube";
@@ -11,6 +12,12 @@ namespace SoftRenderingApp3D.App.Utils {
             public const string CreateLittleTown = "CreateLittleTown";
             public const string CreateBigTown = "CreateBigTown";
             
-        } 
+        }
+
+        public static class Readers {
+            public const string ColladaReader = "ColladaReader";
+            public const string StlReader = "StlReader";
+
+        }
     }
 }
