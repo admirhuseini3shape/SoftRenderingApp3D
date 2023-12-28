@@ -16,7 +16,34 @@ namespace SoftRenderingApp3D.App.FormMethods {
                         });
                 }
         }
+
+        public static void CreateBigTown(World world) {
+            var d = 200;
+            var s = 2;
+            for(var x = -d; x <= d; x += s)
+            for(var z = -d; z <= d; z += s) {
+                world.Volumes.Add(
+                    new Cube {
+                        Position = new Vector3(x, 0, z)
+                        // Scale = new Vector3(1, r.Next(1, 50), 1)
+                    });
+            }
+        }
+
+        public static void CreateCube(World world) {
+            world.Volumes.Add(
+                new Cube {
+                    Position = new Vector3(0, 0, 0)
+                });
+        }
         
+        public static void CreateBigCube(World world) {
+            world.Volumes.Add(
+                new Cube {
+                    Position = new Vector3(0, 0, 0),
+                    Scale = new Vector3(100, 100, 100)
+                });
+        }
         
         public static void CreateCubes(World world) {
             var d = 5;
@@ -53,7 +80,18 @@ namespace SoftRenderingApp3D.App.FormMethods {
                     });
             }
         }
+        
+        public static void CreateLittleTown(World world) {
+            var d = 10;
+            var s = 2;
+            for(var x = -d; x <= d; x += s)
+            for(var z = -d; z <= d; z += s) {
+                world.Volumes.Add(
+                    new Cube {
+                        Position = new Vector3(x, 0, z)
+                        // Scale = new Vector3(1, r.Next(1, 50), 1)
+                    });
+            }
+        }
     }
-    
-    
 }

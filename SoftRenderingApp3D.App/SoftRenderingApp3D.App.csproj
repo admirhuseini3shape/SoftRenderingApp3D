@@ -168,6 +168,7 @@
     <Compile Include="DataStructures\DisplayModelJsonData.cs" />
     <Compile Include="DataStructures\Enums.cs" />
     <Compile Include="DataStructures\JsonDeserializer.cs" />
+    <Compile Include="FormMethods\FileDeserializer.cs" />
     <Compile Include="FormMethods\FormMethods.cs" />
     <Compile Include="FormMethods\ShapeGenerator.cs" />
     <Compile Include="SoftRenderingForm.cs">
@@ -248,7 +249,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="JsonData\jsonModel.json">
+    <Content Include="JsonData\jaw.json" />
+    <Content Include="JsonData\teapot.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="JsonData\skull.json">

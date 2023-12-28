@@ -22,27 +22,20 @@ namespace SoftRenderingApp3D.App.FormMethods {
 
         private readonly Dictionary<string, Action<World>> _generatingMethods = new Dictionary<string, Action<World>>
         {
-            { Constants.GeneratingFunctions.CreateTown, ShapeGenerator.CreateTown}
+            { Constants.GeneratingFunctions.CreateTown, ShapeGenerator.CreateTown},
+            { Constants.GeneratingFunctions.CreateLittleTown, ShapeGenerator.CreateLittleTown},
+            { Constants.GeneratingFunctions.CreateCubes, ShapeGenerator.CreateCubes},
+            { Constants.GeneratingFunctions.CreateSphere, ShapeGenerator.CreateSphere},
+            { Constants.GeneratingFunctions.CreateCube, ShapeGenerator.CreateCube},
+            { Constants.GeneratingFunctions.CreateBigCube, ShapeGenerator.CreateBigCube},
+            { Constants.GeneratingFunctions.CreateBigTown, ShapeGenerator.CreateBigTown}
         };
 
         public FormMethods() {
 
         }
 
-        public List<DisplayModelJsonData> DeserializeAllModelConfigs(string directoryPath) {
-            var deserializer = new JsonDeserializer();
-            var models = new List<DisplayModelJsonData>();
-            var files = Directory.GetFiles(directoryPath, "*.json");
-
-            foreach(var jsonFile in files) {
-                var model = deserializer.DeserializeObjectFromFile(jsonFile);
-                models.Add(model);
-                Console.WriteLine(model.Id);
-            }
-
-            return models;
-        }
-
+        
         public World prepareWorld(string id, ArcBallCam arcBallCam, CheckBox chkShowTexture, Panel3D panel3D1) {
 
             var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
@@ -50,12 +43,13 @@ namespace SoftRenderingApp3D.App.FormMethods {
             if(!Directory.Exists(jsonDirectory)) {
                 throw new DirectoryNotFoundException($"Could not find the directory {jsonDirectory} that contains the json files!");
             }
-            var models = DeserializeAllModelConfigs(jsonDirectory);
+            
+            var deserializer = new DeserializeAllModelConfigs();
+            
+            var models = deserializer.DeserializeAllFiles(jsonDirectory);
 
             var world = new World();
 
-            var colladaReader = new ColladaReader();
-            var stlReader = new STLReader();
             ITextureReader textureReader = new TextureReaderBMP();
             world.Textures.Add(textureReader.ReadImage(@"textures\bone.bmp"));
             world.Textures.Add(textureReader.ReadImage(@"textures\glass_effect.bmp"));
@@ -64,151 +58,67 @@ namespace SoftRenderingApp3D.App.FormMethods {
             foreach(var model in models) {
 
                 switch(model.Id) {
-                    case "teapot":
-                        panel3D1.RendererSettings.ShowTextures = model.ShowTexture;
-                        chkShowTexture.Enabled = model.ShowTexture;
-                        chkShowTexture.Checked = model.ShowTexture;
-                        world.Volumes.AddRange(_readers[model.ReaderType].ReadFile(model.InputFileName));
-                        break;
-                        // case "jaw":
-                        //     panel3D1.RendererSettings.ShowTextures = false;
-                        //     chkShowTexture.Enabled = false;
-                        //     chkShowTexture.Checked = false;
-                        //     world.Volumes.AddRange(stlReader.ReadFile(@"models\original.stl"));
-                        //     world.Volumes.AddRange(stlReader.ReadFile(@"models\offset_2.stl"));
-                        //     arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
-                        //     break;
-                        // case "stl-mesh-1":
-                        //     panel3D1.RendererSettings.ShowTextures = false;
-                        //     chkShowTexture.Enabled = false;
-                        //     chkShowTexture.Checked = false;
-                        //     world.Volumes.AddRange(stlReader.ReadFile(@"models\Planetary_Toy_D80.stl"));
-                        //     arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
-                        //     break;
-                        // case "stl-mesh-2":
-                        //     panel3D1.RendererSettings.ShowTextures = false;
-                        //     chkShowTexture.Enabled = false;
-                        //     chkShowTexture.Checked = false;
-                        //     world.Volumes.AddRange(stlReader.ReadFile(@"models\Star_Destroyer_Fixed.stl"));
-                        //     arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
-                        //     break;
-                        // case "skull":
-                        //     panel3D1.RendererSettings.ShowTextures = true;
-                        //     chkShowTexture.Enabled = true;
-                        //     chkShowTexture.Checked = true;
-                        //     world.Volumes.AddRange(colladaReader.ReadFile(@"models\skull.dae"));
-                        //     arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
-                        //     break;
-                        // case "empty":
-                        //     panel3D1.RendererSettings.ShowTextures = false;
-                        //     chkShowTexture.Enabled = false;
-                        //     chkShowTexture.Checked = false;
-                        //     break;
-                        //
-                        // case "town": {
-                        //         panel3D1.RendererSettings.ShowTextures = false;
-                        //         chkShowTexture.Enabled = false;
-                        //         chkShowTexture.Checked = false;
-                        //         ShapeGenerator.CreateTown(world);
-                        //         break;
-                        //     }
-                        //
-                        // case "littletown": {
-                        //         panel3D1.RendererSettings.ShowTextures = false;
-                        //         chkShowTexture.Enabled = false;
-                        //         chkShowTexture.Checked = false;
-                        //         var d = 10;
-                        //         var s = 2;
-                        //         for(var x = -d; x <= d; x += s)
-                        //             for(var z = -d; z <= d; z += s) {
-                        //                 world.Volumes.Add(
-                        //                     new Cube {
-                        //                         Position = new Vector3(x, 0, z)
-                        //                         // Scale = new Vector3(1, r.Next(1, 50), 1)
-                        //                     });
-                        //             }
-                        //
-                        //         break;
-                        //     }
-                        //
-                        // case "bigtown": {
-                        //         panel3D1.RendererSettings.ShowTextures = false;
-                        //         chkShowTexture.Enabled = false;
-                        //         chkShowTexture.Checked = false;
-                        //         var d = 200;
-                        //         var s = 2;
-                        //         for(var x = -d; x <= d; x += s)
-                        //             for(var z = -d; z <= d; z += s) {
-                        //                 world.Volumes.Add(
-                        //                     new Cube {
-                        //                         Position = new Vector3(x, 0, z)
-                        //                         // Scale = new Vector3(1, r.Next(1, 50), 1)
-                        //                     });
-                        //             }
-                        //
-                        //         break;
-                        //     }
-                        //
-                        // case "cube":
-                        //     panel3D1.RendererSettings.ShowTextures = false;
-                        //     chkShowTexture.Enabled = false;
-                        //     chkShowTexture.Checked = false;
-                        //     world.Volumes.Add(new Cube());
-                        //     break;
-                        //
-                        // case "bigcube":
-                        //     panel3D1.RendererSettings.ShowTextures = false;
-                        //     chkShowTexture.Enabled = false;
-                        //     chkShowTexture.Checked = false;
-                        //     world.Volumes.Add(new Cube { Scale = new Vector3(100, 100, 100) });
-                        //     break;
-                        //
-                        // case "spheres": {
-                        //         panel3D1.RendererSettings.ShowTextures = false;
-                        //         chkShowTexture.Enabled = false;
-                        //         chkShowTexture.Checked = false;
-                        //         var d = 5;
-                        //         var s = 2;
-                        //         var r = new Random();
-                        //         for(var x = -d; x <= d; x += s)
-                        //             for(var y = -d; y <= d; y += s)
-                        //                 for(var z = -d; z <= d; z += s) {
-                        //                     world.Volumes.Add(
-                        //                         new IcoSphere(2) {
-                        //                             Position = new Vector3(x, y, z),
-                        //                             Rotation = new Rotation3D(
-                        //                                 r.Next(-90, 90),
-                        //                                 r.Next(-90, 90),
-                        //                                 r.Next(-90, 90)).ToRad()
-                        //                         });
-                        //                 }
-                        //
-                        //         break;
-                        //     }
-                        //
-                        // case "cubes": {
-                        //         panel3D1.RendererSettings.ShowTextures = false;
-                        //         chkShowTexture.Enabled = false;
-                        //         chkShowTexture.Checked = false;
-                        //         var d = 20;
-                        //         var s = 2;
-                        //         var r = new Random();
-                        //         for(var x = -d; x <= d; x += s)
-                        //             for(var y = -d; y <= d; y += s)
-                        //                 for(var z = -d; z <= d; z += s) {
-                        //                     world.Volumes.Add(
-                        //                         new Cube {
-                        //                             Position = new Vector3(x, y, z),
-                        //                             Rotation = new Rotation3D(
-                        //                                 r.Next(-90, 90),
-                        //                                 r.Next(-90, 90),
-                        //                                 r.Next(-90, 90)).ToRad()
-                        //                         });
-                        //                 }
-                        //
-                        //         break;
-                        //     }
-                        // }
+                        case "skull":
+                              panel3D1.RendererSettings.ShowTextures = model.ShowTexture;
+                              chkShowTexture.Enabled = model.HasTexture;
+                              chkShowTexture.Checked = model.ShowTexture;
+                              world.Volumes.AddRange(_readers[model.ReaderType].ReadFile(model.InputFileName));
+                              arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
+                              break;
+                        case "teapot":
+                              panel3D1.RendererSettings.ShowTextures = model.ShowTexture;
+                              chkShowTexture.Enabled = model.ShowTexture;
+                              chkShowTexture.Checked = model.ShowTexture;
+                              world.Volumes.AddRange(_readers[model.ReaderType].ReadFile(model.InputFileName));
+                              break;
+                        case "town": 
+                              panel3D1.RendererSettings.ShowTextures = false;
+                              chkShowTexture.Enabled = false;
+                              chkShowTexture.Checked = false;
+                              ShapeGenerator.CreateTown(world);
+                              break;
+                        case "littletown": 
+                              panel3D1.RendererSettings.ShowTextures = false;
+                              chkShowTexture.Enabled = false;
+                              chkShowTexture.Checked = false;
+                              ShapeGenerator.CreateLittleTown(world);
+                              break;
+                        case "bigtown": 
+                              panel3D1.RendererSettings.ShowTextures = false;
+                              chkShowTexture.Enabled = false;
+                              chkShowTexture.Checked = false;
+                              ShapeGenerator.CreateBigTown(world);
+                              break;
+                        case "cube":
+                              panel3D1.RendererSettings.ShowTextures = false;
+                              chkShowTexture.Enabled = false;
+                              chkShowTexture.Checked = false;
+                              ShapeGenerator.CreateCube(world);
+                              break;
+                        case "bigcube":
+                              panel3D1.RendererSettings.ShowTextures = false;
+                              chkShowTexture.Enabled = false;
+                              chkShowTexture.Checked = false;
+                              ShapeGenerator.CreateBigCube(world);
+                              break;
+                        
+                        case "spheres": 
+                              panel3D1.RendererSettings.ShowTextures = false;
+                              chkShowTexture.Enabled = false;
+                              chkShowTexture.Checked = false;
+                              ShapeGenerator.CreateSphere(world);
+                              break;
+                        case "cubes": 
+                              panel3D1.RendererSettings.ShowTextures = false;
+                              chkShowTexture.Enabled = false;
+                              chkShowTexture.Checked = false;
+                              ShapeGenerator.CreateCubes(world);
+                              break;                                
+                        case "empty":
+                              panel3D1.RendererSettings.ShowTextures = false;
+                              chkShowTexture.Enabled = false;
+                              chkShowTexture.Checked = false;
+                              break;
                 }
             }
 

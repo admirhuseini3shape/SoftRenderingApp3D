@@ -5,14 +5,17 @@ using SoftRenderingApp3D.DataStructures.World;
 using SoftRenderingApp3D.Projection;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Numerics;
+using System.Reflection;
 using System.Windows.Forms;
 
 namespace SoftRenderingApp3D.App {
+    
     public partial class SoftRenderingForm : Form {
         private readonly ArcBallCam arcBallCam;
         private FlyCam flyCam;
-
+        
         public SoftRenderingForm() {
             InitializeComponent();
 
@@ -62,7 +65,7 @@ namespace SoftRenderingApp3D.App {
             panel3D1.Camera = arcBallCam;
 
             // Deserialize DisplayModelData from a JSON file
-            prepareWorld("skull");
+            prepareWorld("teapot");
         }
 
         private void LstDemos_DoubleClick(object sender, EventArgs e) {
