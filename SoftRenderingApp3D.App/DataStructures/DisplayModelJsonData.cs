@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace SoftRenderingApp3D.App.DataStructures {
+﻿namespace SoftRenderingApp3D.App.DataStructures {
     public class DisplayModelJsonData {
         public string Id { get; set; }
         public bool HasTexture { get; set; }

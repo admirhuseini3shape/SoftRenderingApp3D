@@ -1,5 +1,4 @@
-﻿using SoftRenderingApp3D.App.DataStructures;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.IO;
 using System.Text.Json.Serialization;
 
@@ -12,7 +11,7 @@ namespace SoftRenderingApp3D.App.DataStructures  {
             {
                 throw new FileNotFoundException($"The file '{filePath}' was not found.");
             }
-            string jsonString = File.ReadAllText(filePath);
+            var jsonString = File.ReadAllText(filePath);
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true, 
