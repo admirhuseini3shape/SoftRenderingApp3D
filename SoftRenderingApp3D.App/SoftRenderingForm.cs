@@ -75,23 +75,17 @@ namespace SoftRenderingApp3D.App {
             lstDemos.DisplayMember = nameof(DisplayModelData.DisplayName);
         }
 
-        private void LstDemos_DoubleClick(object sender, EventArgs e) 
-        {
+        private void LstDemos_DoubleClick(object sender, EventArgs e) {
             var id = lstDemos.SelectedValue as string;
             var currentModel = displayModels.FirstOrDefault(x => x.Id == id);
             if(currentModel == null)
                 return;
 
             var world = DisplayModelHelpers.GenerateWorld(currentModel);
-
-            switch(id) {
-                case "skull":
-                    arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
-                    break;
-
-                case "jaw":
-                    arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
-                    break;
+            if(currentModel.InitialZoomLevel != 0) {
+                var zoom = currentModel.InitialZoomLevel;
+                var cameraPositionDelta = new Vector3(0, 0, zoom - arcBallCam.Position.Z);
+                arcBallCam.Position += cameraPositionDelta;
             }
 
             chkShowTexture.Enabled = currentModel.HasTexture;
@@ -104,15 +98,10 @@ namespace SoftRenderingApp3D.App {
         private void PrepareWorld(IWorld world) {
 
             world.LightSources.Add(new LightSource { Position = new Vector3(0, 0, 10) });
-
-            // var camObject = new Cube() { Position = arcBallCam.Position };
-
+            
             arcBallCam.CameraChanged -= MainCam_CameraChanged;
             arcBallCam.CameraChanged += MainCam_CameraChanged;
-
-            // world.Volumes.Add(camObject);
-
-
+            
             panel3D1.World = world;
 
             panel3D1.Invalidate();

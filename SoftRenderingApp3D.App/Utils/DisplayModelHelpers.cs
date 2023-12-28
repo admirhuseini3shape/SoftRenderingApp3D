@@ -26,8 +26,8 @@ namespace SoftRenderingApp3D.App.Utils {
             { Constants.GeneratingFunctions.CreateBigTown, ShapeGenerator.CreateBigTown}
         };
 
-
-        public static World GenerateWorld(DisplayModelData data) {
+        public static World GenerateWorld(DisplayModelData data) 
+        {
             var world = new World();
 
             ITextureReader textureReader = new TextureReaderBMP();
@@ -42,22 +42,23 @@ namespace SoftRenderingApp3D.App.Utils {
             return world;
         }
 
-        private static void LoadModel(DisplayModelData data, World world) {
-
-            if(data.InputFileName != null && data.ReaderType != null) {
-                if(!_readers.TryGetValue(data.ReaderType, out var reader)) {
+        private static void LoadModel(DisplayModelData data, World world) 
+        {
+            var functionName = data.GeneratingFunctionName;
+            if(data.InputFileName != null && data.ReaderType != null) 
+            {
+                if(!_readers.TryGetValue(data.ReaderType, out var reader)) 
                     throw new Exception($"Could not find reader for {data.ReaderType}!");
-                }
 
                 var volumes = reader.ReadFile(data.InputFileName);
                 world.Volumes.AddRange(volumes);
             }
-            else if(data.GeneratingFunctionName != null) {
-                if(!_generatingMethods.TryGetValue(data.GeneratingFunctionName, out var function)) {
-                    throw new Exception($"Could not find generating function for {data.GeneratingFunctionName}!");
-                }
+            else if(functionName != null) 
+            {
+                if(!_generatingMethods.TryGetValue(functionName, out var method)) 
+                    throw new Exception($"Could not find generating function for {functionName}!");
 
-                function(world);
+                method(world);
             }
         }
     }

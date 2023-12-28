@@ -8,8 +8,10 @@ using System.Text.Json.Serialization;
 namespace SoftRenderingApp3D.App.Utils  {
     public static class JsonHelpers
     {
-        public static List<DisplayModelData> GetDisplayModelsFromJson() {
-            var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        public static List<DisplayModelData> GetDisplayModelsFromJson() 
+        {
+            var location = Assembly.GetExecutingAssembly().Location;
+            var basePath = Path.GetDirectoryName(location);
             if(basePath == null)
                 throw new FileNotFoundException("Cannot find location of executing assembly!");
 
@@ -26,14 +28,16 @@ namespace SoftRenderingApp3D.App.Utils  {
             return DisplayModelsFromJsonFile(fileName);
         }
 
-        public static List<DisplayModelData> DisplayModelsFromJsonFile(string filePath) {
-            if(!File.Exists(filePath)) {
+        public static List<DisplayModelData> DisplayModelsFromJsonFile(string filePath) 
+        {
+            if(!File.Exists(filePath)) 
                 throw new FileNotFoundException($"The file '{filePath}' was not found.");
-            }
             var jsonString = File.ReadAllText(filePath);
-            var options = new JsonSerializerOptions {
+            var options = new JsonSerializerOptions 
+            {
                 PropertyNameCaseInsensitive = true,
-                Converters = { new JsonStringEnumConverter() } // Converts Enum into String so json can be deserialized
+                // Converts Enum into String so json can be deserialized
+                Converters = { new JsonStringEnumConverter() } 
             };
             return JsonSerializer.Deserialize<List<DisplayModelData>>(jsonString, options);
         }

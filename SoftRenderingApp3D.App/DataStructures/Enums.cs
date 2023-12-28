@@ -1,5 +1,5 @@
 ﻿namespace SoftRenderingApp3D.App.DataStructures {
-    public class Enums {
+    public static class Enums {
         public enum DisplayModelType {
             StlFiles = 0,
             ColladaFiles = 1,
