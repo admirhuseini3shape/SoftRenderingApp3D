@@ -280,7 +280,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                 throw new FileLoadException($"Error reading file: {path}!");
             }
 
-            return new Volume.Volume(vertices.ToArray().Vector3ArrayToColoredVertices().ToArray(),
+            return new Volume.Volume(vertices.ToArray(),
                 triangleIndices.ToArray(),
                 normals.ToArray());
         }
@@ -426,7 +426,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                 } // if solid
             } // while !endofstream
 
-            return new Volume.Volume(vertices.ToArray().Vector3ArrayToColoredVertices().ToArray(),
+            return new Volume.Volume(vertices.ToArray(),
                 triangleIndices.ToArray(),
                 normals.ToArray());
         }

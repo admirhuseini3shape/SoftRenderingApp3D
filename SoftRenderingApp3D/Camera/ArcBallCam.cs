@@ -23,9 +23,8 @@ namespace SoftRenderingApp3D.Camera {
                 return rotation;
             }
             set {
-                if(PropertyChangedHelper.ChangeValue(ref rotation, value)) {
+                if(value.TryUpdateOther(ref rotation))
                     CameraChanged?.Invoke(this, EventArgs.Empty);
-                }
             }
         }
 
@@ -34,9 +33,10 @@ namespace SoftRenderingApp3D.Camera {
                 return position;
             }
             set {
-                if(PropertyChangedHelper.ChangeValue(ref position, value)) {
-                    CameraChanged?.Invoke(this, EventArgs.Empty);
-                }
+                if(!value.TryUpdateOther(ref position))
+                    return;
+
+                CameraChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -46,11 +46,11 @@ namespace SoftRenderingApp3D.Camera {
             return Matrix4x4.CreateFromQuaternion(rotation) * Matrix4x4.CreateTranslation(position);
         }
 
-        public void SetPosition(Vector3 position, Quaternion rotation) {
-            if(PropertyChangedHelper.ChangeValue(ref this.rotation, rotation) ||
-               PropertyChangedHelper.ChangeValue(ref this.position, position)) {
-                CameraChanged?.Invoke(this, EventArgs.Empty);
-            }
+        public void SetPosition(Vector3 newPosition, Quaternion newRotation) {
+            if(!newRotation.TryUpdateOther(ref rotation) && !newPosition.TryUpdateOther(ref position))
+                return;
+
+            CameraChanged?.Invoke(this, EventArgs.Empty);
         }
 
         // Hyperboloid mapping taken from https://www.opengl.org/wiki/Object_Mouse_Trackball

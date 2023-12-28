@@ -20,6 +20,9 @@ namespace SoftRenderingApp3D.Painter {
             var p0 = v0.ScreenPoint;
             var p1 = v1.ScreenPoint;
             var p2 = v2.ScreenPoint;
+            
+            if(p0.IsNaN() || p1.IsNaN() || p2.IsNaN())
+                return;
 
             var yStart = (int)Math.Max(p0.Y, 0);
             var yEnd = (int)Math.Min(p2.Y, surface.Height - 1);
@@ -38,9 +41,9 @@ namespace SoftRenderingApp3D.Painter {
             // computing the cos of the angle between the light vector and the normal vector
             // it will return a value between 0 and 1 that will be used as the intensity of the color
 
-            var nl0 = MathUtils.ComputeNDotL(v0.WorldPoint.position, v0.WorldNormal, lightPos);
-            var nl1 = MathUtils.ComputeNDotL(v1.WorldPoint.position, v1.WorldNormal, lightPos);
-            var nl2 = MathUtils.ComputeNDotL(v2.WorldPoint.position, v2.WorldNormal, lightPos);
+            var nl0 = MathUtils.ComputeNDotL(v0.WorldPoint, v0.WorldNormal, lightPos);
+            var nl1 = MathUtils.ComputeNDotL(v1.WorldPoint, v1.WorldNormal, lightPos);
+            var nl2 = MathUtils.ComputeNDotL(v2.WorldPoint, v2.WorldNormal, lightPos);
 
             if(PainterUtils.Cross2D(p0, p1, p2) > 0) {
                 // P0
@@ -124,16 +127,16 @@ namespace SoftRenderingApp3D.Painter {
             // calculate barycentric weight for each vertex
             var barycentric =
                 GetBarycentricCoordinates(pointInTriangle, v0.ScreenPoint, v1.ScreenPoint, v2.ScreenPoint);
-            var maxR = Math.Max(v0.WorldPoint.color.R, Math.Max(v1.WorldPoint.color.R, v2.WorldPoint.color.R));
-            var maxG = Math.Max(v0.WorldPoint.color.G, Math.Max(v1.WorldPoint.color.G, v2.WorldPoint.color.G));
-            var maxB = Math.Max(v0.WorldPoint.color.B, Math.Max(v1.WorldPoint.color.B, v2.WorldPoint.color.B));
+            var maxR = Math.Max(v0.Color.R, Math.Max(v1.Color.R, v2.Color.R));
+            var maxG = Math.Max(v0.Color.G, Math.Max(v1.Color.G, v2.Color.G));
+            var maxB = Math.Max(v0.Color.B, Math.Max(v1.Color.B, v2.Color.B));
             // interpolate
-            var R = (int)(barycentric.X * v0.WorldPoint.color.R + barycentric.Y * v1.WorldPoint.color.R +
-                          barycentric.Z * v2.WorldPoint.color.R).Clamp(0, maxR);
-            var G = (int)(barycentric.X * v0.WorldPoint.color.G + barycentric.Y * v1.WorldPoint.color.G +
-                          barycentric.Z * v2.WorldPoint.color.G).Clamp(0, maxG);
-            var B = (int)(barycentric.X * v0.WorldPoint.color.B + barycentric.Y * v1.WorldPoint.color.B +
-                          barycentric.Z * v2.WorldPoint.color.B).Clamp(0, maxB);
+            var R = (int)(barycentric.X * v0.Color.R + barycentric.Y * v1.Color.R +
+                          barycentric.Z * v2.Color.R).Clamp(0, maxR);
+            var G = (int)(barycentric.X * v0.Color.G + barycentric.Y * v1.Color.G +
+                          barycentric.Z * v2.Color.G).Clamp(0, maxG);
+            var B = (int)(barycentric.X * v0.Color.B + barycentric.Y * v1.Color.B +
+                          barycentric.Z * v2.Color.B).Clamp(0, maxB);
             var finalColor = new ColorRGB((byte)R, (byte)G, (byte)B, 255);
 
 
@@ -242,9 +245,9 @@ namespace SoftRenderingApp3D.Painter {
             // computing the cos of the angle between the light vector and the normal vector
             // it will return a value between 0 and 1 that will be used as the intensity of the color
 
-            var nl0 = MathUtils.ComputeNDotL(v0.WorldPoint.position, v0.WorldNormal, lightPos);
-            var nl1 = MathUtils.ComputeNDotL(v1.WorldPoint.position, v1.WorldNormal, lightPos);
-            var nl2 = MathUtils.ComputeNDotL(v2.WorldPoint.position, v2.WorldNormal, lightPos);
+            var nl0 = MathUtils.ComputeNDotL(v0.WorldPoint, v0.WorldNormal, lightPos);
+            var nl1 = MathUtils.ComputeNDotL(v1.WorldPoint, v1.WorldNormal, lightPos);
+            var nl2 = MathUtils.ComputeNDotL(v2.WorldPoint, v2.WorldNormal, lightPos);
 
             if(PainterUtils.Cross2D(p0, p1, p2) > 0) {
                 // P0

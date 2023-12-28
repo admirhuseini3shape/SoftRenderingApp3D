@@ -20,9 +20,10 @@ namespace SoftRenderingApp3D.Projection {
             }
 
             set {
-                if(PropertyChangedHelper.ChangeValue(ref fOV, value)) {
-                    ProjectionChanged?.Invoke(this, EventArgs.Empty);
-                }
+                if(!value.TryUpdateOther(ref fOV)) 
+                    return;
+
+                ProjectionChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -32,9 +33,10 @@ namespace SoftRenderingApp3D.Projection {
             }
 
             set {
-                if(PropertyChangedHelper.ChangeValue(ref zNear, value)) {
-                    ProjectionChanged?.Invoke(this, EventArgs.Empty);
-                }
+                if(!value.TryUpdateOther(ref zNear)) 
+                    return;
+
+                ProjectionChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -44,9 +46,10 @@ namespace SoftRenderingApp3D.Projection {
             }
 
             set {
-                if(PropertyChangedHelper.ChangeValue(ref zFar, value)) {
-                    ProjectionChanged?.Invoke(this, EventArgs.Empty);
-                }
+                if(!value.TryUpdateOther(ref zFar)) 
+                    return;
+
+                ProjectionChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 

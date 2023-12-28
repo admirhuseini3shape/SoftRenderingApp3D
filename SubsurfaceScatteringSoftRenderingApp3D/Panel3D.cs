@@ -54,12 +54,14 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
             get {
                 return rendererSettings;
             }
-            set {
-                if(PropertyChangedHelper.ChangeValue(ref rendererSettings, value)) {
-                    rendererSettings.ShowTriangleNormals = true;
-                    renderContext.RendererSettings = value;
-                    rendererSettings = value;
-                }
+            private set {
+                if(!value.TryUpdateOther(ref rendererSettings)) 
+                    return;
+                
+
+                rendererSettings.ShowTriangleNormals = true;
+                renderContext.RendererSettings = value;
+                rendererSettings = value;
             }
         }
 
@@ -69,10 +71,11 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
                 return world;
             }
             set {
-                if(PropertyChangedHelper.ChangeValue(ref world, value)) {
-                    renderContext.World = world;
-                    hookPaintEvent();
-                }
+                if(!value.TryUpdateOther(ref world)) 
+                    return;
+
+                renderContext.World = world;
+                hookPaintEvent();
             }
         }
 
@@ -82,13 +85,14 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
                 return painter;
             }
             set {
-                if(PropertyChangedHelper.ChangeValue(ref painter, value)) {
-                    if(painter != null) {
-                        painter.RendererContext = renderContext;
-                    }
+                if(!value.TryUpdateOther(ref painter)) 
+                    return;
 
-                    assign(renderer, painter);
+                if(painter != null) {
+                    painter.RendererContext = renderContext;
                 }
+
+                assign(renderer, painter);
             }
         }
 
@@ -98,10 +102,11 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
                 return renderer;
             }
             set {
-                if(PropertyChangedHelper.ChangeValue(ref renderer, value)) {
-                    renderer.SubsurfaceScatteringRenderContext = renderContext;
-                    assign(renderer, painter);
-                }
+                if(!value.TryUpdateOther(ref renderer)) 
+                    return;
+
+                renderer.SubsurfaceScatteringRenderContext = renderContext;
+                assign(renderer, painter);
             }
         }
 
@@ -113,18 +118,19 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
             set {
                 var oldCamera = camera;
 
-                if(PropertyChangedHelper.ChangeValue(ref camera, value)) {
-                    if(oldCamera != null) {
-                        oldCamera.CameraChanged -= cameraChanged;
-                    }
+                if(!value.TryUpdateOther(ref camera)) 
+                    return;
 
-                    if(camera != null) {
-                        camera.CameraChanged += cameraChanged;
-                    }
-
-                    renderContext.Camera = value;
-                    hookPaintEvent();
+                if(oldCamera != null) {
+                    oldCamera.CameraChanged -= cameraChanged;
                 }
+
+                if(camera != null) {
+                    camera.CameraChanged += cameraChanged;
+                }
+
+                renderContext.Camera = value;
+                hookPaintEvent();
             }
         }
 
@@ -136,20 +142,21 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
             set {
                 var oldProjection = projection;
 
-                if(PropertyChangedHelper.ChangeValue(ref projection, value)) {
-                    if(oldProjection != null) {
-                        oldProjection.ProjectionChanged -= projectionChanged;
-                    }
+                if(!value.TryUpdateOther(ref projection)) 
+                    return;
 
-                    if(projection != null) {
-                        projection.ProjectionChanged += projectionChanged;
-                    }
-
-                    ;
-
-                    renderContext.Projection = value;
-                    hookPaintEvent();
+                if(oldProjection != null) {
+                    oldProjection.ProjectionChanged -= projectionChanged;
                 }
+
+                if(projection != null) {
+                    projection.ProjectionChanged += projectionChanged;
+                }
+
+                ;
+
+                renderContext.Projection = value;
+                hookPaintEvent();
             }
         }
 

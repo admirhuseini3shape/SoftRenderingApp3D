@@ -13,7 +13,7 @@ namespace SoftRenderingApp3D.DataStructures.Volume {
             return vectorList;
         }
 
-        private static List<int> GetTriangleIndexesHaving(this ColoredVertex vertex, IVolume volume) {
+        private static List<int> GetTriangleIndexesHaving(this Vector3 vertex, IVolume volume) {
             var indexList = new List<int>();
             for (var i = 0; i < volume.Triangles.Length; i++) {
                 if (volume.Triangles[i].Contains(vertex, volume.Vertices)) {
@@ -23,7 +23,7 @@ namespace SoftRenderingApp3D.DataStructures.Volume {
             return indexList;
         }
 
-        public static Vector3 CalculateVertexNormal(this ColoredVertex vertex, IVolume volume) {
+        public static Vector3 CalculateVertexNormal(this Vector3 vertex, IVolume volume) {
             var inTriangles = GetTriangleIndexesHaving(vertex, volume);
             if(!inTriangles.Any()) {
                 return Vector3.Zero;
@@ -59,20 +59,8 @@ namespace SoftRenderingApp3D.DataStructures.Volume {
                 yield return new Triangle(indices[i], indices[i + 1], indices[i + 2]);
             }
         }
-
-        public static IEnumerable<ColoredVertex> Vector3ArrayToColoredVertices(this Vector3[] positions) {
-            foreach(var position in positions) {
-                yield return new ColoredVertex(position);
-            }
-        }
-
-        public static IEnumerable<Vector3d> ColoredVerticesToVector3d(this ColoredVertex[] vertices) {
-            foreach(var vertex in vertices) {
-                yield return vertex.position.ToVector3d();
-            }
-        }
-
-        public static IEnumerable<Vector3d> TrianglesToVector3d(this Triangle[] triangles) {
+        
+        public static IEnumerable<Vector3d> ToVector3d(this IEnumerable<Triangle> triangles) {
             foreach(var triangle in triangles) {
                 yield return new Vector3d(triangle.I0, triangle.I1, triangle.I2);
             }

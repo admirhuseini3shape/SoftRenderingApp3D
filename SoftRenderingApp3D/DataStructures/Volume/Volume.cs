@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace SoftRenderingApp3D.DataStructures.Volume {
     public class Volume : IVolume {
-        public Volume(ColoredVertex[] vertices, Triangle[] triangleIndices, Vector3[] vertexNormals = null,
+        public Volume(Vector3[] vertices, Triangle[] triangleIndices, Vector3[] vertexNormals = null,
             Vector2[] textureCoordinates = null, ColorRGB[] triangleColors = null) {
             Vertices = vertices;
             Triangles = triangleIndices;
@@ -17,7 +17,7 @@ namespace SoftRenderingApp3D.DataStructures.Volume {
 
         public Vector3 Centroid { get; }
 
-        public ColoredVertex[] Vertices { get; }
+        public Vector3[] Vertices { get; }
 
         public Vector2[] TexCoordinates { get; }
 

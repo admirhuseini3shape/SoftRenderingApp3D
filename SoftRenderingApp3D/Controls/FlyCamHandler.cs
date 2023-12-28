@@ -34,24 +34,26 @@ namespace SoftRenderingApp3D.Controls {
             set {
                 var oldControl = control;
 
-                if(PropertyChangedHelper.ChangeValue(ref control, value)) {
-                    if(oldControl != null) {
-                        oldControl.MouseDown -= control_MouseDown;
-                        oldControl.MouseMove -= control_MouseMove;
-                        oldControl.MouseUp -= Control_MouseUp;
-                        control.MouseWheel -= Control_MouseWheel;
-                        oldControl.MouseEnter -= Control_MouseEnter;
-                        oldControl.MouseLeave -= Control_MouseLeave;
-                    }
+                if(!value.TryUpdateOther(ref control)) 
+                    return;
+                
 
-                    if(control != null) {
-                        control.MouseDown += control_MouseDown;
-                        control.MouseMove += control_MouseMove;
-                        control.MouseUp += Control_MouseUp;
-                        control.MouseWheel += Control_MouseWheel;
-                        control.MouseEnter += Control_MouseEnter;
-                        control.MouseLeave += Control_MouseLeave;
-                    }
+                if(oldControl != null) {
+                    oldControl.MouseDown -= control_MouseDown;
+                    oldControl.MouseMove -= control_MouseMove;
+                    oldControl.MouseUp -= Control_MouseUp;
+                    control.MouseWheel -= Control_MouseWheel;
+                    oldControl.MouseEnter -= Control_MouseEnter;
+                    oldControl.MouseLeave -= Control_MouseLeave;
+                }
+
+                if(control != null) {
+                    control.MouseDown += control_MouseDown;
+                    control.MouseMove += control_MouseMove;
+                    control.MouseUp += Control_MouseUp;
+                    control.MouseWheel += Control_MouseWheel;
+                    control.MouseEnter += Control_MouseEnter;
+                    control.MouseLeave += Control_MouseLeave;
                 }
             }
         }
@@ -61,7 +63,7 @@ namespace SoftRenderingApp3D.Controls {
                 return camera;
             }
             set {
-                PropertyChangedHelper.ChangeValue(ref camera, value);
+                value.TryUpdateOther(ref camera);
             }
         }
 

@@ -42,6 +42,10 @@ namespace SoftRenderingApp3D.Utils {
             return new Vector3d(vector.X, vector.Y, vector.Z);
         }
 
+        public static bool IsNaN(this Vector3 v) {
+            return double.IsNaN(v.X) || double.IsNaN(v.Y) || double.IsNaN(v.Z);
+        }
+
         public static IEnumerable<Vector3d> ToVector3dList(this Vector3[] array) {
             var resultList = new List<Vector3d>();
             for (var i = 0; i < array.Length; i++){
@@ -50,8 +54,6 @@ namespace SoftRenderingApp3D.Utils {
             return resultList;
         }
         
-        
-
         public static float[] ToFloatArray(this Vector3[] array) {
             var resultArray = new float[array.Length * 3];
             for(var i = 0; i < array.Length * 3; i += 3) {
@@ -62,18 +64,7 @@ namespace SoftRenderingApp3D.Utils {
 
             return resultArray;
         }
-
-        public static float[] ToFloatArray(this ColoredVertex[] array) {
-            var resultArray = new float[array.Length * 3];
-            for(var i = 0; i < array.Length * 3; i += 3) {
-                resultArray[i] = array[i / 3].position.X;
-                resultArray[i + 1] = array[i / 3].position.Y;
-                resultArray[i + 2] = array[i / 3].position.Z;
-            }
-
-            return resultArray;
-        }
-
+        
         public static int[] ToIntArray(this Triangle[] triangles) {
             var array = new int[triangles.Length * 3];
             for(var i = 0; i < triangles.Length * 3; i += 3) {

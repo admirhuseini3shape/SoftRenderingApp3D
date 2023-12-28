@@ -53,12 +53,14 @@ namespace SoftRenderingApp3D.App {
             get {
                 return _rendererSettings;
             }
-            set {
-                if(PropertyChangedHelper.ChangeValue(ref _rendererSettings, value)) {
-                    _rendererSettings.ShowTriangleNormals = true;
-                    RenderContext.RendererSettings = value;
-                    _rendererSettings = value;
-                }
+            private set {
+                if(!value.TryUpdateOther(ref _rendererSettings))
+                    return;
+
+
+                _rendererSettings.ShowTriangleNormals = true;
+                RenderContext.RendererSettings = value;
+                _rendererSettings = value;
             }
         }
 
@@ -68,10 +70,11 @@ namespace SoftRenderingApp3D.App {
                 return world;
             }
             set {
-                if(PropertyChangedHelper.ChangeValue(ref world, value)) {
-                    RenderContext.World = world;
-                    HookPaintEvent();
-                }
+                if(!value.TryUpdateOther(ref world))
+                    return;
+
+                RenderContext.World = world;
+                HookPaintEvent();
             }
         }
 
@@ -81,13 +84,14 @@ namespace SoftRenderingApp3D.App {
                 return painter;
             }
             set {
-                if(PropertyChangedHelper.ChangeValue(ref painter, value)) {
-                    if(painter != null) {
-                        painter.RendererContext = RenderContext;
-                    }
+                if(!value.TryUpdateOther(ref painter))
+                    return;
 
-                    Assign(renderer, painter);
+                if(painter != null) {
+                    painter.RendererContext = RenderContext;
                 }
+
+                Assign(renderer, painter);
             }
         }
 
@@ -97,10 +101,11 @@ namespace SoftRenderingApp3D.App {
                 return renderer;
             }
             set {
-                if(PropertyChangedHelper.ChangeValue(ref renderer, value)) {
-                    renderer.RenderContext = RenderContext;
-                    Assign(renderer, painter);
-                }
+                if(!value.TryUpdateOther(ref renderer))
+                    return;
+
+                renderer.RenderContext = RenderContext;
+                Assign(renderer, painter);
             }
         }
 
@@ -112,18 +117,20 @@ namespace SoftRenderingApp3D.App {
             set {
                 var oldCamera = camera;
 
-                if(PropertyChangedHelper.ChangeValue(ref camera, value)) {
-                    if(oldCamera != null) {
-                        oldCamera.CameraChanged -= CameraChanged;
-                    }
+                if(!value.TryUpdateOther(ref camera))
+                    return;
 
-                    if(camera != null) {
-                        camera.CameraChanged += CameraChanged;
-                    }
 
-                    RenderContext.Camera = value;
-                    HookPaintEvent();
+                if(oldCamera != null) {
+                    oldCamera.CameraChanged -= CameraChanged;
                 }
+
+                if(camera != null) {
+                    camera.CameraChanged += CameraChanged;
+                }
+
+                RenderContext.Camera = value;
+                HookPaintEvent();
             }
         }
 
@@ -135,20 +142,19 @@ namespace SoftRenderingApp3D.App {
             set {
                 var oldProjection = projection;
 
-                if(PropertyChangedHelper.ChangeValue(ref projection, value)) {
-                    if(oldProjection != null) {
-                        oldProjection.ProjectionChanged -= ProjectionChanged;
-                    }
+                if(!value.TryUpdateOther(ref projection))
+                    return;
 
-                    if(projection != null) {
-                        projection.ProjectionChanged += ProjectionChanged;
-                    }
-
-                    ;
-
-                    RenderContext.Projection = value;
-                    HookPaintEvent();
+                if(oldProjection != null) {
+                    oldProjection.ProjectionChanged -= ProjectionChanged;
                 }
+
+                if(projection != null) {
+                    projection.ProjectionChanged += ProjectionChanged;
+                }
+
+                RenderContext.Projection = value;
+                HookPaintEvent();
             }
         }
 

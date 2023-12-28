@@ -113,7 +113,6 @@
     <Compile Include="Utils\PainterUtils.cs" />
     <Compile Include="Utils\RenderUtils.cs" />
     <Compile Include="World.cs" />
-    <Compile Include="DataStructures\ColoredVertex.cs" />
     <Compile Include="Camera\ICamera.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rotation3D.cs" />

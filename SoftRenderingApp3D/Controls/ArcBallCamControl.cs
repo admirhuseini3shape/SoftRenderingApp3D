@@ -27,19 +27,21 @@ namespace SoftRenderingApp3D.Controls {
             set {
                 var oldCamera = camera;
 
-                if(PropertyChangedHelper.ChangeValue(ref camera, value)) {
-                    if(oldCamera != null) {
-                        oldCamera.CameraChanged -= Camera_CameraChanged;
-                        handler = null;
-                    }
+                if(!value.TryUpdateOther(ref camera)) 
+                    return;
+                
 
-                    if(camera != null) {
-                        camera.CameraChanged += Camera_CameraChanged;
-                        handler = new ArcBallCamHandler(panel1, Camera);
-                    }
-
-                    slider1.Value = -camera.Position.Z;
+                if(oldCamera != null) {
+                    oldCamera.CameraChanged -= Camera_CameraChanged;
+                    handler = null;
                 }
+
+                if(camera != null) {
+                    camera.CameraChanged += Camera_CameraChanged;
+                    handler = new ArcBallCamHandler(panel1, Camera);
+                }
+
+                slider1.Value = -camera.Position.Z;
             }
         }
 

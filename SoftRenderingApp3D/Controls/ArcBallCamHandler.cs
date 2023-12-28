@@ -34,18 +34,20 @@ namespace SoftRenderingApp3D.Controls {
             set {
                 var oldControl = control;
 
-                if(PropertyChangedHelper.ChangeValue(ref control, value)) {
-                    if(oldControl != null) {
-                        oldControl.MouseDown -= control_MouseDown;
-                        oldControl.MouseMove -= control_MouseMove;
-                        control.MouseUp -= Control_MouseUp;
-                    }
+                if(!value.TryUpdateOther(ref control)) 
+                    return;
+                
 
-                    if(control != null) {
-                        control.MouseDown += control_MouseDown;
-                        control.MouseMove += control_MouseMove;
-                        control.MouseUp += Control_MouseUp;
-                    }
+                if(oldControl != null) {
+                    oldControl.MouseDown -= control_MouseDown;
+                    oldControl.MouseMove -= control_MouseMove;
+                    control.MouseUp -= Control_MouseUp;
+                }
+
+                if(control != null) {
+                    control.MouseDown += control_MouseDown;
+                    control.MouseMove += control_MouseMove;
+                    control.MouseUp += Control_MouseUp;
                 }
             }
         }
@@ -55,7 +57,7 @@ namespace SoftRenderingApp3D.Controls {
                 return camera;
             }
             set {
-                PropertyChangedHelper.ChangeValue(ref camera, value);
+                value.TryUpdateOther(ref camera);
             }
         }
 

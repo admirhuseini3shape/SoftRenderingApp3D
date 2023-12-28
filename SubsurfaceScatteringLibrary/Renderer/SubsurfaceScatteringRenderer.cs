@@ -75,13 +75,13 @@ namespace SubsurfaceScatteringLibrary.Renderer {
                 // Transform and store vertices to View
                 var vertexCount = vertices.Length;
                 for(var idxVertex = 0; idxVertex < vertexCount; idxVertex++) {
-                    viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex].position, viewMatrix);
+                    viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex], viewMatrix);
                 }
 
                 // Transform and store offset vertices
                 var offsetVertexCount = offset.Vertices.Length;
                 for(var idxVertex = 0; idxVertex < offsetVertexCount; idxVertex++) {
-                    offsetViewVertices[idxVertex] = Vector3.Transform(offset.Vertices[idxVertex].position, viewMatrix);
+                    offsetViewVertices[idxVertex] = Vector3.Transform(offset.Vertices[idxVertex], viewMatrix);
                 }
 
                 vbx.TransformWorld();
@@ -200,7 +200,7 @@ namespace SubsurfaceScatteringLibrary.Renderer {
                 // Transform and store vertices to View
                 var cariesVertexCount = cariesVertices.Length;
                 for(var idxVertex = 0; idxVertex < cariesVertexCount; idxVertex++) {
-                    cariesViewVertices[idxVertex] = Vector3.Transform(cariesVertices[idxVertex].position, viewMatrix);
+                    cariesViewVertices[idxVertex] = Vector3.Transform(cariesVertices[idxVertex], viewMatrix);
                 }
 
                 cariesVbx.TransformWorld();
@@ -275,14 +275,14 @@ namespace SubsurfaceScatteringLibrary.Renderer {
             spatial.Build();
             for(var i = 0; i < verticesCount; i++) {
                 CalculateVertexSubsurfaceScattering(vbx.Volume.Vertices[i], lightPos, spatial, originalG3,
-                    vbx.Volume as Volume, i);
+                    vbx.VertexColors, i);
             }
         }
 
-        public void CalculateVertexSubsurfaceScattering(ColoredVertex vertex, Vector3 lightPos, DMeshAABBTree3 spatial,
-            DMesh3 originalG3, Volume subsurfaceScatteringVolume, int index) {
+        public void CalculateVertexSubsurfaceScattering(Vector3 vertex, Vector3 lightPos, DMeshAABBTree3 spatial,
+            DMesh3 originalG3, ColorRGB[] vertexColorsBuffer, int index) {
             // get direction of light to vertex
-            var direction = vertex.position - lightPos;
+            var direction = vertex - lightPos;
 
             var ray = new Ray3d(SubsurfaceScatteringMiscUtils.Vector3ToVector3d(lightPos),
                 SubsurfaceScatteringMiscUtils.Vector3ToVector3d(direction));
@@ -291,18 +291,18 @@ namespace SubsurfaceScatteringLibrary.Renderer {
             if(hit_tid != DMesh3.InvalidID) {
                 var intr = MeshQueries.TriangleIntersection(originalG3, hit_tid, ray);
                 // Calculate distance traveled after passing through the surface
-                var hit_dist = SubsurfaceScatteringMiscUtils.Vector3ToVector3d(vertex.position)
+                var hit_dist = SubsurfaceScatteringMiscUtils.Vector3ToVector3d(vertex)
                     .Distance(ray.PointAt(intr.RayParameter));
                 // Calculate the decay of the light
                 var decay = (float)Math.Exp(-hit_dist * SubsurfaceScatteringRenderUtils.subsurfaceDecay);
                 // Color of the vertex
                 //var color = decay * SubsurfaceScatteringRenderUtils.surfaceColor;
                 var color = decay * SubsurfaceScatteringRenderUtils.surfaceColor;
-                subsurfaceScatteringVolume.Vertices[index].color = color;
+                vertexColorsBuffer[index] = color;
             }
             else {
                 var color = SubsurfaceScatteringRenderUtils.surfaceColor;
-                subsurfaceScatteringVolume.Vertices[index].color = color;
+                vertexColorsBuffer[index] = color;
             }
         }
     }

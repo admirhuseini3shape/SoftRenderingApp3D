@@ -36,6 +36,7 @@ namespace SoftRenderingApp3D.Buffer {
     public class VertexBuffer : IDisposable {
         private static readonly ArrayPool<Vector3> Vector3Bag = ArrayPool<Vector3>.Shared;
         private static readonly ArrayPool<Vector4> Vector4Bag = ArrayPool<Vector4>.Shared;
+        private static readonly ArrayPool<ColorRGB> ColorRGBBag = ArrayPool<ColorRGB>.Shared;
 
         public VertexBuffer(int vertexCount) {
             Size = vertexCount;
@@ -43,6 +44,7 @@ namespace SoftRenderingApp3D.Buffer {
             WorldVertices = Vector3Bag.Rent(vertexCount);
             WorldNormVertices = Vector3Bag.Rent(vertexCount);
             ProjectionVertices = Vector4Bag.Rent(vertexCount);
+            VertexColors = ColorRGBBag.Rent(vertexCount);
         }
 
         public IVolume Volume { get; set; } // Volumes
@@ -50,7 +52,7 @@ namespace SoftRenderingApp3D.Buffer {
         public Vector3[] WorldVertices { get; } // Vertices in _subsurfaceScatteringWorld
         public Vector3[] WorldNormVertices { get; } // Vertices normals in _subsurfaceScatteringWorld
         public Vector4[] ProjectionVertices { get; } // Vertices in frustum
-
+        public ColorRGB[] VertexColors { get; } // Vertex colors
         private int Size { get; }
 
         public Matrix4x4 WorldMatrix { get; set; }
@@ -61,22 +63,24 @@ namespace SoftRenderingApp3D.Buffer {
             Array.Clear(WorldVertices, 0, Size);
             Array.Clear(WorldNormVertices, 0, Size);
             Array.Clear(ProjectionVertices, 0, Size);
+            Array.Clear(VertexColors, 0, Size);
 
             Vector3Bag.Return(ViewVertices);
             Vector3Bag.Return(WorldVertices);
             Vector3Bag.Return(WorldNormVertices);
             Vector4Bag.Return(ProjectionVertices);
+            ColorRGBBag.Return(VertexColors);
         }
 
         public void TransformWorld() {
             for(var i = 0; i < Volume.Vertices.Length; i++) {
-                WorldVertices[i] = Vector3.Transform(Volume.Vertices[i].position, WorldMatrix);
+                WorldVertices[i] = Vector3.Transform(Volume.Vertices[i], WorldMatrix);
             }
         }
 
         public void TransformWorldView() {
             for(var i = 0; i < Volume.Vertices.Length; i++) {
-                ViewVertices[i] = Vector3.Transform(Volume.Vertices[i].position, WorldViewMatrix);
+                ViewVertices[i] = Vector3.Transform(Volume.Vertices[i], WorldViewMatrix);
             }
         }
     }

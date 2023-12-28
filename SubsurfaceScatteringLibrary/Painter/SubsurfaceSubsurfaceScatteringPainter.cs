@@ -40,9 +40,9 @@ namespace SubsurfaceScatteringLibrary.Painter {
             // computing the cos of the angle between the light vector and the normal vector
             // it will return a value between 0 and 1 that will be used as the intensity of the color
 
-            var nl0 = MathUtils.ComputeNDotL(v0.WorldPoint.position, v0.WorldNormal, lightPos);
-            var nl1 = MathUtils.ComputeNDotL(v1.WorldPoint.position, v1.WorldNormal, lightPos);
-            var nl2 = MathUtils.ComputeNDotL(v2.WorldPoint.position, v2.WorldNormal, lightPos);
+            var nl0 = MathUtils.ComputeNDotL(v0.WorldPoint, v0.WorldNormal, lightPos);
+            var nl1 = MathUtils.ComputeNDotL(v1.WorldPoint, v1.WorldNormal, lightPos);
+            var nl2 = MathUtils.ComputeNDotL(v2.WorldPoint, v2.WorldNormal, lightPos);
 
             if(SubsurfaceScatteringPainterUtils.Cross2D(p0, p1, p2) > 0) {
                 // P0

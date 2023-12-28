@@ -43,10 +43,11 @@ namespace SoftRenderingApp3D.Controls {
                 return value;
             }
             set {
-                if(PropertyChangedHelper.ChangeValue(ref this.value, value)) {
-                    ValueChanged?.Invoke(this, EventArgs.Empty);
-                    Invalidate();
-                }
+                if(!value.TryUpdateOther(ref this.value))
+                    return;
+
+                ValueChanged?.Invoke(this, EventArgs.Empty);
+                Invalidate();
             }
         }
 
@@ -55,10 +56,11 @@ namespace SoftRenderingApp3D.Controls {
                 return pixelStep;
             }
             set {
-                if(PropertyChangedHelper.ChangeValue(ref pixelStep, value)) {
-                    PixelStepChanged?.Invoke(this, EventArgs.Empty);
-                    Invalidate();
-                }
+                if(!value.TryUpdateOther(ref pixelStep))
+                    return;
+
+                PixelStepChanged?.Invoke(this, EventArgs.Empty);
+                Invalidate();
             }
         }
 
@@ -165,7 +167,8 @@ namespace SoftRenderingApp3D.Controls {
                         var y = transform(i);
                         g.DrawString(label, f, Brushes.Gray, 12, y - 1,
                             new StringFormat {
-                                Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center
+                                Alignment = StringAlignment.Center,
+                                LineAlignment = StringAlignment.Center
                             });
                     }
 

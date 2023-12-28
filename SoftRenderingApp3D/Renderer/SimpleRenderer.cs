@@ -58,7 +58,7 @@ namespace SoftRenderingApp3D.Renderer {
                 // Transform and store vertices to View
                 var vertexCount = vertices.Length;
                 for(var idxVertex = 0; idxVertex < vertexCount; idxVertex++) {
-                    viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex].position, viewMatrix);
+                    viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex], viewMatrix);
                 }
 
                 var triangleCount = volume.Triangles.Length;
