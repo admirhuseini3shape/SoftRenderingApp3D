@@ -30,11 +30,6 @@ namespace SoftRenderingApp3D.App.FormMethods {
             { Constants.GeneratingFunctions.CreateBigCube, ShapeGenerator.CreateBigCube},
             { Constants.GeneratingFunctions.CreateBigTown, ShapeGenerator.CreateBigTown}
         };
-
-        public FormMethods() {
-
-        }
-
         
         public World prepareWorld(string id, ArcBallCam arcBallCam, CheckBox chkShowTexture, Panel3D panel3D1) {
 
@@ -57,19 +52,13 @@ namespace SoftRenderingApp3D.App.FormMethods {
 
             foreach(var model in models) {
 
-                switch(model.Id) {
+                switch(id) {
                         case "skull":
-                              panel3D1.RendererSettings.ShowTextures = model.ShowTexture;
-                              chkShowTexture.Enabled = model.HasTexture;
-                              chkShowTexture.Checked = model.ShowTexture;
-                              world.Volumes.AddRange(_readers[model.ReaderType].ReadFile(model.InputFileName));
+                              LoadModel(model, panel3D1, chkShowTexture, world);
                               arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
                               break;
                         case "teapot":
-                              panel3D1.RendererSettings.ShowTextures = model.ShowTexture;
-                              chkShowTexture.Enabled = model.ShowTexture;
-                              chkShowTexture.Checked = model.ShowTexture;
-                              world.Volumes.AddRange(_readers[model.ReaderType].ReadFile(model.InputFileName));
+                              LoadModel(model, panel3D1, chkShowTexture, world);
                               break;
                         case "town": 
                               panel3D1.RendererSettings.ShowTextures = false;
@@ -101,7 +90,6 @@ namespace SoftRenderingApp3D.App.FormMethods {
                               chkShowTexture.Checked = false;
                               ShapeGenerator.CreateBigCube(world);
                               break;
-                        
                         case "spheres": 
                               panel3D1.RendererSettings.ShowTextures = false;
                               chkShowTexture.Enabled = false;
@@ -113,7 +101,11 @@ namespace SoftRenderingApp3D.App.FormMethods {
                               chkShowTexture.Enabled = false;
                               chkShowTexture.Checked = false;
                               ShapeGenerator.CreateCubes(world);
-                              break;                                
+                              break;                 
+                        case "jaw":
+                              LoadModel(model, panel3D1, chkShowTexture, world);
+                              arcBallCam.Position += new Vector3(0, 0, -5 - arcBallCam.Position.Z);
+                              break;
                         case "empty":
                               panel3D1.RendererSettings.ShowTextures = false;
                               chkShowTexture.Enabled = false;

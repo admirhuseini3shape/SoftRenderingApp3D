@@ -47,7 +47,6 @@ namespace SoftRenderingApp3D.App {
                     arcBallCam.Rotation *= Quaternion.CreateFromYawPitchRoll(.1f, .1f, .1f);
                     panel3D1.Render();
                 }
-
                 sw.Stop();
                 lblSw.Text = sw.ElapsedMilliseconds.ToString();
             };
@@ -63,13 +62,15 @@ namespace SoftRenderingApp3D.App {
 
             panel3D1.Projection = projection;
             panel3D1.Camera = arcBallCam;
-
-            // Deserialize DisplayModelData from a JSON file
-            prepareWorld("teapot");
+            
+            prepareWorld(lstDemos.SelectedValue as string);
+            
+            Console.WriteLine(lstDemos.SelectedValue);
         }
 
         private void LstDemos_DoubleClick(object sender, EventArgs e) {
              var id =lstDemos.SelectedValue as string; 
+             Console.WriteLine("Selected model ID: " + id);
             //var data  = GetDisplayModelData(id);
             // PrepareWorld(data);
             // PrepareUI(data);
@@ -79,8 +80,7 @@ namespace SoftRenderingApp3D.App {
         private void prepareWorld(string id) {
             var prepareWorld = new FormMethods.FormMethods();
             var world = prepareWorld.prepareWorld(id, arcBallCam, chkShowTexture, panel3D1);
-
-
+            
             world.LightSources.Add(new LightSource { Position = new Vector3(0, 0, 10) });
 
             // var camObject = new Cube() { Position = arcBallCam.Position };

@@ -1,8 +1,8 @@
 ﻿{
   "Id" : "skull",
   "DisplayModelType": "ColladaFiles",
-  "inputFileName": "models/skull.dae",
-  "showTextures" : true,
+  "inputFileName": "models\\skull.dae",
+  "showTexture" : true,
   "hasTexture" : true,
   "readerType" : "colladaReader"
 }

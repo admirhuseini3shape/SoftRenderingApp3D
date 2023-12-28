@@ -27,7 +27,7 @@ namespace SoftRenderingApp3D.App.FormMethods {
                         Position = new Vector3(x, 0, z)
                         // Scale = new Vector3(1, r.Next(1, 50), 1)
                     });
-            }
+            } 
         }
 
         public static void CreateCube(World world) {

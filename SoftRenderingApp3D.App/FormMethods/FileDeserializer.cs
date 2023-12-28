@@ -13,9 +13,8 @@ namespace SoftRenderingApp3D.App.FormMethods {
             foreach(var jsonFile in files) {
                 var model = deserializer.DeserializeObjectFromFile(jsonFile);
                 models.Add(model);
-                Console.WriteLine(model.Id);
             }
-
+            
             return models;
         }
     }
