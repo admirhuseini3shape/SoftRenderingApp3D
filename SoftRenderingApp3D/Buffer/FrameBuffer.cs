@@ -27,7 +27,6 @@ namespace SoftRenderingApp3D.Buffer {
         }
 
         public int[] Screen { get; }
-
         public int Width { get; }
         public int Height { get; }
         internal int Depth { get; set; } = 65535; // Build a true Z buffer based on Zfar/Znear planes

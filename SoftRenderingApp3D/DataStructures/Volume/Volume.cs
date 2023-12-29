@@ -23,7 +23,6 @@ namespace SoftRenderingApp3D.DataStructures.Volume {
 
         public ColorRGB[] TriangleColors { get; private set; }
 
-
         public Triangle[] Triangles { get; }
 
         public Rotation3D Rotation { get; set; }

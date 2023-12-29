@@ -16,8 +16,8 @@ using System.Windows.Forms;
 
 namespace SubsurfaceScatteringSoftRenderingApp3D {
     public partial class Panel3D : UserControl {
+        
         private Bitmap bmp;
-
         private ICamera camera;
 
         private readonly string format =
