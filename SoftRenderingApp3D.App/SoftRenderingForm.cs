@@ -11,14 +11,17 @@ using System.Linq;
 using System.Numerics;
 using System.Windows.Forms;
 
-namespace SoftRenderingApp3D.App {
+namespace SoftRenderingApp3D.App
+{
 
-    public partial class SoftRenderingForm : Form {
+    public partial class SoftRenderingForm : Form
+    {
         private readonly ArcBallCam arcBallCam;
         private FlyCam flyCam;
         private readonly List<DisplayModelData> displayModels;
 
-        public SoftRenderingForm() {
+        public SoftRenderingForm()
+        {
 
             InitializeComponent();
             displayModels = JsonHelpers.GetDisplayModelsFromJson();
@@ -29,20 +32,24 @@ namespace SoftRenderingApp3D.App {
             chkShowTexture.Checked = panel3D1.RendererSettings.ShowTextures;
             chkLinearFiltering.Checked = panel3D1.RendererSettings.LiearTextureFiltering;
 
-            chkShowTexture.CheckedChanged += (s, e) => {
+            chkShowTexture.CheckedChanged += (s, e) =>
+            {
                 panel3D1.RendererSettings.ShowTextures = chkShowTexture.Checked;
                 panel3D1.Invalidate();
             };
-            chkLinearFiltering.CheckedChanged += (s, e) => {
+            chkLinearFiltering.CheckedChanged += (s, e) =>
+            {
                 panel3D1.RendererSettings.LiearTextureFiltering = chkLinearFiltering.Checked;
                 panel3D1.Invalidate();
             };
 
-            btnBench.Click += (s, e) => {
+            btnBench.Click += (s, e) =>
+            {
                 var sw = Stopwatch.StartNew();
                 arcBallCam.Position = new Vector3(0, 0, -5);
                 arcBallCam.Rotation = Quaternion.Identity;
-                for(var i = 0; i < 10; i++) {
+                for(var i = 0; i < 10; i++)
+                {
                     arcBallCam.Rotation *= Quaternion.CreateFromYawPitchRoll(.1f, .1f, .1f);
                     panel3D1.Render();
                 }
@@ -65,7 +72,8 @@ namespace SoftRenderingApp3D.App {
             LstDemos_DoubleClick(this, null);
         }
 
-        private void PopulateLstDemos(IEnumerable<DisplayModelData> data) {
+        private void PopulateLstDemos(IEnumerable<DisplayModelData> data)
+        {
             var dataSource = data
                 .Select(x => new { x.Id, x.DisplayName })
                 .ToList();
@@ -74,14 +82,16 @@ namespace SoftRenderingApp3D.App {
             lstDemos.DisplayMember = nameof(DisplayModelData.DisplayName);
         }
 
-        private void LstDemos_DoubleClick(object sender, EventArgs e) {
+        private void LstDemos_DoubleClick(object sender, EventArgs e)
+        {
             var id = lstDemos.SelectedValue as string;
             var currentModel = displayModels.FirstOrDefault(x => x.Id == id);
             if(currentModel == null)
                 return;
 
             var generatedWorld = DisplayModelHelpers.GenerateWorld(currentModel);
-            if(currentModel.InitialZoomLevel != 0) {
+            if(currentModel.InitialZoomLevel != 0)
+            {
                 var zoom = currentModel.InitialZoomLevel;
                 var cameraPositionDelta = new Vector3(0, 0, zoom - arcBallCam.Position.Z);
                 arcBallCam.Position += cameraPositionDelta;
@@ -94,24 +104,27 @@ namespace SoftRenderingApp3D.App {
             PrepareWorld(generatedWorld);
         }
 
-        private void PrepareWorld(IWorld world) {
+        private void PrepareWorld(IWorld world)
+        {
 
             world.LightSources.Add(new LightSource { Position = new Vector3(0, 0, 10) });
-            
+
             arcBallCam.CameraChanged -= MainCam_CameraChanged;
             arcBallCam.CameraChanged += MainCam_CameraChanged;
-            
+
             panel3D1.World = world;
 
             panel3D1.Invalidate();
 
-            void MainCam_CameraChanged(object cam, EventArgs _1) {
+            void MainCam_CameraChanged(object cam, EventArgs _1)
+            {
                 // camObject.Position = ((ArcBallCam)cam).Position;
                 // this.panel3D2.Invalidate();
             }
         }
 
-        private void btnChangeTexture_Click(object sender, EventArgs e) {
+        private void btnChangeTexture_Click(object sender, EventArgs e)
+        {
             panel3D1.RendererSettings.ChangeActiveTexture();
         }
     }

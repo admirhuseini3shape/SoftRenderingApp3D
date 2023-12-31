@@ -4,15 +4,18 @@ using System.Drawing;
 using System.Numerics;
 using System.Windows.Forms;
 
-namespace SoftRenderingApp3D.Controls {
+namespace SoftRenderingApp3D.Controls
+{
     // Must adapt move
 
-    public partial class ArcBallCamControl : UserControl {
+    public partial class ArcBallCamControl : UserControl
+    {
         private ArcBallCam camera;
         private Quaternion curRotation;
         private ArcBallCamHandler handler;
 
-        public ArcBallCamControl() {
+        public ArcBallCamControl()
+        {
             InitializeComponent();
 
             slider1.ValueChanged += (s, e) =>
@@ -20,23 +23,28 @@ namespace SoftRenderingApp3D.Controls {
             panel1.Paint += Panel1_Paint;
         }
 
-        public ArcBallCam Camera {
-            get {
+        public ArcBallCam Camera
+        {
+            get
+            {
                 return camera;
             }
-            set {
+            set
+            {
                 var oldCamera = camera;
 
-                if(!value.TryUpdateOther(ref camera)) 
+                if(!value.TryUpdateOther(ref camera))
                     return;
-                
 
-                if(oldCamera != null) {
+
+                if(oldCamera != null)
+                {
                     oldCamera.CameraChanged -= Camera_CameraChanged;
                     handler = null;
                 }
 
-                if(camera != null) {
+                if(camera != null)
+                {
                     camera.CameraChanged += Camera_CameraChanged;
                     handler = new ArcBallCamHandler(panel1, Camera);
                 }
@@ -45,16 +53,19 @@ namespace SoftRenderingApp3D.Controls {
             }
         }
 
-        private void Panel1_Paint(object sender, PaintEventArgs e) {
+        private void Panel1_Paint(object sender, PaintEventArgs e)
+        {
             var g = e.Graphics;
             drawGlobe(g);
             drawZIndex(g);
         }
 
-        private void drawZIndex(Graphics g) {
+        private void drawZIndex(Graphics g)
+        {
         }
 
-        private void drawGlobe(Graphics g) {
+        private void drawGlobe(Graphics g)
+        {
             var nR = camera?.Radius ?? 0f;
 
             var rectF = new RectangleF(
@@ -67,12 +78,15 @@ namespace SoftRenderingApp3D.Controls {
             g.DrawEllipse(Pens.LightBlue, rectF);
         }
 
-        private void Camera_CameraChanged(object sender, EventArgs e) {
-            if(-camera.Position.Z != slider1.Value) {
+        private void Camera_CameraChanged(object sender, EventArgs e)
+        {
+            if(-camera.Position.Z != slider1.Value)
+            {
                 slider1.Value = -camera.Position.Z;
             }
 
-            if(camera.Rotation != curRotation) {
+            if(camera.Rotation != curRotation)
+            {
                 curRotation = camera.Rotation;
                 panel1.Invalidate();
             }

@@ -2,8 +2,10 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace SoftRenderingApp3D.Controls {
-    public partial class SliderIn : Control {
+namespace SoftRenderingApp3D.Controls
+{
+    public partial class SliderIn : Control
+    {
         private readonly float inc = 0.1f;
         private float pixelStep = 1;
 
@@ -15,7 +17,8 @@ namespace SoftRenderingApp3D.Controls {
         private float yHit;
         private float yValueHit;
 
-        public SliderIn() {
+        public SliderIn()
+        {
             InitializeComponent();
             DoubleBuffered = true;
 
@@ -30,7 +33,8 @@ namespace SoftRenderingApp3D.Controls {
             Layout += SuperSlider_Layout;
         }
 
-        public Orientation Orientation {
+        public Orientation Orientation
+        {
             get;
             set;
         }
@@ -38,11 +42,14 @@ namespace SoftRenderingApp3D.Controls {
         public float TickEvery { get; set; } = 10;
         public float NumberEvery { get; set; } = 20;
 
-        public float Value {
-            get {
+        public float Value
+        {
+            get
+            {
                 return value;
             }
-            set {
+            set
+            {
                 if(!value.TryUpdateOther(ref this.value))
                     return;
 
@@ -51,11 +58,14 @@ namespace SoftRenderingApp3D.Controls {
             }
         }
 
-        public float PixelStep {
-            get {
+        public float PixelStep
+        {
+            get
+            {
                 return pixelStep;
             }
-            set {
+            set
+            {
                 if(!value.TryUpdateOther(ref pixelStep))
                     return;
 
@@ -69,16 +79,20 @@ namespace SoftRenderingApp3D.Controls {
         public event EventHandler ValueChanged;
         public event EventHandler PixelStepChanged;
 
-        private void SuperSlider_Layout(object sender, LayoutEventArgs e) {
+        private void SuperSlider_Layout(object sender, LayoutEventArgs e)
+        {
             Invalidate();
         }
 
-        private void SuperSlider_MouseWheel(object sender, MouseEventArgs e) {
+        private void SuperSlider_MouseWheel(object sender, MouseEventArgs e)
+        {
             var v = PixelStep;
-            if(e.Delta > 0) {
+            if(e.Delta > 0)
+            {
                 v += inc;
             }
-            else if(PixelStep > inc) {
+            else if(PixelStep > inc)
+            {
                 v -= inc;
             }
 
@@ -87,9 +101,12 @@ namespace SoftRenderingApp3D.Controls {
             Invalidate();
         }
 
-        private void SuperSlider_MouseMove(object sender, MouseEventArgs e) {
-            if(e.Button == MouseButtons.Left) {
-                switch(Orientation) {
+        private void SuperSlider_MouseMove(object sender, MouseEventArgs e)
+        {
+            if(e.Button == MouseButtons.Left)
+            {
+                switch(Orientation)
+                {
                     case Orientation.Horizontal:
                         Value = Math.Min(Max, Math.Max(Min, xValueHit - (e.X - xHit) * PixelStep));
                         break;
@@ -102,8 +119,10 @@ namespace SoftRenderingApp3D.Controls {
             }
         }
 
-        private void SuperSlider_MouseDown(object sender, MouseEventArgs e) {
-            switch(Orientation) {
+        private void SuperSlider_MouseDown(object sender, MouseEventArgs e)
+        {
+            switch(Orientation)
+            {
                 case Orientation.Horizontal:
                     xHit = e.X;
                     xValueHit = Value;
@@ -116,36 +135,44 @@ namespace SoftRenderingApp3D.Controls {
             }
         }
 
-        private void drawIndexH(float x, Graphics g) {
+        private void drawIndexH(float x, Graphics g)
+        {
             g.DrawLine(Pens.Red, new PointF(x - 1, 0), new PointF(x - 1, Height));
             g.DrawLine(Pens.Red, new PointF(x + 1, 0), new PointF(x + 1, Height));
         }
 
-        private void drawIndexV(float y, Graphics g) {
+        private void drawIndexV(float y, Graphics g)
+        {
             g.DrawLine(Pens.Red, new PointF(0, y - 1), new PointF(Width, y - 1));
             g.DrawLine(Pens.Red, new PointF(0, y + 1), new PointF(Width, y + 1));
         }
 
-        private float transform(float v) {
-            return Orientation switch {
+        private float transform(float v)
+        {
+            return Orientation switch
+            {
                 Orientation.Horizontal => Width / 2f + v / PixelStep - Value / PixelStep,
                 Orientation.Vertical => Height / 2f + v / PixelStep - Value / PixelStep,
                 _ => throw new Exception()
             };
         }
 
-        private void SuperSlider_Paint(object sender, PaintEventArgs e) {
+        private void SuperSlider_Paint(object sender, PaintEventArgs e)
+        {
             var g = e.Graphics;
             using var f = new Font(Font.FontFamily, 7f);
 
-            switch(Orientation) {
+            switch(Orientation)
+            {
                 case Orientation.Horizontal:
-                    for(var i = Min; i <= Max; i += TickEvery) {
+                    for(var i = Min; i <= Max; i += TickEvery)
+                    {
                         var x = transform(i);
                         g.DrawLine(Pens.DarkGray, new PointF(x, 0), new PointF(x, 3));
                     }
 
-                    for(var i = Min; i <= Max; i += NumberEvery) {
+                    for(var i = Min; i <= Max; i += NumberEvery)
+                    {
                         var label = $"{i}";
                         var x = transform(i);
                         g.DrawString(label, f, Brushes.Gray, x, 12,
@@ -156,17 +183,20 @@ namespace SoftRenderingApp3D.Controls {
                     break;
 
                 case Orientation.Vertical:
-                    for(var i = Min; i <= Max; i += TickEvery) {
+                    for(var i = Min; i <= Max; i += TickEvery)
+                    {
                         var y = transform(i);
                         g.DrawLine(Pens.DarkGray, new PointF(0, y), new PointF(5, y));
                     }
 
 
-                    for(var i = Min; i <= Max; i += NumberEvery) {
+                    for(var i = Min; i <= Max; i += NumberEvery)
+                    {
                         var label = $"{i}";
                         var y = transform(i);
                         g.DrawString(label, f, Brushes.Gray, 12, y - 1,
-                            new StringFormat {
+                            new StringFormat
+                            {
                                 Alignment = StringAlignment.Center,
                                 LineAlignment = StringAlignment.Center
                             });

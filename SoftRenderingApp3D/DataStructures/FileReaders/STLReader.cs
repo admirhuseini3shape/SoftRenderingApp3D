@@ -7,8 +7,10 @@ using System.Linq;
 using System.Numerics;
 using System.Threading;
 
-namespace SoftRenderingApp3D.DataStructures.FileReaders {
-    public class STLReader : FileReader {
+namespace SoftRenderingApp3D.DataStructures.FileReaders
+{
+    public class STLReader : FileReader
+    {
         private readonly Dictionary<Vector3, int> indices;
 
         public string path; // file path
@@ -19,7 +21,8 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
         * @param  none
         * @retval none
         */
-        public STLReader(string filePath = "") {
+        public STLReader(string filePath = "")
+        {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en-US");
             Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
             path = filePath;
@@ -27,7 +30,8 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
             indices = new Dictionary<Vector3, int>();
         }
 
-        public override IEnumerable<Mesh> ReadFile(string fileName) {
+        public override IEnumerable<Mesh> ReadFile(string fileName)
+        {
             path = fileName;
             return NewSTLImport();
         }
@@ -38,7 +42,8 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
         * @param  none
         * @retval none
         */
-        public bool Get_Process_Error() {
+        public bool Get_Process_Error()
+        {
             return processError;
         }
 
@@ -48,16 +53,20 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
         * @param  none
         * @retval SubsurfaceScatteringVolume
         */
-        public IEnumerable<Mesh> NewSTLImport() {
+        public IEnumerable<Mesh> NewSTLImport()
+        {
             var stlFileType = GetFileType(path);
 
-            if(stlFileType == FileType.ASCII) {
+            if(stlFileType == FileType.ASCII)
+            {
                 yield return ReadASCIIFile(path);
             }
-            else if(stlFileType == FileType.BINARY) {
+            else if(stlFileType == FileType.BINARY)
+            {
                 yield return ReadBinaryFile(path);
             }
-            else {
+            else
+            {
                 throw new FileLoadException($"Cannot load file format of {path}");
             }
         }
@@ -68,11 +77,13 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
          * @param  none
          * @retval stlFileType
          */
-        private FileType GetFileType(string filePath) {
+        private FileType GetFileType(string filePath)
+        {
             var stlFileType = FileType.NONE;
 
             /* check path is exist */
-            if(File.Exists(filePath)) {
+            if(File.Exists(filePath))
+            {
                 var lineCount = 0;
                 lineCount = File.ReadLines(filePath).Count(); // number of lines in the file
 
@@ -83,14 +94,17 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
 
                 /* check the file is ascii or not */
                 if((firstLine.IndexOf("solid") != -1) &
-                   (endLines.IndexOf("endsolid") != -1)) {
+                   (endLines.IndexOf("endsolid") != -1))
+                {
                     stlFileType = FileType.ASCII;
                 }
-                else {
+                else
+                {
                     stlFileType = FileType.BINARY;
                 }
             }
-            else {
+            else
+            {
                 stlFileType = FileType.NONE;
             }
 
@@ -104,7 +118,8 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
         * @param  filePath
         * @retval meshList
         */
-        private Mesh ReadBinaryFile(string filePath) {
+        private Mesh ReadBinaryFile(string filePath)
+        {
             var vertices = new List<Vector3>();
             var normals = new List<Vector3>();
             var triangleIndices = new List<Triangle>();
@@ -114,7 +129,8 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
             var temp = new byte[4];
 
             /* 80 bytes title + 4 byte num of triangles + 50 bytes (1 of triangular mesh)  */
-            if(fileBytes.Length > 120) {
+            if(fileBytes.Length > 120)
+            {
                 temp[0] = fileBytes[80];
                 temp[1] = fileBytes[81];
                 temp[2] = fileBytes[82];
@@ -127,9 +143,11 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                 // Used to index the vertices
                 var vertexIndex = 0;
 
-                for(var i = 0; i < numOfMesh; i++) {
+                for(var i = 0; i < numOfMesh; i++)
+                {
                     /* this try-catch block will be reviewed */
-                    try {
+                    try
+                    {
                         /* face normal */
                         var normalX = BitConverter.ToSingle(
                             new[] {
@@ -219,10 +237,12 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                         // Create triangle, check if vertices already exist
                         int I1, I2, I3 = -1;
                         // First vertex
-                        if(indices.ContainsKey(vertex1)) {
+                        if(indices.ContainsKey(vertex1))
+                        {
                             I1 = indices[vertex1];
                         }
-                        else {
+                        else
+                        {
                             I1 = vertexIndex;
                             // Add vertex to dictionary
                             indices.Add(vertex1, vertexIndex);
@@ -234,10 +254,12 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                         }
 
                         // Second vertex
-                        if(indices.ContainsKey(vertex2)) {
+                        if(indices.ContainsKey(vertex2))
+                        {
                             I2 = indices[vertex2];
                         }
-                        else {
+                        else
+                        {
                             I2 = vertexIndex;
                             // Add vertex to dictionary
                             indices.Add(vertex2, vertexIndex);
@@ -249,10 +271,12 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                         }
 
                         // Third vertex
-                        if(indices.ContainsKey(vertex3)) {
+                        if(indices.ContainsKey(vertex3))
+                        {
                             I3 = indices[vertex3];
                         }
-                        else {
+                        else
+                        {
                             I3 = vertexIndex;
                             // Add vertex to dictionary
                             indices.Add(vertex3, vertexIndex);
@@ -268,7 +292,8 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
 
                         byteIndex += 2; // Attribute byte count
                     }
-                    catch {
+                    catch
+                    {
                         processError = true;
                         break;
                     }
@@ -276,7 +301,8 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
             }
 
             // itentionally left blank
-            if(processError) {
+            if(processError)
+            {
                 throw new FileLoadException($"Error reading file: {path}!");
             }
 
@@ -291,7 +317,8 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
         * @param  filePath
         * @retval meshList
         */
-        private Mesh ReadASCIIFile(string filePath) {
+        private Mesh ReadASCIIFile(string filePath)
+        {
             var vertices = new List<Vector3>();
             var normals = new List<Vector3>();
             var triangleIndices = new List<Triangle>();
@@ -300,14 +327,17 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
 
             string lineString;
 
-            while(!txtReader.EndOfStream) {
+            while(!txtReader.EndOfStream)
+            {
                 lineString = txtReader.ReadLine().Trim(); /* delete whitespace in front and tail of the string */
                 var lineData = lineString.Split(' ');
 
                 var vertexIndex = 0;
 
-                if(lineData[0] == "solid") {
-                    while(lineData[0] != "endsolid") {
+                if(lineData[0] == "solid")
+                {
+                    while(lineData[0] != "endsolid")
+                    {
                         lineString = txtReader.ReadLine().Trim(); // facetnormal
                         lineData = lineString.Split(' ');
 
@@ -317,7 +347,8 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                         }
 
                         /* this try-catch block will be reviewed */
-                        try {
+                        try
+                        {
                             // FaceNormal 
 
                             var normal = new Vector3(float.Parse(lineData[2]), float.Parse(lineData[3]),
@@ -330,7 +361,8 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                             // Vertex1
                             lineString = txtReader.ReadLine().Trim();
                             /* reduce spaces until string has proper format for split */
-                            while(lineString.IndexOf("  ") != -1) {
+                            while(lineString.IndexOf("  ") != -1)
+                            {
                                 lineString = lineString.Replace("  ", " ");
                             }
 
@@ -342,7 +374,8 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                             // Vertex2
                             lineString = txtReader.ReadLine().Trim();
                             /* reduce spaces until string has proper format for split */
-                            while(lineString.IndexOf("  ") != -1) {
+                            while(lineString.IndexOf("  ") != -1)
+                            {
                                 lineString = lineString.Replace("  ", " ");
                             }
 
@@ -354,7 +387,8 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                             // Vertex3
                             lineString = txtReader.ReadLine().Trim();
                             /* reduce spaces until string has proper format for split */
-                            while(lineString.IndexOf("  ") != -1) {
+                            while(lineString.IndexOf("  ") != -1)
+                            {
                                 lineString = lineString.Replace("  ", " ");
                             }
 
@@ -366,10 +400,12 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                             // Create triangle, check if vertices already exist
                             int I1, I2, I3 = -1;
                             // First vertex
-                            if(indices.ContainsKey(vertex1)) {
+                            if(indices.ContainsKey(vertex1))
+                            {
                                 I1 = indices[vertex1];
                             }
-                            else {
+                            else
+                            {
                                 I1 = vertexIndex;
                                 // Add vertex to dictionary
                                 indices.Add(vertex1, vertexIndex);
@@ -381,10 +417,12 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                             }
 
                             // Second vertex
-                            if(indices.ContainsKey(vertex2)) {
+                            if(indices.ContainsKey(vertex2))
+                            {
                                 I2 = indices[vertex2];
                             }
-                            else {
+                            else
+                            {
                                 I2 = vertexIndex;
                                 // Add vertex to dictionary
                                 indices.Add(vertex2, vertexIndex);
@@ -396,10 +434,12 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                             }
 
                             // Third vertex
-                            if(indices.ContainsKey(vertex3)) {
+                            if(indices.ContainsKey(vertex3))
+                            {
                                 I3 = indices[vertex3];
                             }
-                            else {
+                            else
+                            {
                                 I3 = vertexIndex;
                                 // Add vertex to dictionary
                                 indices.Add(vertex3, vertexIndex);
@@ -413,7 +453,8 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                             // Add triangle to list of triangles
                             triangleIndices.Add(new Triangle(I1, I2, I3));
                         }
-                        catch {
+                        catch
+                        {
                             processError = true;
                             break;
                         }

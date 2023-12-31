@@ -5,17 +5,21 @@ using System;
 using System.Buffers;
 using System.Numerics;
 
-namespace SoftRenderingApp3D.Buffer {
-    public class WorldBuffer : IDisposable {
+namespace SoftRenderingApp3D.Buffer
+{
+    public class WorldBuffer : IDisposable
+    {
         private static readonly ArrayPool<VertexBuffer> VertexBuffer3Bag = ArrayPool<VertexBuffer>.Shared;
 
-        public WorldBuffer(IWorld w) {
+        public WorldBuffer(IWorld w)
+        {
             var meshes = w.Meshes;
             Size = meshes.Count;
 
             VertexBuffer = VertexBuffer3Bag.Rent(Size);
 
-            for(var i = 0; i < Size; i++) {
+            for(var i = 0; i < Size; i++)
+            {
                 VertexBuffer[i] = new VertexBuffer(meshes[i].Vertices.Count);
             }
         }
@@ -23,9 +27,11 @@ namespace SoftRenderingApp3D.Buffer {
         public VertexBuffer[] VertexBuffer { get; }
         private int Size { get; }
 
-        public void Dispose() {
+        public void Dispose()
+        {
             var nv = VertexBuffer.Length;
-            for(var i = 0; i < nv; i++) {
+            for(var i = 0; i < nv; i++)
+            {
                 VertexBuffer[i]?.Dispose();
             }
 
@@ -34,12 +40,14 @@ namespace SoftRenderingApp3D.Buffer {
         }
     }
 
-    public class VertexBuffer : IDisposable {
+    public class VertexBuffer : IDisposable
+    {
         private static readonly ArrayPool<Vector3> Vector3Bag = ArrayPool<Vector3>.Shared;
         private static readonly ArrayPool<Vector4> Vector4Bag = ArrayPool<Vector4>.Shared;
         private static readonly ArrayPool<ColorRGB> ColorRGBBag = ArrayPool<ColorRGB>.Shared;
 
-        public VertexBuffer(int vertexCount) {
+        public VertexBuffer(int vertexCount)
+        {
             Size = vertexCount;
             ViewVertices = Vector3Bag.Rent(vertexCount);
             WorldVertices = Vector3Bag.Rent(vertexCount);
@@ -59,7 +67,8 @@ namespace SoftRenderingApp3D.Buffer {
         public Matrix4x4 WorldMatrix { get; set; }
         public Matrix4x4 WorldViewMatrix { get; set; }
 
-        public void Dispose() {
+        public void Dispose()
+        {
             Array.Clear(ViewVertices, 0, Size);
             Array.Clear(WorldVertices, 0, Size);
             Array.Clear(WorldVertexNormals, 0, Size);
@@ -73,21 +82,27 @@ namespace SoftRenderingApp3D.Buffer {
             ColorRGBBag.Return(VertexColors);
         }
 
-        public void TransformVertices(Matrix4x4 matrix) {
-            for(var i = 0; i < Mesh.Vertices.Count; i++) {
+        public void TransformVertices(Matrix4x4 matrix)
+        {
+            for(var i = 0; i < Mesh.Vertices.Count; i++)
+            {
                 WorldVertices[i] = matrix.Transform(Mesh.Vertices[i]);
                 WorldVertexNormals[i] = matrix.TransformWithoutTranslation(Mesh.VertexNormals[i]);
             }
         }
 
-        public void TransformWorld() {
-            for(var i = 0; i < Mesh.Vertices.Count; i++) {
+        public void TransformWorld()
+        {
+            for(var i = 0; i < Mesh.Vertices.Count; i++)
+            {
                 WorldVertices[i] = Vector3.Transform(Mesh.Vertices[i], WorldMatrix);
             }
         }
 
-        public void TransformWorldView() {
-            for(var i = 0; i < Mesh.Vertices.Count; i++) {
+        public void TransformWorldView()
+        {
+            for(var i = 0; i < Mesh.Vertices.Count; i++)
+            {
                 ViewVertices[i] = Vector3.Transform(Mesh.Vertices[i], WorldViewMatrix);
             }
         }

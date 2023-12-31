@@ -14,9 +14,11 @@ using System.Drawing.Imaging;
 using System.Text;
 using System.Windows.Forms;
 
-namespace SubsurfaceScatteringSoftRenderingApp3D {
-    public partial class Panel3D : UserControl {
-        
+namespace SubsurfaceScatteringSoftRenderingApp3D
+{
+    public partial class Panel3D : UserControl
+    {
+
         private Bitmap bmp;
         private ICamera camera;
 
@@ -31,7 +33,8 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
         private readonly StringBuilder sb = new StringBuilder();
         private IWorld world;
 
-        public Panel3D() {
+        public Panel3D()
+        {
             InitializeComponent();
 
             renderContext = new SubsurfaceScatteringRenderContext();
@@ -50,14 +53,17 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
         private SubsurfaceScatteringRenderContext renderContext { get; }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public SubsurfaceScatteringRendererSettings RendererSettings {
-            get {
+        public SubsurfaceScatteringRendererSettings RendererSettings
+        {
+            get
+            {
                 return rendererSettings;
             }
-            private set {
-                if(!value.TryUpdateOther(ref rendererSettings)) 
+            private set
+            {
+                if(!value.TryUpdateOther(ref rendererSettings))
                     return;
-                
+
 
                 rendererSettings.ShowTriangleNormals = true;
                 renderContext.RendererSettings = value;
@@ -66,12 +72,15 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public IWorld World {
-            get {
+        public IWorld World
+        {
+            get
+            {
                 return world;
             }
-            set {
-                if(!value.TryUpdateOther(ref world)) 
+            set
+            {
+                if(!value.TryUpdateOther(ref world))
                     return;
 
                 renderContext.World = world;
@@ -80,15 +89,19 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public ISubsurfaceScatteringPainter Painter {
-            get {
+        public ISubsurfaceScatteringPainter Painter
+        {
+            get
+            {
                 return painter;
             }
-            set {
-                if(!value.TryUpdateOther(ref painter)) 
+            set
+            {
+                if(!value.TryUpdateOther(ref painter))
                     return;
 
-                if(painter != null) {
+                if(painter != null)
+                {
                     painter.RendererContext = renderContext;
                 }
 
@@ -97,12 +110,15 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public ISubsurfaceScatteringRenderer Renderer {
-            get {
+        public ISubsurfaceScatteringRenderer Renderer
+        {
+            get
+            {
                 return renderer;
             }
-            set {
-                if(!value.TryUpdateOther(ref renderer)) 
+            set
+            {
+                if(!value.TryUpdateOther(ref renderer))
                     return;
 
                 renderer.SubsurfaceScatteringRenderContext = renderContext;
@@ -111,21 +127,26 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public ICamera Camera {
-            get {
+        public ICamera Camera
+        {
+            get
+            {
                 return camera;
             }
-            set {
+            set
+            {
                 var oldCamera = camera;
 
-                if(!value.TryUpdateOther(ref camera)) 
+                if(!value.TryUpdateOther(ref camera))
                     return;
 
-                if(oldCamera != null) {
+                if(oldCamera != null)
+                {
                     oldCamera.CameraChanged -= cameraChanged;
                 }
 
-                if(camera != null) {
+                if(camera != null)
+                {
                     camera.CameraChanged += cameraChanged;
                 }
 
@@ -135,21 +156,26 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public IProjection Projection {
-            get {
+        public IProjection Projection
+        {
+            get
+            {
                 return projection;
             }
-            set {
+            set
+            {
                 var oldProjection = projection;
 
-                if(!value.TryUpdateOther(ref projection)) 
+                if(!value.TryUpdateOther(ref projection))
                     return;
 
-                if(oldProjection != null) {
+                if(oldProjection != null)
+                {
                     oldProjection.ProjectionChanged -= projectionChanged;
                 }
 
-                if(projection != null) {
+                if(projection != null)
+                {
                     projection.ProjectionChanged += projectionChanged;
                 }
 
@@ -160,34 +186,42 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
             }
         }
 
-        private void assign(ISubsurfaceScatteringRenderer renderer, ISubsurfaceScatteringPainter painter) {
-            if(renderer == null) {
+        private void assign(ISubsurfaceScatteringRenderer renderer, ISubsurfaceScatteringPainter painter)
+        {
+            if(renderer == null)
+            {
                 return;
             }
 
             renderer.SubsurfaceScatteringPainter = painter;
         }
 
-        private void projectionChanged(object sender, EventArgs e) {
+        private void projectionChanged(object sender, EventArgs e)
+        {
             Invalidate();
         }
 
-        private void cameraChanged(object sender, EventArgs e) {
+        private void cameraChanged(object sender, EventArgs e)
+        {
             Invalidate();
         }
 
-        private void hookPaintEvent() {
+        private void hookPaintEvent()
+        {
             Paint -= Panel3D_Paint;
-            if(camera != null && world != null && projection != null) {
+            if(camera != null && world != null && projection != null)
+            {
                 Paint += Panel3D_Paint;
             }
         }
 
-        public int[] Render() {
+        public int[] Render()
+        {
             return renderer.Render();
         }
 
-        private void Panel3D_Paint(object sender, PaintEventArgs e) {
+        private void Panel3D_Paint(object sender, PaintEventArgs e)
+        {
             var g = e.Graphics;
 
             // g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
@@ -215,8 +249,10 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
                 TextFormatFlags.ExpandTabs);
         }
 
-        private void Panel3D_Layout(object sender, LayoutEventArgs e) {
-            if(Size.Height == 0 || Size.Width == 0) {
+        private void Panel3D_Layout(object sender, LayoutEventArgs e)
+        {
+            if(Size.Height == 0 || Size.Width == 0)
+            {
                 return;
             }
 
@@ -224,7 +260,8 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
             bmp = new Bitmap(Width, Height, PixelFormat.Format32bppPArgb);
         }
 
-        private void buildFrame() {
+        private void buildFrame()
+        {
             var buffer = renderer.Render();
             ImageUtils.FillBitmap(bmp, buffer, Width, Height);
         }

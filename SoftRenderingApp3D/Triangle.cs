@@ -4,9 +4,12 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace SoftRenderingApp3D {
-    public readonly struct Triangle {
-        public Triangle(int p0, int p1, int p2) {
+namespace SoftRenderingApp3D
+{
+    public readonly struct Triangle
+    {
+        public Triangle(int p0, int p1, int p2)
+        {
             I0 = p0;
             I1 = p1;
             I2 = p2;
@@ -16,15 +19,18 @@ namespace SoftRenderingApp3D {
         public int I1 { get; }
         public int I2 { get; }
 
-        public Vector3 CalculateCentroid(IReadOnlyList<Vector3> vertices) {
+        public Vector3 CalculateCentroid(IReadOnlyList<Vector3> vertices)
+        {
             return (vertices[I0] + vertices[I1] + vertices[I2]) / 3;
         }
 
-        public Vector3 CalculateNormal(IReadOnlyList<Vector3> vertices) {
+        public Vector3 CalculateNormal(IReadOnlyList<Vector3> vertices)
+        {
             // Avoid division with zero
             if(vertices[I0] == Vector3.Zero &&
                vertices[I1] == Vector3.Zero &&
-               vertices[I2] == Vector3.Zero) {
+               vertices[I2] == Vector3.Zero)
+            {
                 return Vector3.Zero;
             }
 
@@ -33,18 +39,21 @@ namespace SoftRenderingApp3D {
             return result.IsNaN() ? Vector3.Zero : result;
         }
 
-        public bool Contains(Vector3 vertex, IReadOnlyList<Vector3> vertices) {
+        public bool Contains(Vector3 vertex, IReadOnlyList<Vector3> vertices)
+        {
             return vertices[I0] == vertex || vertices[I1] == vertex || vertices[I2] == vertex;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsBehindFarPlane(VertexBuffer vbx) {
+        public bool IsBehindFarPlane(VertexBuffer vbx)
+        {
             var viewVertices = vbx.ViewVertices;
             return viewVertices[I0].Z > 0 && viewVertices[I1].Z > 0 && viewVertices[I2].Z > 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsFacingBack(VertexBuffer vbx) {
+        public bool IsFacingBack(VertexBuffer vbx)
+        {
             var viewVertices = vbx.ViewVertices;
             var p0 = viewVertices[I0];
             var p1 = viewVertices[I1];
@@ -57,38 +66,46 @@ namespace SoftRenderingApp3D {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsOutsideFrustum(VertexBuffer vbx) {
+        public bool IsOutsideFrustum(VertexBuffer vbx)
+        {
             var projectionVertices = vbx.ProjectionVertices;
             var p0 = projectionVertices[I0];
             var p1 = projectionVertices[I1];
             var p2 = projectionVertices[I2];
 
-            if(p0.W < 0 || p1.W < 0 || p2.W < 0) {
+            if(p0.W < 0 || p1.W < 0 || p2.W < 0)
+            {
                 return true;
             }
 
-            if(p0.X < -p0.W && p1.X < -p1.W && p2.X < -p2.W) {
+            if(p0.X < -p0.W && p1.X < -p1.W && p2.X < -p2.W)
+            {
                 return true;
             }
 
-            if(p0.X > p0.W && p1.X > p1.W && p2.X > p2.W) {
+            if(p0.X > p0.W && p1.X > p1.W && p2.X > p2.W)
+            {
                 return true;
             }
 
-            if(p0.Y < -p0.W && p1.Y < -p1.W && p2.Y < -p2.W) {
+            if(p0.Y < -p0.W && p1.Y < -p1.W && p2.Y < -p2.W)
+            {
                 return true;
             }
 
-            if(p0.Y > p0.W && p1.Y > p1.W && p2.Y > p2.W) {
+            if(p0.Y > p0.W && p1.Y > p1.W && p2.Y > p2.W)
+            {
                 return true;
             }
 
-            if(p0.Z > p0.W && p1.Z > p1.W && p2.Z > p2.W) {
+            if(p0.Z > p0.W && p1.Z > p1.W && p2.Z > p2.W)
+            {
                 return true;
             }
 
             // This last one is normally not necessary when a IsTriangleBehind check is done
-            if(p0.Z < 0 && p1.Z < 0 && p2.Z < 0) {
+            if(p0.Z < 0 && p1.Z < 0 && p2.Z < 0)
+            {
                 return true;
             }
 
@@ -96,40 +113,48 @@ namespace SoftRenderingApp3D {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void TransformProjection(VertexBuffer vbx, Matrix4x4 projectionMatrix) {
+        public void TransformProjection(VertexBuffer vbx, Matrix4x4 projectionMatrix)
+        {
             var projectionVertices = vbx.ProjectionVertices;
             var viewVertices = vbx.ViewVertices;
 
-            if(projectionVertices[I0] == Vector4.Zero) {
+            if(projectionVertices[I0] == Vector4.Zero)
+            {
                 projectionVertices[I0] = Vector4.Transform(viewVertices[I0], projectionMatrix);
             }
 
-            if(projectionVertices[I1] == Vector4.Zero) {
+            if(projectionVertices[I1] == Vector4.Zero)
+            {
                 projectionVertices[I1] = Vector4.Transform(viewVertices[I1], projectionMatrix);
             }
 
-            if(projectionVertices[I2] == Vector4.Zero) {
+            if(projectionVertices[I2] == Vector4.Zero)
+            {
                 projectionVertices[I2] = Vector4.Transform(viewVertices[I2], projectionMatrix);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void TransformWorld(VertexBuffer vbx) {
+        public void TransformWorld(VertexBuffer vbx)
+        {
             var worldMatrix = vbx.WorldMatrix;
 
             var worldNormVertices = vbx.WorldVertexNormals;
             var normVertices = vbx.Mesh.VertexNormals;
             var textureCoordinates = vbx.Mesh.TexCoordinates;
 
-            if(worldNormVertices[I0] == Vector3.Zero) {
+            if(worldNormVertices[I0] == Vector3.Zero)
+            {
                 worldNormVertices[I0] = Vector3.TransformNormal(normVertices[I0], worldMatrix);
             }
 
-            if(worldNormVertices[I1] == Vector3.Zero) {
+            if(worldNormVertices[I1] == Vector3.Zero)
+            {
                 worldNormVertices[I1] = Vector3.TransformNormal(normVertices[I1], worldMatrix);
             }
 
-            if(worldNormVertices[I2] == Vector3.Zero) {
+            if(worldNormVertices[I2] == Vector3.Zero)
+            {
                 worldNormVertices[I2] = Vector3.TransformNormal(normVertices[I2], worldMatrix);
             }
 
@@ -145,20 +170,24 @@ namespace SoftRenderingApp3D {
             */
 
             // Check if mesh has texture data
-            if(vbx.Mesh.TexCoordinates != null) {
-                if(textureCoordinates[I0] == Vector2.Zero) {
+            if(vbx.Mesh.TexCoordinates != null)
+            {
+                if(textureCoordinates[I0] == Vector2.Zero)
+                {
                     var temp = Vector3.Transform(new Vector3(textureCoordinates[I0].X, textureCoordinates[I0].Y, 1.0f),
                         worldMatrix);
                     vbx.Mesh.SetVertexTextureCoordinate(I0, new Vector2(temp.X, temp.Y));
                 }
 
-                if(textureCoordinates[I1] == Vector2.Zero) {
+                if(textureCoordinates[I1] == Vector2.Zero)
+                {
                     var temp = Vector3.Transform(new Vector3(textureCoordinates[I1].X, textureCoordinates[I1].Y, 1.0f),
                         worldMatrix);
                     vbx.Mesh.SetVertexTextureCoordinate(I1, new Vector2(temp.X, temp.Y));
                 }
 
-                if(textureCoordinates[I2] == Vector2.Zero) {
+                if(textureCoordinates[I2] == Vector2.Zero)
+                {
                     var temp = Vector3.Transform(new Vector3(textureCoordinates[I2].X, textureCoordinates[I2].Y, 1.0f),
                         worldMatrix);
                     vbx.Mesh.SetVertexTextureCoordinate(I2, new Vector2(temp.X, temp.Y));
@@ -166,7 +195,8 @@ namespace SoftRenderingApp3D {
             }
         }
 
-        public Vector3 GetCenterCoordinates(VertexBuffer vbx) {
+        public Vector3 GetCenterCoordinates(VertexBuffer vbx)
+        {
             var x = (vbx.WorldVertices[I0].X + vbx.WorldVertices[I1].X + vbx.WorldVertices[I2].X) / 3.0f;
             var y = (vbx.WorldVertices[I0].Y + vbx.WorldVertices[I1].Y + vbx.WorldVertices[I2].Y) / 3.0f;
             var z = (vbx.WorldVertices[I0].Z + vbx.WorldVertices[I1].Z + vbx.WorldVertices[I2].Z) / 3.0f;

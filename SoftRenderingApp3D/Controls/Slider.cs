@@ -2,11 +2,14 @@
 using System.ComponentModel;
 using System.Windows.Forms;
 
-namespace SoftRenderingApp3D.Controls {
+namespace SoftRenderingApp3D.Controls
+{
     // Slider
 
-    public partial class Slider : UserControl {
-        public Slider() {
+    public partial class Slider : UserControl
+    {
+        public Slider()
+        {
             InitializeComponent();
             textBox1.DataBindings.Add(nameof(TextBox.Text), superSlider1, "Value", false,
                 DataSourceUpdateMode.OnPropertyChanged);
@@ -16,47 +19,62 @@ namespace SoftRenderingApp3D.Controls {
         [Browsable(true)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
         [Bindable(true)]
-        public override string Text {
-            get {
+        public override string Text
+        {
+            get
+            {
                 return label1.Text;
             }
-            set {
+            set
+            {
                 label1.Text = value;
             }
         }
 
-        public float Value {
-            get {
+        public float Value
+        {
+            get
+            {
                 return superSlider1.Value;
             }
-            set {
+            set
+            {
                 superSlider1.Value = value;
             }
         }
 
-        public float Min {
-            get {
+        public float Min
+        {
+            get
+            {
                 return superSlider1.Min;
             }
-            set {
+            set
+            {
                 superSlider1.Min = value;
             }
         }
 
-        public float Max {
-            get {
+        public float Max
+        {
+            get
+            {
                 return superSlider1.Max;
             }
-            set {
+            set
+            {
                 superSlider1.Max = value;
             }
         }
 
-        public event EventHandler ValueChanged {
-            add {
+        public event EventHandler ValueChanged
+        {
+            add
+            {
                 superSlider1.ValueChanged += value;
             }
-            remove {
+            remove
+            {
                 superSlider1.ValueChanged -= value;
             }
         }

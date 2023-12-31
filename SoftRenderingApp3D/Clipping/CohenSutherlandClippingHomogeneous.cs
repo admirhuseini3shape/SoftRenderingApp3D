@@ -2,11 +2,14 @@
 using System;
 using System.Numerics;
 
-namespace SoftRenderingApp3D.Clipping {
+namespace SoftRenderingApp3D.Clipping
+{
     // Buggy : this code has a bounce case and shall not be used
 
-    internal class CohenSutherlandClippingHomogeneous : IClippingHomogeneous {
-        public bool Clip(ref Vector4 p1, ref Vector4 p2) {
+    internal class CohenSutherlandClippingHomogeneous : IClippingHomogeneous
+    {
+        public bool Clip(ref Vector4 p1, ref Vector4 p2)
+        {
             var x1 = p1.X;
             var y1 = p1.Y;
             var z1 = p1.Z;
@@ -20,14 +23,17 @@ namespace SoftRenderingApp3D.Clipping {
             var outcode1 = computeOutCode(x1, y1, z1, w1);
             var outcode2 = computeOutCode(x2, y2, z2, w2);
 
-            while(true) {
-                if((outcode1 | outcode2) == 0) {
+            while(true)
+            {
+                if((outcode1 | outcode2) == 0)
+                {
                     p1 = new Vector4(x1, y1, z1, w1);
                     p2 = new Vector4(x2, y2, z2, w2);
                     return true;
                 }
 
-                if((outcode1 & outcode2) != 0) {
+                if((outcode1 & outcode2) != 0)
+                {
                     return false;
                 }
 
@@ -38,14 +44,16 @@ namespace SoftRenderingApp3D.Clipping {
 
                 var outcodeOut = outcode1 == 0 ? outcode2 : outcode1;
 
-                if(outcodeOut.HasFlag(OutCode.OUT)) {
+                if(outcodeOut.HasFlag(OutCode.OUT))
+                {
                     var t = w1 / (w1 - w2);
                     w = MathUtils.Epsilon; // Clip at the closest as possible to W = 0
                     x = x1 + t * (x2 - x1);
                     y = y1 + t * (y2 - y1);
                     z = z1 + t * (z2 - z1);
                 }
-                else if(outcodeOut.HasFlag(OutCode.TOP)) {
+                else if(outcodeOut.HasFlag(OutCode.TOP))
+                {
                     var v = w1 - y1;
                     var t = v / (v - (w2 - y2));
                     w = w1 + t * (w2 - w1);
@@ -53,7 +61,8 @@ namespace SoftRenderingApp3D.Clipping {
                     y = w;
                     z = z1 + t * (z2 - z1);
                 }
-                else if(outcodeOut.HasFlag(OutCode.BOTTOM)) {
+                else if(outcodeOut.HasFlag(OutCode.BOTTOM))
+                {
                     var v = w1 + y1;
                     var t = v / (v - (w2 + y2));
                     w = w1 + t * (w2 - w1);
@@ -61,7 +70,8 @@ namespace SoftRenderingApp3D.Clipping {
                     y = -w;
                     z = z1 + t * (z2 - z1);
                 }
-                else if(outcodeOut.HasFlag(OutCode.RIGHT)) {
+                else if(outcodeOut.HasFlag(OutCode.RIGHT))
+                {
                     var v = w1 - x1;
                     var t = v / (v - (w2 - x2));
                     w = w1 + t * (w2 - w1);
@@ -69,7 +79,8 @@ namespace SoftRenderingApp3D.Clipping {
                     y = y1 + t * (y2 - y1);
                     z = z1 + t * (z2 - z1);
                 }
-                else if(outcodeOut.HasFlag(OutCode.LEFT)) {
+                else if(outcodeOut.HasFlag(OutCode.LEFT))
+                {
                     var v = w1 + x1;
                     var t = v / (v - (w2 + x2));
                     w = w1 + t * (w2 - w1);
@@ -77,7 +88,8 @@ namespace SoftRenderingApp3D.Clipping {
                     y = y1 + t * (y2 - y1);
                     z = z1 + t * (z2 - z1);
                 }
-                else if(outcodeOut.HasFlag(OutCode.FAR)) {
+                else if(outcodeOut.HasFlag(OutCode.FAR))
+                {
                     var v = w1 - z1;
                     var t = v / (v - (w2 - z2));
                     w = w1 + t * (w2 - w1);
@@ -85,7 +97,8 @@ namespace SoftRenderingApp3D.Clipping {
                     y = y1 + t * (y2 - y1);
                     z = -w;
                 }
-                else if(outcodeOut.HasFlag(OutCode.NEAR)) {
+                else if(outcodeOut.HasFlag(OutCode.NEAR))
+                {
                     var v = w1 + z1;
                     var t = v / (v - (w2 + z2));
                     w = w1 + t * (w2 - w1);
@@ -96,14 +109,16 @@ namespace SoftRenderingApp3D.Clipping {
 
                 // Now we move outside point to intersection point to clip
                 // and get ready for next pass.
-                if(outcodeOut == outcode1) {
+                if(outcodeOut == outcode1)
+                {
                     x1 = x;
                     y1 = y;
                     z1 = z;
                     w1 = w;
                     outcode1 = computeOutCode(x, y, z, w);
                 }
-                else {
+                else
+                {
                     x2 = x;
                     y2 = y;
                     z2 = z;
@@ -113,31 +128,39 @@ namespace SoftRenderingApp3D.Clipping {
             }
         }
 
-        private static OutCode computeOutCode(float x, float y, float z, float w) {
+        private static OutCode computeOutCode(float x, float y, float z, float w)
+        {
             var code = OutCode.INSIDE;
 
-            if(w < 0f) {
+            if(w < 0f)
+            {
                 code = OutCode.OUT;
             }
 
-            if(y > w) {
+            if(y > w)
+            {
                 code |= OutCode.TOP;
             }
-            else if(y < -w) {
+            else if(y < -w)
+            {
                 code |= OutCode.BOTTOM;
             }
 
-            if(x < -w) {
+            if(x < -w)
+            {
                 code |= OutCode.LEFT;
             }
-            else if(x > w) {
+            else if(x > w)
+            {
                 code |= OutCode.RIGHT;
             }
 
-            if(z < -w) {
+            if(z < -w)
+            {
                 code |= OutCode.FAR;
             }
-            else if(z > w) {
+            else if(z > w)
+            {
                 code |= OutCode.NEAR;
             }
 
@@ -145,7 +168,8 @@ namespace SoftRenderingApp3D.Clipping {
         }
 
         [Flags]
-        private enum OutCode {
+        private enum OutCode
+        {
             INSIDE = 0,
             LEFT = 1,
             RIGHT = 2,

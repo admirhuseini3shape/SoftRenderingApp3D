@@ -6,15 +6,19 @@ using System.Linq;
 using System.Numerics;
 using System.Xml.Linq;
 
-namespace SoftRenderingApp3D.DataStructures.FileReaders {
-    public class ColladaReader : FileReader {
+namespace SoftRenderingApp3D.DataStructures.FileReaders
+{
+    public class ColladaReader : FileReader
+    {
         // Collada import is a brittle hack and need a serious work
 
-        public static IEnumerable<Mesh> ImportCollada(string fileName) {
+        public static IEnumerable<Mesh> ImportCollada(string fileName)
+        {
             var ns = "http://www.collada.org/2005/11/COLLADASchema";
             var xdoc = XDocument.Load(fileName);
             var xvolumes = xdoc.Descendants(XName.Get("geometry", ns));
-            foreach(var xvolume in xvolumes) {
+            foreach(var xvolume in xvolumes)
+            {
                 var xid = xvolume.Attribute("id").Value;
 
                 var svertices = xvolume.Descendants().First(e => e.Attribute("id")?.Value == $"{xid}-positions-array")
@@ -37,21 +41,25 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
 
         // Work in progress
 
-        public static IEnumerable<Mesh> NewImportCollada(string fileName) {
+        public static IEnumerable<Mesh> NewImportCollada(string fileName)
+        {
             XNamespace ns = "http://www.collada.org/2005/11/COLLADASchema";
 
             var xdoc = XDocument.Load(fileName);
 
             var geometries = xdoc.Root.Element(ns + "library_geometries").Elements(ns + "geometry");
 
-            foreach(var geometry in geometries) {
+            foreach(var geometry in geometries)
+            {
                 var mesh = geometry.Element(ns + "mesh");
 
                 var polylist = mesh.Element(ns + "polylist");
-                if(polylist != null) {
+                if(polylist != null)
+                {
                     var polylist_vcount = parseArray<int>(polylist.Element(ns + "vcount")?.Value);
 
-                    if(!polylist_vcount.Any() || polylist_vcount.Distinct().Any(v => v != 3)) {
+                    if(!polylist_vcount.Any() || polylist_vcount.Distinct().Any(v => v != 3))
+                    {
                         throw new Exception();
                     }
 
@@ -74,12 +82,13 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                     yield return new Mesh(
                         vertices_position.ToArray(),
                         polylist_p.ToArray().BuildTriangleIndices(),
-                        vertices_normal.ToArray(),null,
+                        vertices_normal.ToArray(), null,
                         texture_coordinates.ToArray());
                 }
 
                 var triangles = mesh.Element(ns + "triangles");
-                if(triangles != null) {
+                if(triangles != null)
+                {
                     var triangles_count = int.Parse(triangles.Attribute("count").Value);
                     var triangles_p = parseArray<int>(triangles.Element(ns + "p")?.Value).ToArray();
 
@@ -102,28 +111,33 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
             }
         }
 
-        private static IEnumerable<Triangle> getTriangles(int[] array, int stride, int offset = 0) {
+        private static IEnumerable<Triangle> getTriangles(int[] array, int stride, int offset = 0)
+        {
             var l = array.Length / stride;
-            for(var i = 0; i < l; i++) {
+            for(var i = 0; i < l; i++)
+            {
                 yield return new Triangle(array[i * stride + offset], array[i * stride + 4 + offset],
                     array[i * stride + 8 + offset]);
             }
         }
 
-        private static IEnumerable<T> parseArray<T>(string value) {
+        private static IEnumerable<T> parseArray<T>(string value)
+        {
             return value?.Split(new[] { ' ', '\n' }, StringSplitOptions.RemoveEmptyEntries)
                        ?.Select(v => (T)Convert.ChangeType(v, typeof(T), CultureInfo.InvariantCulture)) ??
                    Enumerable.Empty<T>();
         }
 
-        private static void getSource(XElement element, string semantic, out string id, out int offset) {
+        private static void getSource(XElement element, string semantic, out string id, out int offset)
+        {
             var e = element?.Elements(element?.GetDefaultNamespace() + "input")
                 ?.FirstOrDefault(e => string.Equals(e.Attribute("semantic")?.Value, semantic));
             id = e?.Attribute("source")?.Value?.TrimStart('#');
             offset = int.Parse(e?.Attribute("offset")?.Value ?? "0");
         }
 
-        private static IEnumerable<T> getArraySource<T>(XElement mesh, string id) {
+        private static IEnumerable<T> getArraySource<T>(XElement mesh, string id)
+        {
             var ns = mesh.GetDefaultNamespace();
 
             var data = mesh
@@ -134,20 +148,25 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
 
             var floats = parseArray<float>(data).ToArray();
 
-            if(typeof(T) == typeof(Vector3)) {
-                for(var i = 0; i < floats.Length; i += 3) {
+            if(typeof(T) == typeof(Vector3))
+            {
+                for(var i = 0; i < floats.Length; i += 3)
+                {
                     yield return (T)(object)new Vector3(floats[i], floats[i + 1], floats[i + 2]);
                 }
             }
 
-            if(typeof(T) == typeof(Vector2)) {
-                for(var i = 0; i < floats.Length; i += 2) {
+            if(typeof(T) == typeof(Vector2))
+            {
+                for(var i = 0; i < floats.Length; i += 2)
+                {
                     yield return (T)(object)new Vector2(floats[i], floats[i + 1]);
                 }
             }
         }
 
-        public override IEnumerable<Mesh> ReadFile(string fileName) {
+        public override IEnumerable<Mesh> ReadFile(string fileName)
+        {
             return NewImportCollada(fileName);
         }
     }

@@ -11,12 +11,15 @@ using System;
 using System.Numerics;
 using System.Windows.Forms;
 
-namespace SubsurfaceScatteringSoftRenderingApp3D {
-    public partial class Form1 : Form {
+namespace SubsurfaceScatteringSoftRenderingApp3D
+{
+    public partial class Form1 : Form
+    {
         private readonly ArcBallCam arcBallCam;
         private FlyCam flyCam;
 
-        public Form1() {
+        public Form1()
+        {
             InitializeComponent();
             var projection = new FovPerspectiveProjection(40f * (float)Math.PI / 180f, .01f, 500f);
             arcBallCam = new ArcBallCam { Position = new Vector3(0, 0, -25) };
@@ -38,11 +41,13 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
             PrepareWorld("jaw");
         }
 
-        private void PrepareWorld(string id) {
+        private void PrepareWorld(string id)
+        {
             var world = new World();
             var stlReader = new STLReader();
 
-            switch(id) {
+            switch(id)
+            {
                 case "jaw":
                     world.Meshes.AddRange(stlReader.ReadFile(@"models\original.stl"));
                     // Add a cube that represents the light
@@ -61,61 +66,73 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
             panel3D1.World = world;
             panel3D1.Invalidate();
 
-            void MainCam_CameraChanged(object cam, EventArgs _1) {
+            void MainCam_CameraChanged(object cam, EventArgs _1)
+            {
                 // camObject.Position = ((ArcBallCam)cam).Position;
                 // this.panel3D2.Invalidate();
             }
         }
 
-        private void btnChangeTexture_Click(object sender, EventArgs e) {
+        private void btnChangeTexture_Click(object sender, EventArgs e)
+        {
             panel3D1.RendererSettings.ChangeActiveTexture();
         }
 
-        private void label1_Click(object sender, EventArgs e) {
+        private void label1_Click(object sender, EventArgs e)
+        {
         }
 
-        private void trackBar1_Scroll(object sender, EventArgs e) {
+        private void trackBar1_Scroll(object sender, EventArgs e)
+        {
             SubsurfaceScatteringRenderUtils.ChangeVisibility(trackBar1.Value);
             panel3D1.Invalidate();
         }
 
-        private void trackBar2_Scroll(object sender, EventArgs e) {
+        private void trackBar2_Scroll(object sender, EventArgs e)
+        {
             SubsurfaceScatteringRenderUtils.ChangeSubsurfaceScatteringStrength(trackBar2.Value);
             panel3D1.Invalidate();
         }
 
-        private void trackBar4_Scroll(object sender, EventArgs e) {
+        private void trackBar4_Scroll(object sender, EventArgs e)
+        {
             SubsurfaceScatteringRenderUtils.ChangeSurfaceColor(trackBar4.Value);
             panel3D1.Invalidate();
         }
 
-        private void trackBar3_Scroll(object sender, EventArgs e) {
+        private void trackBar3_Scroll(object sender, EventArgs e)
+        {
             SubsurfaceScatteringRenderUtils.ChangeSubsurfaceColor(trackBar3.Value);
             panel3D1.Invalidate();
         }
 
-        private void trackBar5_Scroll(object sender, EventArgs e) {
+        private void trackBar5_Scroll(object sender, EventArgs e)
+        {
             SubsurfaceScatteringRenderUtils.ChangeSubsurfaceDecay(trackBar5.Value);
             panel3D1.Invalidate();
         }
 
-        private void trackBar6_Scroll(object sender, EventArgs e) {
+        private void trackBar6_Scroll(object sender, EventArgs e)
+        {
             SubsurfaceScatteringRenderUtils.ChangeGaussianBlurStDev(trackBar6.Value);
             panel3D1.Invalidate();
         }
 
-        private void checkBox1_CheckedChanged(object sender, EventArgs e) {
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
             SubsurfaceScatteringRenderUtils.ToggleGaussianBlur();
             trackBar6.Enabled = RenderUtils.GaussianBlur;
             panel3D1.Invalidate();
         }
 
-        private void checkBox2_CheckedChanged(object sender, EventArgs e) {
+        private void checkBox2_CheckedChanged(object sender, EventArgs e)
+        {
             SubsurfaceScatteringRenderUtils.ToggleOnlySubsurfaceBlur();
             panel3D1.Invalidate();
         }
 
-        private void checkBox3_CheckedChanged(object sender, EventArgs e) {
+        private void checkBox3_CheckedChanged(object sender, EventArgs e)
+        {
             SubsurfaceScatteringRenderUtils.ToggleCaries();
             panel3D1.Invalidate();
         }

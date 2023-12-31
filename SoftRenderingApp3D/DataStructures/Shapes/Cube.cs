@@ -1,8 +1,10 @@
 ﻿using SoftRenderingApp3D.DataStructures.Meshes;
 using System.Numerics;
 
-namespace SoftRenderingApp3D.DataStructures.Shapes {
-    public static class Cube {
+namespace SoftRenderingApp3D.DataStructures.Shapes
+{
+    public static class Cube
+    {
         private static readonly Vector3[] _vertices = {
             new Vector3(1, 1, 1),
             new Vector3(0, 1, 1),
@@ -37,7 +39,8 @@ namespace SoftRenderingApp3D.DataStructures.Shapes {
             ColorRGB.Blue, ColorRGB.Blue
         };
 
-        public static Mesh GetMesh() {
+        public static Mesh GetMesh()
+        {
             var cube = new Mesh(
                 _vertices, _triangleIndices,
                 null, null,

@@ -2,13 +2,17 @@
 using System;
 using System.Numerics;
 
-namespace SoftRenderingApp3D.App.Utils {
-    public static class ShapeGenerator {
-        public static void CreateCube(World world) {
+namespace SoftRenderingApp3D.App.Utils
+{
+    public static class ShapeGenerator
+    {
+        public static void CreateCube(World world)
+        {
             world.Meshes.Add(Cube.GetMesh());
         }
 
-        public static void CreateBigCube(World world) {
+        public static void CreateBigCube(World world)
+        {
             var cube = Cube.GetMesh();
             var scaling = new Vector3(100, 100, 100);
             var matrix = Matrix4x4.CreateScale(scaling);
@@ -17,14 +21,16 @@ namespace SoftRenderingApp3D.App.Utils {
             world.Meshes.Add(cube);
         }
 
-        public static void CreateCubes(World world) {
+        public static void CreateCubes(World world)
+        {
             const int d = 5;
             const int s = 2;
             const int maxAngle = 0;
             var r = new Random();
             for(var x = -d; x <= d; x += s)
                 for(var y = -d; y <= d; y += s)
-                    for(var z = -d; z <= d; z += s) {
+                    for(var z = -d; z <= d; z += s)
+                    {
                         var cube = Cube.GetMesh();
 
                         var rotation = new Rotation3D(
@@ -40,13 +46,15 @@ namespace SoftRenderingApp3D.App.Utils {
                         world.Meshes.Add(cube);
                     }
         }
-        public static void CreateTown(World world) {
+        public static void CreateTown(World world)
+        {
             const int d = 50;
             const int s = 2;
             var translateToOriginY = new Vector3(0, .5f, 0);
             var random = new Random();
             for(var x = -d; x <= d; x += s)
-                for(var z = -d; z <= d; z += s) {
+                for(var z = -d; z <= d; z += s)
+                {
                     var cube = Cube.GetMesh();
 
                     var position = new Vector3(x, 0, z);
@@ -59,17 +67,19 @@ namespace SoftRenderingApp3D.App.Utils {
                 }
         }
 
-        public static void CreateLittleTown(World world) {
+        public static void CreateLittleTown(World world)
+        {
             const int d = 10;
             const int s = 2;
             var translateToOriginY = new Vector3(0, .5f, 0);
             var random = new Random();
             for(var x = -d; x <= d; x += s)
-                for(var z = -d; z <= d; z += s) {
+                for(var z = -d; z <= d; z += s)
+                {
                     var cube = Cube.GetMesh();
                     var position = new Vector3(x, 0, z);
                     var scaling = new Vector3(1, random.Next(1, 10), 1);
-                    
+
                     var matrix = Matrix4x4.CreateTranslation(translateToOriginY) *
                                  Matrix4x4.CreateScale(scaling) *
                                  Matrix4x4.CreateTranslation(position);
@@ -78,13 +88,15 @@ namespace SoftRenderingApp3D.App.Utils {
                 }
         }
 
-        public static void CreateBigTown(World world) {
+        public static void CreateBigTown(World world)
+        {
             const int d = 200;
             const int s = 2;
             var translateToOriginY = new Vector3(0, .5f, 0);
             var random = new Random();
             for(var x = -d; x <= d; x += s)
-                for(var z = -d; z <= d; z += s) {
+                for(var z = -d; z <= d; z += s)
+                {
                     var cube = Cube.GetMesh();
                     var position = new Vector3(x, 0, z);
                     var scaling = new Vector3(1, random.Next(1, 10), 1);
@@ -96,13 +108,15 @@ namespace SoftRenderingApp3D.App.Utils {
                 }
         }
 
-        public static void CreateSphere(World world) {
+        public static void CreateSphere(World world)
+        {
             const int d = 5;
             const int s = 2;
             var r = new Random();
             for(var x = -d; x <= d; x += s)
                 for(var y = -d; y <= d; y += s)
-                    for(var z = -d; z <= d; z += s) {
+                    for(var z = -d; z <= d; z += s)
+                    {
                         var sphere = Sphere.GetMesh(2);
                         var rotation = new Rotation3D(
                                 r.Next(-90, 90),

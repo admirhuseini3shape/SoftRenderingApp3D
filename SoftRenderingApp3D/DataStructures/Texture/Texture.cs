@@ -1,15 +1,18 @@
 ﻿using SoftRenderingApp3D.Utils;
 using System.Numerics;
 
-namespace SoftRenderingApp3D.DataStructures.Texture {
-    public class Texture {
+namespace SoftRenderingApp3D.DataStructures.Texture
+{
+    public class Texture
+    {
         /// <summary>
         ///     Creates a texture.
         /// </summary>
         /// <param name="imageData">The color data of the iamge as an array of Vector3 objects.</param>
         /// <param name="width">The width of the texture image.</param>
         /// <param name="height">The height of the texture image.</param>
-        public Texture(Vector3[] imageData, int width, int height) {
+        public Texture(Vector3[] imageData, int width, int height)
+        {
             this.imageData = imageData;
             this.width = width;
             this.height = height;
@@ -26,7 +29,8 @@ namespace SoftRenderingApp3D.DataStructures.Texture {
         /// <param name="u">Float representing the X texture coordinate for a vertex.</param>
         /// <param name="v">Float representing the Y texture coordinate for a vertex.</param>
         /// <returns></returns>
-        public ColorRGB GetPixelColorNearestFiltering(float u, float v) {
+        public ColorRGB GetPixelColorNearestFiltering(float u, float v)
+        {
             var pixel_x = (int)MathUtils.Clamp((int)(u * width), 0, width - 1);
             var pixel_y = (int)MathUtils.Clamp((int)(v * height), 0, height - 1);
 
@@ -41,7 +45,8 @@ namespace SoftRenderingApp3D.DataStructures.Texture {
         /// <param name="u">Float representing the X texture coordinate for a vertex.</param>
         /// <param name="v">Float representing the Y texture coordinate for a vertex.</param>
         /// <returns></returns>
-        public ColorRGB GetPixelColorLinearFiltering(float u, float v) {
+        public ColorRGB GetPixelColorLinearFiltering(float u, float v)
+        {
             var pixelCoordinateX = (u * width).Clamp(0, width - 1);
             var pixelCoordinateY = (v * height).Clamp(0, height - 1);
 

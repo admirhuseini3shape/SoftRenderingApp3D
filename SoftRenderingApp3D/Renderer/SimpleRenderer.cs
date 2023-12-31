@@ -3,13 +3,16 @@ using SoftRenderingApp3D.Painter;
 using System;
 using System.Numerics;
 
-namespace SoftRenderingApp3D.Renderer {
-    public class SimpleRenderer : IRenderer {
+namespace SoftRenderingApp3D.Renderer
+{
+    public class SimpleRenderer : IRenderer
+    {
         public RenderContext RenderContext { get; set; }
 
         public IPainter Painter { get; set; }
 
-        public int[] Render() {
+        public int[] Render()
+        {
             var stats = RenderContext.Stats;
             var surface = RenderContext.Surface;
             var camera = RenderContext.Camera;
@@ -17,7 +20,7 @@ namespace SoftRenderingApp3D.Renderer {
             var world = RenderContext.World;
             var rendererSettings = RenderContext.RendererSettings;
 
-            if(surface == null || camera == null || projection == null || 
+            if(surface == null || camera == null || projection == null ||
                world == null || rendererSettings == null)
                 return Array.Empty<int>();
 
@@ -44,7 +47,8 @@ namespace SoftRenderingApp3D.Renderer {
 
             var volumes = world.Meshes;
             var volumeCount = volumes.Count;
-            for(var idxVolume = 0; idxVolume < volumeCount; idxVolume++) {
+            for(var idxVolume = 0; idxVolume < volumeCount; idxVolume++)
+            {
                 var vbx = worldBuffer.VertexBuffer[idxVolume];
                 var volume = volumes[idxVolume];
 
@@ -64,22 +68,26 @@ namespace SoftRenderingApp3D.Renderer {
 
                 // Transform and store vertices to View
                 var vertexCount = vertices.Count;
-                for(var idxVertex = 0; idxVertex < vertexCount; idxVertex++) {
+                for(var idxVertex = 0; idxVertex < vertexCount; idxVertex++)
+                {
                     viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex], viewMatrix);
                 }
 
                 var triangleCount = volume.Triangles.Count;
-                for(var idxTriangle = 0; idxTriangle < triangleCount; idxTriangle++) {
+                for(var idxTriangle = 0; idxTriangle < triangleCount; idxTriangle++)
+                {
                     var t = volume.Triangles[idxTriangle];
 
                     // Discard if behind far plane
-                    if(t.IsBehindFarPlane(vbx)) {
+                    if(t.IsBehindFarPlane(vbx))
+                    {
                         stats.BehindViewTriangleCount++;
                         continue;
                     }
 
                     // Discard if back facing 
-                    if(rendererSettings.BackFaceCulling && t.IsFacingBack(vbx)) {
+                    if(rendererSettings.BackFaceCulling && t.IsFacingBack(vbx))
+                    {
                         stats.FacingBackTriangleCount++;
                         continue;
                     }
@@ -88,18 +96,22 @@ namespace SoftRenderingApp3D.Renderer {
                     t.TransformProjection(vbx, projectionMatrix);
 
                     // Discard if outside view frustum
-                    if(t.IsOutsideFrustum(vbx)) {
+                    if(t.IsOutsideFrustum(vbx))
+                    {
                         stats.OutOfViewTriangleCount++;
                         continue;
                     }
 
                     stats.PaintTime();
 
-                    if(!rendererSettings.ShowTextures) {
+                    if(!rendererSettings.ShowTextures)
+                    {
                         Painter?.DrawTriangle(vbx, idxTriangle);
                     }
-                    else {
-                        if(Painter.GetType() == typeof(GouraudPainter)) {
+                    else
+                    {
+                        if(Painter.GetType() == typeof(GouraudPainter))
+                        {
                             var painter = (GouraudPainter)Painter;
                             painter.DrawTriangleTextured(texture, vbx, idxTriangle,
                                 rendererSettings.LiearTextureFiltering);

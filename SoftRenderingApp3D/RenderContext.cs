@@ -4,14 +4,18 @@ using SoftRenderingApp3D.DataStructures.World;
 using SoftRenderingApp3D.Projection;
 using SoftRenderingApp3D.Renderer;
 
-namespace SoftRenderingApp3D {
-    public class RenderContext {
+namespace SoftRenderingApp3D
+{
+    public class RenderContext
+    {
         private IWorld world;
         public ICamera Camera { get; set; }
 
-        public IWorld World {
+        public IWorld World
+        {
             get { return world; }
-            set {
+            set
+            {
                 if(value.Equals(world))
                     return;
                 world = value;

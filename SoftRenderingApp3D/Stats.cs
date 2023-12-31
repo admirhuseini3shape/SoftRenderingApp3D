@@ -1,7 +1,9 @@
 ﻿using System.Diagnostics;
 
-namespace SoftRenderingApp3D {
-    public class Stats {
+namespace SoftRenderingApp3D
+{
+    public class Stats
+    {
         private readonly Stopwatch calcSw = new Stopwatch();
         private readonly Stopwatch paintSw = new Stopwatch();
         public int BehindViewTriangleCount;
@@ -13,34 +15,42 @@ namespace SoftRenderingApp3D {
         public int OutOfViewTriangleCount;
         public int TotalTriangleCount;
 
-        public long CalculationTimeMs {
-            get {
+        public long CalculationTimeMs
+        {
+            get
+            {
                 return calcSw.ElapsedMilliseconds;
             }
         }
 
-        public long PainterTimeMs {
-            get {
+        public long PainterTimeMs
+        {
+            get
+            {
                 return paintSw.ElapsedMilliseconds;
             }
         }
 
-        public void PaintTime() {
+        public void PaintTime()
+        {
             calcSw.Stop();
             paintSw.Start();
         }
 
-        public void CalcTime() {
+        public void CalcTime()
+        {
             paintSw.Stop();
             calcSw.Start();
         }
 
-        public void StopTime() {
+        public void StopTime()
+        {
             paintSw.Stop();
             calcSw.Stop();
         }
 
-        public void Clear() {
+        public void Clear()
+        {
             paintSw.Reset();
             calcSw.Reset();
             TotalTriangleCount = 0;

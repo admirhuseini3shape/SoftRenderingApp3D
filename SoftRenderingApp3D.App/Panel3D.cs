@@ -13,8 +13,10 @@ using System.Drawing.Imaging;
 using System.Text;
 using System.Windows.Forms;
 
-namespace SoftRenderingApp3D.App {
-    public partial class Panel3D : UserControl {
+namespace SoftRenderingApp3D.App
+{
+    public partial class Panel3D : UserControl
+    {
         private const string Format =
             "Meshes:{0}\nTriangles:{1} - Back:{2} - Out:{3} - Behind:{4}\nPixels:{9} drawn:{5} - Z behind:{6}\nCalc time:{7} - Paint time:{8}";
 
@@ -30,7 +32,8 @@ namespace SoftRenderingApp3D.App {
         private readonly StringBuilder sb = new StringBuilder();
         private IWorld world;
 
-        public Panel3D() {
+        public Panel3D()
+        {
             InitializeComponent();
 
             RenderContext = new RenderContext();
@@ -49,11 +52,14 @@ namespace SoftRenderingApp3D.App {
         private RenderContext RenderContext { get; }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public RendererSettings RendererSettings {
-            get {
+        public RendererSettings RendererSettings
+        {
+            get
+            {
                 return _rendererSettings;
             }
-            private set {
+            private set
+            {
                 if(!value.TryUpdateOther(ref _rendererSettings))
                     return;
 
@@ -65,11 +71,14 @@ namespace SoftRenderingApp3D.App {
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public IWorld World {
-            get {
+        public IWorld World
+        {
+            get
+            {
                 return world;
             }
-            set {
+            set
+            {
                 if(!value.TryUpdateOther(ref world))
                     return;
 
@@ -79,15 +88,19 @@ namespace SoftRenderingApp3D.App {
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public IPainter Painter {
-            get {
+        public IPainter Painter
+        {
+            get
+            {
                 return painter;
             }
-            set {
+            set
+            {
                 if(!value.TryUpdateOther(ref painter))
                     return;
 
-                if(painter != null) {
+                if(painter != null)
+                {
                     painter.RendererContext = RenderContext;
                 }
 
@@ -96,11 +109,14 @@ namespace SoftRenderingApp3D.App {
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public IRenderer Renderer {
-            get {
+        public IRenderer Renderer
+        {
+            get
+            {
                 return renderer;
             }
-            set {
+            set
+            {
                 if(!value.TryUpdateOther(ref renderer))
                     return;
 
@@ -110,22 +126,27 @@ namespace SoftRenderingApp3D.App {
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public ICamera Camera {
-            get {
+        public ICamera Camera
+        {
+            get
+            {
                 return camera;
             }
-            set {
+            set
+            {
                 var oldCamera = camera;
 
                 if(!value.TryUpdateOther(ref camera))
                     return;
 
 
-                if(oldCamera != null) {
+                if(oldCamera != null)
+                {
                     oldCamera.CameraChanged -= CameraChanged;
                 }
 
-                if(camera != null) {
+                if(camera != null)
+                {
                     camera.CameraChanged += CameraChanged;
                 }
 
@@ -135,21 +156,26 @@ namespace SoftRenderingApp3D.App {
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public IProjection Projection {
-            get {
+        public IProjection Projection
+        {
+            get
+            {
                 return projection;
             }
-            set {
+            set
+            {
                 var oldProjection = projection;
 
                 if(!value.TryUpdateOther(ref projection))
                     return;
 
-                if(oldProjection != null) {
+                if(oldProjection != null)
+                {
                     oldProjection.ProjectionChanged -= ProjectionChanged;
                 }
 
-                if(projection != null) {
+                if(projection != null)
+                {
                     projection.ProjectionChanged += ProjectionChanged;
                 }
 
@@ -158,34 +184,42 @@ namespace SoftRenderingApp3D.App {
             }
         }
 
-        private static void Assign(IRenderer renderer, IPainter painter) {
-            if(renderer == null) {
+        private static void Assign(IRenderer renderer, IPainter painter)
+        {
+            if(renderer == null)
+            {
                 return;
             }
 
             renderer.Painter = painter;
         }
 
-        private void ProjectionChanged(object sender, EventArgs e) {
+        private void ProjectionChanged(object sender, EventArgs e)
+        {
             Invalidate();
         }
 
-        private void CameraChanged(object sender, EventArgs e) {
+        private void CameraChanged(object sender, EventArgs e)
+        {
             Invalidate();
         }
 
-        private void HookPaintEvent() {
+        private void HookPaintEvent()
+        {
             Paint -= Panel3D_Paint;
-            if(camera != null && world != null && projection != null) {
+            if(camera != null && world != null && projection != null)
+            {
                 Paint += Panel3D_Paint;
             }
         }
 
-        public int[] Render() {
+        public int[] Render()
+        {
             return renderer.Render();
         }
 
-        private void Panel3D_Paint(object sender, PaintEventArgs e) {
+        private void Panel3D_Paint(object sender, PaintEventArgs e)
+        {
             var g = e.Graphics;
 
             BuildFrame();
@@ -209,8 +243,10 @@ namespace SoftRenderingApp3D.App {
                 TextFormatFlags.ExpandTabs);
         }
 
-        private void Panel3D_Layout(object sender, LayoutEventArgs e) {
-            if(Size.Height == 0 || Size.Width == 0) {
+        private void Panel3D_Layout(object sender, LayoutEventArgs e)
+        {
+            if(Size.Height == 0 || Size.Width == 0)
+            {
                 return;
             }
 
@@ -218,7 +254,8 @@ namespace SoftRenderingApp3D.App {
             bmp = new Bitmap(Width, Height, PixelFormat.Format32bppPArgb);
         }
 
-        private void BuildFrame() {
+        private void BuildFrame()
+        {
             var buffer = renderer.Render();
             ImageUtils.FillBitmap(bmp, buffer, Width, Height);
         }

@@ -3,12 +3,15 @@ using SoftRenderingApp3D.Painter;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace SoftRenderingApp3D.Utils {
-    internal static class PainterUtils {
+namespace SoftRenderingApp3D.Utils
+{
+    internal static class PainterUtils
+    {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SortTrianglePoints(VertexBuffer vbx, FrameBuffer frameBuffer, int triangleIndices,
             out PaintedVertex v0, out PaintedVertex v1, out PaintedVertex v2, out int index0, out int index1,
-            out int index2) {
+            out int index2)
+        {
             var t = vbx.Mesh.Triangles[triangleIndices];
 
             var worldNormVertices = vbx.WorldVertexNormals;
@@ -38,17 +41,20 @@ namespace SoftRenderingApp3D.Utils {
             index1 = t.I1;
             index2 = t.I2;
 
-            if(v0.ScreenPoint.Y > v1.ScreenPoint.Y) {
+            if(v0.ScreenPoint.Y > v1.ScreenPoint.Y)
+            {
                 Extensions.Swap(ref v0, ref v1);
                 Extensions.Swap(ref index0, ref index1);
             }
 
-            if(v1.ScreenPoint.Y > v2.ScreenPoint.Y) {
+            if(v1.ScreenPoint.Y > v2.ScreenPoint.Y)
+            {
                 Extensions.Swap(ref v1, ref v2);
                 Extensions.Swap(ref index1, ref index2);
             }
 
-            if(v0.ScreenPoint.Y > v1.ScreenPoint.Y) {
+            if(v0.ScreenPoint.Y > v1.ScreenPoint.Y)
+            {
                 Extensions.Swap(ref v0, ref v1);
                 Extensions.Swap(ref index0, ref index1);
             }
@@ -57,7 +63,8 @@ namespace SoftRenderingApp3D.Utils {
         // https://www.geeksforgeeks.org/orientation-3-ordered-points/
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static float Cross2D(Vector3 p0, Vector3 p1, Vector3 p2) {
+        public static float Cross2D(Vector3 p0, Vector3 p1, Vector3 p2)
+        {
             return (p1.X - p0.X) * (p2.Y - p1.Y) - (p1.Y - p0.Y) * (p2.X - p1.X);
         }
     }

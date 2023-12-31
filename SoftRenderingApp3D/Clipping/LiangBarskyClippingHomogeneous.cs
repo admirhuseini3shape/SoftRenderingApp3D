@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Numerics;
 
-namespace SoftRenderingApp3D.Clipping {
+namespace SoftRenderingApp3D.Clipping
+{
     // Taken from https://fr.mathworks.com/matlabcentral/fileexchange/51550-3d-and-2d-homogeneous-space-line-clipping-using-liang-barsky-algorithm
 
-    public class LiangBarskyClippingHomogeneous : IClippingHomogeneous {
+    public class LiangBarskyClippingHomogeneous : IClippingHomogeneous
+    {
         private float _t0;
         private float _t1;
 
-        public bool Clip(ref Vector4 p0, ref Vector4 p1) {
-            if(p0.W < 0 && p1.W < 0) {
+        public bool Clip(ref Vector4 p0, ref Vector4 p1)
+        {
+            if(p0.W < 0 && p1.W < 0)
+            {
                 return false;
             }
 
@@ -18,63 +22,79 @@ namespace SoftRenderingApp3D.Clipping {
 
             var delta = p1 - p0;
 
-            if(!clip(p0.W - p0.X, -delta.W + delta.X)) {
+            if(!clip(p0.W - p0.X, -delta.W + delta.X))
+            {
                 return false;
             }
 
-            if(!clip(p0.W + p0.X, -delta.W - delta.X)) {
+            if(!clip(p0.W + p0.X, -delta.W - delta.X))
+            {
                 return false;
             }
 
-            if(!clip(p0.W - p0.Y, -delta.W + delta.Y)) {
+            if(!clip(p0.W - p0.Y, -delta.W + delta.Y))
+            {
                 return false;
             }
 
-            if(!clip(p0.W + p0.Y, -delta.W - delta.Y)) {
+            if(!clip(p0.W + p0.Y, -delta.W - delta.Y))
+            {
                 return false;
             }
 
-            if(!clip(p0.W - p0.Z, -delta.W + delta.Z)) {
+            if(!clip(p0.W - p0.Z, -delta.W + delta.Z))
+            {
                 return false;
             }
 
-            if(!clip(p0.W + p0.Z, -delta.W - delta.Z)) {
+            if(!clip(p0.W + p0.Z, -delta.W - delta.Z))
+            {
                 return false;
             }
 
-            if(_t1 < 1) {
+            if(_t1 < 1)
+            {
                 p1 = p0 + _t1 * delta;
             }
 
-            if(_t0 > 0) {
+            if(_t0 > 0)
+            {
                 p0 = p0 + _t0 * delta;
             }
 
             return true;
         }
 
-        private bool clip(float q, float p) {
-            if(Math.Abs(p) < float.Epsilon && q < 0) {
+        private bool clip(float q, float p)
+        {
+            if(Math.Abs(p) < float.Epsilon && q < 0)
+            {
                 return false;
             }
 
             var r = q / p;
 
-            if(p < 0) {
-                if(r > _t1) {
+            if(p < 0)
+            {
+                if(r > _t1)
+                {
                     return false;
                 }
 
-                if(r > _t0) {
+                if(r > _t0)
+                {
                     _t0 = r;
                 }
             }
-            else {
-                if(r < _t0) {
+            else
+            {
+                if(r < _t0)
+                {
                     return false;
                 }
 
-                if(r < _t1) {
+                if(r < _t1)
+                {
                     _t1 = r;
                 }
             }

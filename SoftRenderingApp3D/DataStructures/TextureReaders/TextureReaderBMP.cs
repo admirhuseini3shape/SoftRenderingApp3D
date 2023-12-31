@@ -5,11 +5,15 @@ using System.IO;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-namespace SoftRenderingApp3D.DataStructures.TextureReaders {
-    public class TextureReaderBMP : ITextureReader {
+namespace SoftRenderingApp3D.DataStructures.TextureReaders
+{
+    public class TextureReaderBMP : ITextureReader
+    {
         // Reads image data from .bmp file and creates a new texture
-        public Texture.Texture ReadImage(string filepath) {
-            if(!File.Exists(filepath)) {
+        public Texture.Texture ReadImage(string filepath)
+        {
+            if(!File.Exists(filepath))
+            {
                 throw new FileNotFoundException($"Error reading texture. File {filepath} not found!");
             }
 
@@ -32,8 +36,10 @@ namespace SoftRenderingApp3D.DataStructures.TextureReaders {
             var rgbValues = new byte[dataLength];
             Marshal.Copy(ptr, rgbValues, 0, dataLength);
 
-            for(var i = 0; i < bmp.Height; i++) {
-                for(var j = 0; j < bmp.Width; j++) {
+            for(var i = 0; i < bmp.Height; i++)
+            {
+                for(var j = 0; j < bmp.Width; j++)
+                {
                     var position = i * bitmapData.Stride + j * bytesPerPixel;
                     float r = rgbValues[position + 2];
                     float g = rgbValues[position + 1];

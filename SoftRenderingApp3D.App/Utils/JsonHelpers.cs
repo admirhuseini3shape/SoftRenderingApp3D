@@ -5,10 +5,11 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace SoftRenderingApp3D.App.Utils  {
+namespace SoftRenderingApp3D.App.Utils
+{
     public static class JsonHelpers
     {
-        public static List<DisplayModelData> GetDisplayModelsFromJson() 
+        public static List<DisplayModelData> GetDisplayModelsFromJson()
         {
             var location = Assembly.GetExecutingAssembly().Location;
             var basePath = Path.GetDirectoryName(location);
@@ -28,16 +29,16 @@ namespace SoftRenderingApp3D.App.Utils  {
             return DisplayModelsFromJsonFile(fileName);
         }
 
-        public static List<DisplayModelData> DisplayModelsFromJsonFile(string filePath) 
+        public static List<DisplayModelData> DisplayModelsFromJsonFile(string filePath)
         {
-            if(!File.Exists(filePath)) 
+            if(!File.Exists(filePath))
                 throw new FileNotFoundException($"The file '{filePath}' was not found.");
             var jsonString = File.ReadAllText(filePath);
-            var options = new JsonSerializerOptions 
+            var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
                 // Converts Enum into String so json can be deserialized
-                Converters = { new JsonStringEnumConverter() } 
+                Converters = { new JsonStringEnumConverter() }
             };
             return JsonSerializer.Deserialize<List<DisplayModelData>>(jsonString, options);
         }
