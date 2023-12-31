@@ -1,5 +1,5 @@
 ﻿using SoftRenderingApp3D.DataStructures.Meshes;
-using SoftRenderingApp3D.DataStructures.Texture;
+using SoftRenderingApp3D.DataStructures.Textures;
 using SoftRenderingApp3D.DataStructures.World;
 using System.Collections.Generic;
 using System.ComponentModel;

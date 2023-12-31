@@ -1,5 +1,5 @@
 ﻿using SoftRenderingApp3D.Buffer;
-using SoftRenderingApp3D.DataStructures.Texture;
+using SoftRenderingApp3D.DataStructures.Textures;
 using SoftRenderingApp3D.Utils;
 using System;
 using System.Numerics;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SoftRenderingApp3D.DataStructures.Textures;
+using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -10,7 +11,7 @@ namespace SoftRenderingApp3D.DataStructures.TextureReaders
     public class TextureReaderBMP : ITextureReader
     {
         // Reads image data from .bmp file and creates a new texture
-        public Texture.Texture ReadImage(string filepath)
+        public Texture ReadImage(string filepath)
         {
             if(!File.Exists(filepath))
             {
@@ -53,7 +54,7 @@ namespace SoftRenderingApp3D.DataStructures.TextureReaders
 
             bmp.UnlockBits(bitmapData);
 
-            return new Texture.Texture(imageData, bmp.Width, bmp.Height);
+            return new Texture(imageData, bmp.Width, bmp.Height);
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using SoftRenderingApp3D.Utils;
 using System.Numerics;
 
-namespace SoftRenderingApp3D.DataStructures.Texture
+namespace SoftRenderingApp3D.DataStructures.Textures
 {
     public class Texture
     {

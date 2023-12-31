@@ -1,7 +1,13 @@
-﻿
+﻿using SoftRenderingApp3D.DataStructures.Materials;
+using SoftRenderingApp3D.DataStructures.Meshes;
+
 namespace SoftRenderingApp3D.DataStructures.Drawables
 {
-    internal interface IDrawable
+    public interface IDrawable<T>
+    where T : IMaterial
     {
+        IMesh Mesh { get; }
+
+        T Material { get; }
     }
 }

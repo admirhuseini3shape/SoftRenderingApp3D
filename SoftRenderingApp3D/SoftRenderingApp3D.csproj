@@ -80,12 +80,14 @@
     <Compile Include="DataStructures\FileReaders\ColladaReader.cs" />
     <Compile Include="DataStructures\FileReaders\FileReader.cs" />
     <Compile Include="DataStructures\FileReaders\STLReader.cs" />
+    <Compile Include="DataStructures\Materials\IMaterial.cs" />
+    <Compile Include="DataStructures\Materials\IMaterialOptions.cs" />
     <Compile Include="DataStructures\Shapes\Sphere.cs" />
     <Compile Include="DataStructures\TextureReaders\ITextureReader.cs" />
     <Compile Include="DataStructures\Shapes\Cube.cs" />
     <Compile Include="DataStructures\Shapes\TriangleFace.cs" />
     <Compile Include="DataStructures\TextureReaders\TextureReaderBMP.cs" />
-    <Compile Include="DataStructures\Texture\Texture.cs" />
+    <Compile Include="DataStructures\Textures\Texture.cs" />
     <Compile Include="DataStructures\Meshes\IMesh.cs" />
     <Compile Include="DataStructures\Meshes\Mesh.cs" />
     <Compile Include="DataStructures\Meshes\MeshExtensions.cs" />
@@ -95,6 +97,7 @@
     <Compile Include="Painter\IPainter.cs" />
     <Compile Include="RenderContext.cs" />
     <Compile Include="Renderer\IRenderer.cs" />
+    <Compile Include="Renderer\IRenderingWorkflow.cs" />
     <Compile Include="Renderer\RendererSettings.cs" />
     <Compile Include="Painter\PaintedVertex.cs" />
     <Compile Include="Projection\FovPerspectiveProjection.cs" />
@@ -104,6 +107,9 @@
     <Compile Include="Camera\FlyCam.cs" />
     <Compile Include="ColorRGB.cs" />
     <Compile Include="Renderer\SimpleRenderer.cs" />
+    <Compile Include="Shaders\IShader.cs" />
+    <Compile Include="Shaders\IShaderProvider.cs" />
+    <Compile Include="Shaders\ShaderAbstract.cs" />
     <Compile Include="Stats.cs" />
     <Compile Include="Triangle.cs" />
     <Compile Include="Utils\GaussianBlur.cs" />
@@ -146,8 +152,6 @@
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="DataStructures\Materials\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
