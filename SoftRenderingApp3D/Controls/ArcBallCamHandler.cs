@@ -11,14 +11,16 @@ namespace SoftRenderingApp3D.Controls {
         private ArcBallCam camera;
 
         private Control control;
-        private bool left;
+        
         private Vector3 oldCameraPosition;
 
         private Quaternion oldCameraRotation;
 
         private Point oldMousePosition;
 
+        private bool left;
         private bool right;
+        private bool middle;
 
         private readonly float yCoeff = 10f;
 
@@ -34,22 +36,30 @@ namespace SoftRenderingApp3D.Controls {
             set {
                 var oldControl = control;
 
-                if(!value.TryUpdateOther(ref control)) 
+                if(!value.TryUpdateOther(ref control))
                     return;
-                
+
 
                 if(oldControl != null) {
                     oldControl.MouseDown -= control_MouseDown;
                     oldControl.MouseMove -= control_MouseMove;
                     control.MouseUp -= Control_MouseUp;
+                    control.MouseWheel += control_MouseWheel;
                 }
 
                 if(control != null) {
                     control.MouseDown += control_MouseDown;
                     control.MouseMove += control_MouseMove;
                     control.MouseUp += Control_MouseUp;
+                    control.MouseWheel += control_MouseWheel;
                 }
             }
+        }
+
+        private void control_MouseWheel(object sender, MouseEventArgs e) {
+            var deltaY = 0.1 * e.Delta;
+            oldCameraPosition = camera.Position;
+            camera.Position = oldCameraPosition + new Vector3(0, 0, (float)deltaY / yCoeff);
         }
 
         public ArcBallCam Camera {
@@ -64,11 +74,12 @@ namespace SoftRenderingApp3D.Controls {
         private void Control_MouseUp(object sender, MouseEventArgs e) {
             left = false;
             right = false;
+            middle = false;
             control.Cursor = Cursors.Default;
         }
 
         private void control_MouseDown(object sender, MouseEventArgs e) {
-            ControlHelper.getMouseButtons(out left, out right);
+            ControlHelper.getMouseButtons(out left, out right, out middle);
             oldMousePosition = e.Location;
 
             if(left && right) {
@@ -79,7 +90,7 @@ namespace SoftRenderingApp3D.Controls {
                 oldCameraRotation = camera.Rotation;
                 control.Cursor = Cursors.NoMove2D;
             }
-            else if(right) {
+            else if(right || middle) {
                 oldCameraPosition = camera.Position;
                 control.Cursor = Cursors.SizeAll;
             }
@@ -100,7 +111,7 @@ namespace SoftRenderingApp3D.Controls {
                 var deltaRotation = camera.CalculateQuaternion(oldVector, curVector);
                 camera.Rotation = deltaRotation * oldCameraRotation;
             }
-            else if(right) {
+            else if(right || middle) {
                 var deltaPosition = new Vector3(e.Location.ToVector2() - oldMousePosition.ToVector2(), 0);
                 camera.Position = oldCameraPosition + deltaPosition * new Vector3(1, -1, 1) / 100;
             }

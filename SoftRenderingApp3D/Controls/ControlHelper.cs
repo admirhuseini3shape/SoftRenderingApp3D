@@ -8,9 +8,10 @@ namespace SoftRenderingApp3D.Controls {
             return new Vector2(position.X * (2f / control.Width) - 1.0f, position.Y * (2f / control.Height) - 1.0f);
         }
 
-        public static void getMouseButtons(out bool left, out bool right) {
+        public static void getMouseButtons(out bool left, out bool right, out bool middle) {
             left = Control.MouseButtons.HasFlag(MouseButtons.Left);
             right = Control.MouseButtons.HasFlag(MouseButtons.Right);
+            middle = Control.MouseButtons.HasFlag(MouseButtons.Middle);
         }
     }
 }

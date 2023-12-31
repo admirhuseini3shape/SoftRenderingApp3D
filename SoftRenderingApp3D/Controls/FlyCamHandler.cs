@@ -13,14 +13,14 @@ namespace SoftRenderingApp3D.Controls {
         private Control control;
         private bool down;
         private bool left;
-
-        private bool leftB;
+        private bool right;
+        private bool up;
 
         private Point mouse;
-        private bool right;
+        private bool leftB;
         private bool rightB;
-
-        private bool up;
+        private bool middleB;
+        
 
         public FlyCamHandler(Control control, FlyCam camera) {
             Control = control;
@@ -144,16 +144,16 @@ namespace SoftRenderingApp3D.Controls {
         }
 
         private void Control_MouseUp(object sender, MouseEventArgs e) {
-            ControlHelper.getMouseButtons(out leftB, out rightB);
+            ControlHelper.getMouseButtons(out leftB, out rightB, out middleB);
         }
 
         private void control_MouseDown(object sender, MouseEventArgs e) {
-            ControlHelper.getMouseButtons(out leftB, out rightB);
+            ControlHelper.getMouseButtons(out leftB, out rightB, out middleB);
             mouse = e.Location;
         }
 
         private void control_MouseMove(object sender, MouseEventArgs e) {
-            if(rightB) {
+            if(rightB || middleB) {
                 const float c = .01f;
                 var delta = Point.Subtract(mouse, (Size)e.Location);
                 move(-delta.X * c, delta.Y * c, 0);
