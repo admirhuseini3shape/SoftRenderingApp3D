@@ -21,7 +21,6 @@ namespace SoftRenderingApp3D.App {
         public SoftRenderingForm() {
 
             InitializeComponent();
-
             displayModels = JsonHelpers.GetDisplayModelsFromJson();
             PopulateLstDemos(displayModels);
 
@@ -81,18 +80,18 @@ namespace SoftRenderingApp3D.App {
             if(currentModel == null)
                 return;
 
-            var world = DisplayModelHelpers.GenerateWorld(currentModel);
+            var generatedWorld = DisplayModelHelpers.GenerateWorld(currentModel);
             if(currentModel.InitialZoomLevel != 0) {
                 var zoom = currentModel.InitialZoomLevel;
                 var cameraPositionDelta = new Vector3(0, 0, zoom - arcBallCam.Position.Z);
                 arcBallCam.Position += cameraPositionDelta;
             }
-
+            generatedWorld.RaisePropertyChanged();
             chkShowTexture.Enabled = currentModel.HasTexture;
             panel3D1.RendererSettings.ShowTextures = currentModel.ShowTexture;
             chkShowTexture.Checked = currentModel.ShowTexture;
 
-            PrepareWorld(world);
+            PrepareWorld(generatedWorld);
         }
 
         private void PrepareWorld(IWorld world) {

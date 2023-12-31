@@ -1,4 +1,4 @@
-﻿using SoftRenderingApp3D.DataStructures.Volume;
+﻿using SoftRenderingApp3D.DataStructures.Meshes;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -27,7 +27,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
             indices = new Dictionary<Vector3, int>();
         }
 
-        public override IEnumerable<Volume.Volume> ReadFile(string fileName) {
+        public override IEnumerable<Mesh> ReadFile(string fileName) {
             path = fileName;
             return NewSTLImport();
         }
@@ -48,7 +48,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
         * @param  none
         * @retval SubsurfaceScatteringVolume
         */
-        public IEnumerable<Volume.Volume> NewSTLImport() {
+        public IEnumerable<Mesh> NewSTLImport() {
             var stlFileType = GetFileType(path);
 
             if(stlFileType == FileType.ASCII) {
@@ -104,7 +104,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
         * @param  filePath
         * @retval meshList
         */
-        private Volume.Volume ReadBinaryFile(string filePath) {
+        private Mesh ReadBinaryFile(string filePath) {
             var vertices = new List<Vector3>();
             var normals = new List<Vector3>();
             var triangleIndices = new List<Triangle>();
@@ -280,7 +280,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                 throw new FileLoadException($"Error reading file: {path}!");
             }
 
-            return new Volume.Volume(vertices.ToArray(),
+            return new Mesh(vertices.ToArray(),
                 triangleIndices.ToArray(),
                 normals.ToArray());
         }
@@ -291,7 +291,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
         * @param  filePath
         * @retval meshList
         */
-        private Volume.Volume ReadASCIIFile(string filePath) {
+        private Mesh ReadASCIIFile(string filePath) {
             var vertices = new List<Vector3>();
             var normals = new List<Vector3>();
             var triangleIndices = new List<Triangle>();
@@ -426,7 +426,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                 } // if solid
             } // while !endofstream
 
-            return new Volume.Volume(vertices.ToArray(),
+            return new Mesh(vertices.ToArray(),
                 triangleIndices.ToArray(),
                 normals.ToArray());
         }

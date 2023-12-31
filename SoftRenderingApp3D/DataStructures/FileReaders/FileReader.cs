@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using SoftRenderingApp3D.DataStructures.Meshes;
+using System.Collections.Generic;
 
 namespace SoftRenderingApp3D.DataStructures.FileReaders {
     public abstract class FileReader {
-        public abstract IEnumerable<Volume.Volume> ReadFile(string fileName);
+        public abstract IEnumerable<Mesh> ReadFile(string fileName);
     }
 }

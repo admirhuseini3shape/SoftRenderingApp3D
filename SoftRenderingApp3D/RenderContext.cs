@@ -6,8 +6,19 @@ using SoftRenderingApp3D.Renderer;
 
 namespace SoftRenderingApp3D {
     public class RenderContext {
+        private IWorld world;
         public ICamera Camera { get; set; }
-        public IWorld World { get; set; }
+
+        public IWorld World {
+            get { return world; }
+            set {
+                if(value.Equals(world))
+                    return;
+                world = value;
+                WorldBuffer = new WorldBuffer(world);
+            }
+        }
+
         public IProjection Projection { get; set; }
         public RendererSettings RendererSettings { get; set; }
         public Stats Stats { get; set; }

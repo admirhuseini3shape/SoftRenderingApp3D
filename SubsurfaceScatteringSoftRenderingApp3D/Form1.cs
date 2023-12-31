@@ -2,7 +2,7 @@
 using SoftRenderingApp3D.Camera;
 using SoftRenderingApp3D.Controls;
 using SoftRenderingApp3D.DataStructures.FileReaders;
-using SoftRenderingApp3D.DataStructures.Volume;
+using SoftRenderingApp3D.DataStructures.Meshes;
 using SoftRenderingApp3D.DataStructures.World;
 using SoftRenderingApp3D.Projection;
 using SoftRenderingApp3D.Utils;
@@ -44,12 +44,12 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
 
             switch(id) {
                 case "jaw":
-                    world.Volumes.AddRange(stlReader.ReadFile(@"models\original.stl"));
+                    world.Meshes.AddRange(stlReader.ReadFile(@"models\original.stl"));
                     // Add a cube that represents the light
-                    world.Volumes.AddRange(stlReader.ReadFile(@"models\offset_3.stl"));
-                    world.Volumes.AddRange(stlReader.ReadFile(@"models\caries.stl"));
-                    (world.Volumes[1] as Volume).InitializeTrianglesColor(ColorRGB.Black);
-                    (world.Volumes[2] as Volume).InitializeTrianglesColor(ColorRGB.Black);
+                    world.Meshes.AddRange(stlReader.ReadFile(@"models\offset_3.stl"));
+                    world.Meshes.AddRange(stlReader.ReadFile(@"models\caries.stl"));
+                    (world.Meshes[1] as Mesh).InitializeTrianglesColor(ColorRGB.Black);
+                    (world.Meshes[2] as Mesh).InitializeTrianglesColor(ColorRGB.Black);
                     arcBallCam.Position += new Vector3(0, 10, -50 - arcBallCam.Position.Z);
                     break;
             }
@@ -57,7 +57,7 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
             world.LightSources.Add(new LightSource { Position = new Vector3(0, 0, 10) });
             arcBallCam.CameraChanged -= MainCam_CameraChanged;
             arcBallCam.CameraChanged += MainCam_CameraChanged;
-            // world.Volumes.Add(camObject);
+            // world.Meshes.Add(camObject);
             panel3D1.World = world;
             panel3D1.Invalidate();
 

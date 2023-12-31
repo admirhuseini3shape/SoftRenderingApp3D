@@ -1,5 +1,4 @@
 ﻿using SoftRenderingApp3D.Buffer;
-using SoftRenderingApp3D.DataStructures;
 using SoftRenderingApp3D.Painter;
 using SubsurfaceScatteringLibrary.Buffer;
 using SubsurfaceScatteringLibrary.Utils;
@@ -12,9 +11,9 @@ namespace SubsurfaceScatteringLibrary.Painter {
         public static void SortTrianglePoints(VertexBuffer vbx, SubsurfaceScatteringFrameBuffer frameBuffer,
             int triangleIndices, out PaintedVertex v0, out PaintedVertex v1, out PaintedVertex v2, out int index0,
             out int index1, out int index2) {
-            var t = vbx.Volume.Triangles[triangleIndices];
+            var t = vbx.Mesh.Triangles[triangleIndices];
 
-            var worldNormVertices = vbx.WorldNormVertices;
+            var worldNormVertices = vbx.WorldVertexNormals;
             var projectionVertices = vbx.ProjectionVertices;
             var worldVertices = vbx.WorldVertices;
 

@@ -1,5 +1,6 @@
 ﻿using SoftRenderingApp3D.Buffer;
 using SoftRenderingApp3D.Painter;
+using System;
 using System.Numerics;
 
 namespace SoftRenderingApp3D.Renderer {
@@ -15,6 +16,10 @@ namespace SoftRenderingApp3D.Renderer {
             var projection = RenderContext.Projection;
             var world = RenderContext.World;
             var rendererSettings = RenderContext.RendererSettings;
+
+            if(surface == null || camera == null || projection == null || 
+               world == null || rendererSettings == null)
+                return Array.Empty<int>();
 
             stats.Clear();
 
@@ -37,31 +42,33 @@ namespace SoftRenderingApp3D.Renderer {
             var textureIndex = rendererSettings.activeTexture % world.Textures.Count;
             var texture = world.Textures[textureIndex];
 
-            var volumes = world.Volumes;
+            var volumes = world.Meshes;
             var volumeCount = volumes.Count;
             for(var idxVolume = 0; idxVolume < volumeCount; idxVolume++) {
                 var vbx = worldBuffer.VertexBuffer[idxVolume];
                 var volume = volumes[idxVolume];
 
-                var worldMatrix = volume.WorldMatrix();
-                var modelViewMatrix = worldMatrix * viewMatrix;
+                //var worldMatrix = volume.WorldMatrix();
+                //var modelViewMatrix = worldMatrix * viewMatrix;
+                var modelViewMatrix = viewMatrix;
 
 
-                vbx.Volume = volume;
-                vbx.WorldMatrix = worldMatrix;
+                vbx.Mesh = volume;
+                vbx.TransformVertices(viewMatrix);
+                //vbx.WorldMatrix = worldMatrix;
 
-                stats.TotalTriangleCount += volume.Triangles.Length;
+                stats.TotalTriangleCount += volume.Triangles.Count;
 
                 var vertices = volume.Vertices;
                 var viewVertices = vbx.ViewVertices;
 
                 // Transform and store vertices to View
-                var vertexCount = vertices.Length;
+                var vertexCount = vertices.Count;
                 for(var idxVertex = 0; idxVertex < vertexCount; idxVertex++) {
                     viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex], viewMatrix);
                 }
 
-                var triangleCount = volume.Triangles.Length;
+                var triangleCount = volume.Triangles.Count;
                 for(var idxTriangle = 0; idxTriangle < triangleCount; idxTriangle++) {
                     var t = volume.Triangles[idxTriangle];
 
@@ -81,7 +88,7 @@ namespace SoftRenderingApp3D.Renderer {
                     t.TransformProjection(vbx, projectionMatrix);
 
                     // Discard if outside view frustum
-                    if(t.isOutsideFrustum(vbx)) {
+                    if(t.IsOutsideFrustum(vbx)) {
                         stats.OutOfViewTriangleCount++;
                         continue;
                     }
@@ -103,9 +110,6 @@ namespace SoftRenderingApp3D.Renderer {
 
                     stats.CalcTime();
                 }
-
-                // Only draw one volume, will remove later
-                break;
             }
 
             return surface.Screen;

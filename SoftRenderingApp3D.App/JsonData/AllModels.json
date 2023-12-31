@@ -48,62 +48,69 @@
         "ReaderType": "StlReader",
         "InitialZoomLevel": -150
     },
-    {
-        "Id": "town",
-        "DisplayName": "Town",
-        "DisplayModelType": "GeneratingFunction",
-        "ShowTexture": false,
-        "HasTexture": false,
-        "GeneratingFunctionName": "CreateTown"
-    },
-    {
-        "Id": "littletown",
-        "DisplayName": "Little Town",
-        "DisplayModelType": "GeneratingFunction",
-        "ShowTexture": false,
-        "HasTexture": false,
-        "GeneratingFunctionName": "CreateLittleTown"
-    },
-    {
-        "Id": "bigtown",
-        "DisplayName": "Big Town",
-        "DisplayModelType": "GeneratingFunction",
-        "ShowTexture": false,
-        "HasTexture": false,
-        "GeneratingFunctionName": "CreateBigTown"
-    },
-    {
-        "Id": "cube",
-        "DisplayName": "Cube",
-        "DisplayModelType": "GeneratingFunction",
-        "ShowTexture": false,
-        "HasTexture": false,
-        "GeneratingFunctionName": "CreateCube"
-    },
-    {
-        "Id": "bigcube",
-        "DisplayName": "Big Cube",
-        "DisplayModelType": "GeneratingFunction",
-        "ShowTexture": false,
-        "HasTexture": false,
-        "GeneratingFunctionName": "CreateBigCube"
-    },
-    {
-        "Id": "cubes",
-        "DisplayName": "Cubes",
-        "DisplayModelType": "GeneratingFunction",
-        "ShowTexture": false,
-        "HasTexture": false,
-        "GeneratingFunctionName": "CreateCubes"
-    },
-    {
-        "Id": "sphere",
-        "DisplayName": "Sphere",
-        "DisplayModelType": "GeneratingFunction",
-        "ShowTexture": false,
-        "HasTexture": false,
-        "GeneratingFunctionName": "CreateSphere"
-    },
+  {
+    "Id": "town",
+    "DisplayName": "Town",
+    "DisplayModelType": "GeneratingFunction",
+    "ShowTexture": false,
+    "HasTexture": false,
+    "GeneratingFunctionName": "CreateTown",
+    "InitialZoomLevel": -175
+  },
+  {
+    "Id": "littletown",
+    "DisplayName": "Little Town",
+    "DisplayModelType": "GeneratingFunction",
+    "ShowTexture": false,
+    "HasTexture": false,
+    "GeneratingFunctionName": "CreateLittleTown",
+    "InitialZoomLevel": -75
+  },
+  {
+    "Id": "bigtown",
+    "DisplayName": "Big Town",
+    "DisplayModelType": "GeneratingFunction",
+    "ShowTexture": false,
+    "HasTexture": false,
+    "GeneratingFunctionName": "CreateBigTown",
+    "InitialZoomLevel": -425
+  },
+  {
+    "Id": "cube",
+    "DisplayName": "Cube",
+    "DisplayModelType": "GeneratingFunction",
+    "ShowTexture": false,
+    "HasTexture": false,
+    "GeneratingFunctionName": "CreateCube",
+    "InitialZoomLevel": -10
+  },
+  {
+    "Id": "bigcube",
+    "DisplayName": "Big Cube",
+    "DisplayModelType": "GeneratingFunction",
+    "ShowTexture": false,
+    "HasTexture": false,
+    "GeneratingFunctionName": "CreateBigCube",
+    "InitialZoomLevel": -250
+  },
+  {
+    "Id": "cubes",
+    "DisplayName": "Cubes",
+    "DisplayModelType": "GeneratingFunction",
+    "ShowTexture": false,
+    "HasTexture": false,
+    "GeneratingFunctionName": "CreateCubes",
+    "InitialZoomLevel": -25
+  },
+  {
+    "Id": "sphere",
+    "DisplayName": "Sphere",
+    "DisplayModelType": "GeneratingFunction",
+    "ShowTexture": false,
+    "HasTexture": false,
+    "GeneratingFunctionName": "CreateSphere",
+    "InitialZoomLevel": -25
+  },
     {
         "Id": "empty",
         "DisplayName": "Empty",

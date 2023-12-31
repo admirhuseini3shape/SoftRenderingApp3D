@@ -1,5 +1,4 @@
-﻿using SoftRenderingApp3D.App;
-using SoftRenderingApp3D.Controls;
+﻿using SoftRenderingApp3D.Controls;
 
 namespace SoftRenderingApp3D.App {
     partial class SoftRenderingForm {

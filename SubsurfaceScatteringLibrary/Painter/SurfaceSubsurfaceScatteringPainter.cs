@@ -13,7 +13,7 @@ namespace SubsurfaceScatteringLibrary.Painter {
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DrawTriangle(VertexBuffer vbx, int triangleIndex) {
-            vbx.Volume.Triangles[triangleIndex].TransformWorld(vbx);
+            vbx.Mesh.Triangles[triangleIndex].TransformWorld(vbx);
 
             var surface = RendererContext.Surface;
             SubsurfaceScatteringPainterUtils.SortTrianglePoints(vbx, surface, triangleIndex, out var v0, out var v1,

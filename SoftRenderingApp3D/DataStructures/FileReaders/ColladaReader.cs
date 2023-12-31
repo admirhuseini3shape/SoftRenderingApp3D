@@ -1,4 +1,4 @@
-﻿using SoftRenderingApp3D.DataStructures.Volume;
+﻿using SoftRenderingApp3D.DataStructures.Meshes;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,7 +10,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
     public class ColladaReader : FileReader {
         // Collada import is a brittle hack and need a serious work
 
-        public static IEnumerable<Volume.Volume> ImportCollada(string fileName) {
+        public static IEnumerable<Mesh> ImportCollada(string fileName) {
             var ns = "http://www.collada.org/2005/11/COLLADASchema";
             var xdoc = XDocument.Load(fileName);
             var xvolumes = xdoc.Descendants(XName.Get("geometry", ns));
@@ -29,15 +29,15 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
 
                 var striangles = xvolume.Descendants(XName.Get("p", ns)).First().Value;
                 var triangles = striangles.Split(" ".ToArray(), StringSplitOptions.RemoveEmptyEntries)
-                    .Select(x => int.Parse(x, CultureInfo.InvariantCulture)).ToArray().BuildTriangleIndices().ToArray();
+                    .Select(x => int.Parse(x, CultureInfo.InvariantCulture)).ToArray().BuildTriangleIndices();
 
-                yield return new Volume.Volume(vertices.ToArray(), triangles, normals);
+                yield return new Mesh(vertices.ToArray(), triangles, normals);
             }
         }
 
         // Work in progress
 
-        public static IEnumerable<Volume.Volume> NewImportCollada(string fileName) {
+        public static IEnumerable<Mesh> NewImportCollada(string fileName) {
             XNamespace ns = "http://www.collada.org/2005/11/COLLADASchema";
 
             var xdoc = XDocument.Load(fileName);
@@ -71,10 +71,10 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                     var vertices_normal = getArraySource<Vector3>(mesh, vertices_normal_id);
                     var texture_coordinates = getArraySource<Vector2>(mesh, texture_coordinates_id);
 
-                    yield return new Volume.Volume(
+                    yield return new Mesh(
                         vertices_position.ToArray(),
-                        polylist_p.ToArray().BuildTriangleIndices().ToArray(),
-                        vertices_normal.ToArray(),
+                        polylist_p.ToArray().BuildTriangleIndices(),
+                        vertices_normal.ToArray(),null,
                         texture_coordinates.ToArray());
                 }
 
@@ -95,7 +95,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
                     var vertices_position = getArraySource<Vector3>(mesh, vertices_position_id);
                     // var triangles_normal = getArraySource<Vector3>(mesh, triangles_normal_id);
 
-                    yield return new Volume.Volume(
+                    yield return new Mesh(
                         vertices_position.ToArray(),
                         getTriangles(triangles_p, stride).ToArray());
                 }
@@ -147,7 +147,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders {
             }
         }
 
-        public override IEnumerable<Volume.Volume> ReadFile(string fileName) {
+        public override IEnumerable<Mesh> ReadFile(string fileName) {
             return NewImportCollada(fileName);
         }
     }

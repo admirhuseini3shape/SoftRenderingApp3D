@@ -21,7 +21,7 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
         private ICamera camera;
 
         private readonly string format =
-            "Volumes:{0}\nTriangles:{1} - Back:{2} - Out:{3} - Behind:{4}\nPixels:{9} drawn:{5} - Z behind:{6}\nCalc time:{7} - Paint time:{8}";
+            "Meshes:{0}\nTriangles:{1} - Back:{2} - Out:{3} - Behind:{4}\nPixels:{9} drawn:{5} - Z behind:{6}\nCalc time:{7} - Paint time:{8}";
 
         private ISubsurfaceScatteringPainter painter;
         private IProjection projection;
@@ -199,7 +199,7 @@ namespace SubsurfaceScatteringSoftRenderingApp3D {
 
             sb.Clear();
             sb.AppendFormat(format,
-                world.Volumes.Count,
+                world.Meshes.Count,
                 renderContext.Stats.TotalTriangleCount,
                 renderContext.Stats.FacingBackTriangleCount,
                 renderContext.Stats.OutOfViewTriangleCount,

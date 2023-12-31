@@ -16,7 +16,7 @@ using System.Windows.Forms;
 namespace SoftRenderingApp3D.App {
     public partial class Panel3D : UserControl {
         private const string Format =
-            "Volumes:{0}\nTriangles:{1} - Back:{2} - Out:{3} - Behind:{4}\nPixels:{9} drawn:{5} - Z behind:{6}\nCalc time:{7} - Paint time:{8}";
+            "Meshes:{0}\nTriangles:{1} - Back:{2} - Out:{3} - Behind:{4}\nPixels:{9} drawn:{5} - Z behind:{6}\nCalc time:{7} - Paint time:{8}";
 
         private RendererSettings _rendererSettings;
 
@@ -193,7 +193,7 @@ namespace SoftRenderingApp3D.App {
 
             sb.Clear();
             sb.AppendFormat(Format,
-                world.Volumes.Count,
+                world.Meshes.Count,
                 RenderContext.Stats.TotalTriangleCount,
                 RenderContext.Stats.FacingBackTriangleCount,
                 RenderContext.Stats.OutOfViewTriangleCount,

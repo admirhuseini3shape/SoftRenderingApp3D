@@ -1,5 +1,6 @@
-﻿using SoftRenderingApp3D.DataStructures.Volume;
+﻿using SoftRenderingApp3D.DataStructures.Meshes;
 using SoftRenderingApp3D.DataStructures.World;
+using SoftRenderingApp3D.Utils;
 using System;
 using System.Buffers;
 using System.Numerics;
@@ -9,13 +10,13 @@ namespace SoftRenderingApp3D.Buffer {
         private static readonly ArrayPool<VertexBuffer> VertexBuffer3Bag = ArrayPool<VertexBuffer>.Shared;
 
         public WorldBuffer(IWorld w) {
-            var volumes = w.Volumes;
-            Size = volumes.Count;
+            var meshes = w.Meshes;
+            Size = meshes.Count;
 
             VertexBuffer = VertexBuffer3Bag.Rent(Size);
 
             for(var i = 0; i < Size; i++) {
-                VertexBuffer[i] = new VertexBuffer(volumes[i].Vertices.Length);
+                VertexBuffer[i] = new VertexBuffer(meshes[i].Vertices.Count);
             }
         }
 
@@ -42,15 +43,15 @@ namespace SoftRenderingApp3D.Buffer {
             Size = vertexCount;
             ViewVertices = Vector3Bag.Rent(vertexCount);
             WorldVertices = Vector3Bag.Rent(vertexCount);
-            WorldNormVertices = Vector3Bag.Rent(vertexCount);
+            WorldVertexNormals = Vector3Bag.Rent(vertexCount);
             ProjectionVertices = Vector4Bag.Rent(vertexCount);
             VertexColors = ColorRGBBag.Rent(vertexCount);
         }
 
-        public IVolume Volume { get; set; } // Volumes
+        public IMesh Mesh { get; set; } // Meshes
         public Vector3[] ViewVertices { get; } // Vertices in view
         public Vector3[] WorldVertices { get; } // Vertices in _subsurfaceScatteringWorld
-        public Vector3[] WorldNormVertices { get; } // Vertices normals in _subsurfaceScatteringWorld
+        public Vector3[] WorldVertexNormals { get; } // Vertices normals in _subsurfaceScatteringWorld
         public Vector4[] ProjectionVertices { get; } // Vertices in frustum
         public ColorRGB[] VertexColors { get; } // Vertex colors
         private int Size { get; }
@@ -61,26 +62,33 @@ namespace SoftRenderingApp3D.Buffer {
         public void Dispose() {
             Array.Clear(ViewVertices, 0, Size);
             Array.Clear(WorldVertices, 0, Size);
-            Array.Clear(WorldNormVertices, 0, Size);
+            Array.Clear(WorldVertexNormals, 0, Size);
             Array.Clear(ProjectionVertices, 0, Size);
             Array.Clear(VertexColors, 0, Size);
 
             Vector3Bag.Return(ViewVertices);
             Vector3Bag.Return(WorldVertices);
-            Vector3Bag.Return(WorldNormVertices);
+            Vector3Bag.Return(WorldVertexNormals);
             Vector4Bag.Return(ProjectionVertices);
             ColorRGBBag.Return(VertexColors);
         }
 
+        public void TransformVertices(Matrix4x4 matrix) {
+            for(var i = 0; i < Mesh.Vertices.Count; i++) {
+                WorldVertices[i] = matrix.Transform(Mesh.Vertices[i]);
+                WorldVertexNormals[i] = matrix.TransformWithoutTranslation(Mesh.VertexNormals[i]);
+            }
+        }
+
         public void TransformWorld() {
-            for(var i = 0; i < Volume.Vertices.Length; i++) {
-                WorldVertices[i] = Vector3.Transform(Volume.Vertices[i], WorldMatrix);
+            for(var i = 0; i < Mesh.Vertices.Count; i++) {
+                WorldVertices[i] = Vector3.Transform(Mesh.Vertices[i], WorldMatrix);
             }
         }
 
         public void TransformWorldView() {
-            for(var i = 0; i < Volume.Vertices.Length; i++) {
-                ViewVertices[i] = Vector3.Transform(Volume.Vertices[i], WorldViewMatrix);
+            for(var i = 0; i < Mesh.Vertices.Count; i++) {
+                ViewVertices[i] = Vector3.Transform(Mesh.Vertices[i], WorldViewMatrix);
             }
         }
     }

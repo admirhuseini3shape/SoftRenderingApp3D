@@ -1,5 +1,4 @@
-﻿using SoftRenderingApp3D.DataStructures;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace SoftRenderingApp3D.Painter {
     public struct PaintedVertex {

@@ -1,5 +1,4 @@
 ﻿using SoftRenderingApp3D.Buffer;
-using SoftRenderingApp3D.DataStructures;
 using SoftRenderingApp3D.Painter;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -10,42 +9,48 @@ namespace SoftRenderingApp3D.Utils {
         public static void SortTrianglePoints(VertexBuffer vbx, FrameBuffer frameBuffer, int triangleIndices,
             out PaintedVertex v0, out PaintedVertex v1, out PaintedVertex v2, out int index0, out int index1,
             out int index2) {
-            var t = vbx.Volume.Triangles[triangleIndices];
+            var t = vbx.Mesh.Triangles[triangleIndices];
 
-            var worldNormVertices = vbx.WorldNormVertices;
+            var worldNormVertices = vbx.WorldVertexNormals;
             var projectionVertices = vbx.ProjectionVertices;
             var worldVertices = vbx.WorldVertices;
-
+            var triangleColor = vbx.Mesh.TriangleColors != null ?
+                vbx.Mesh.TriangleColors[triangleIndices] : ColorRGB.Gray;
+            var color0 = triangleColor;
+            var color1 = triangleColor;
+            var color2 = triangleColor;
+            //if(vbx.VertexColors != null) {
+            //    color0 = vbx.VertexColors[t.I0];
+            //    color1 = vbx.VertexColors[t.I1];
+            //    color2 = vbx.VertexColors[t.I2];
+            //}
             v0 = new PaintedVertex(worldNormVertices[t.I0],
                 frameBuffer.ToScreen3(projectionVertices[t.I0]),
-                worldVertices[t.I0],
-                vbx.VertexColors[t.I0]);
+                worldVertices[t.I0], color0);
             v1 = new PaintedVertex(worldNormVertices[t.I1],
                 frameBuffer.ToScreen3(projectionVertices[t.I1]),
-                worldVertices[t.I1],
-                vbx.VertexColors[t.I1]);
+                worldVertices[t.I1], color1);
             v2 = new PaintedVertex(worldNormVertices[t.I2],
                 frameBuffer.ToScreen3(projectionVertices[t.I2]),
-                worldVertices[t.I2],
-                    vbx.VertexColors[t.I2]);
+                worldVertices[t.I2], color2);
 
             index0 = t.I0;
             index1 = t.I1;
             index2 = t.I2;
 
             if(v0.ScreenPoint.Y > v1.ScreenPoint.Y) {
-                MiscUtils.Swap(ref v0, ref v1);
-                MiscUtils.Swap(ref index0, ref index1);
+                Extensions.Swap(ref v0, ref v1);
+                Extensions.Swap(ref index0, ref index1);
             }
 
             if(v1.ScreenPoint.Y > v2.ScreenPoint.Y) {
-                MiscUtils.Swap(ref v1, ref v2);
-                MiscUtils.Swap(ref index1, ref index2);
+                Extensions.Swap(ref v1, ref v2);
+                Extensions.Swap(ref index1, ref index2);
             }
 
             if(v0.ScreenPoint.Y > v1.ScreenPoint.Y) {
-                MiscUtils.Swap(ref v0, ref v1);
-                MiscUtils.Swap(ref index0, ref index1);
+                Extensions.Swap(ref v0, ref v1);
+                Extensions.Swap(ref index0, ref index1);
             }
         }
 

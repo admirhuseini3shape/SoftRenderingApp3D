@@ -1,4 +1,6 @@
 ﻿using SoftRenderingApp3D.Buffer;
+using SoftRenderingApp3D.Utils;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -14,23 +16,24 @@ namespace SoftRenderingApp3D {
         public int I1 { get; }
         public int I2 { get; }
 
-        public Vector3 CalculateCentroid(Vector3[] vertices) {
+        public Vector3 CalculateCentroid(IReadOnlyList<Vector3> vertices) {
             return (vertices[I0] + vertices[I1] + vertices[I2]) / 3;
         }
 
-        public Vector3 CalculateNormal(Vector3[] vertices) {
+        public Vector3 CalculateNormal(IReadOnlyList<Vector3> vertices) {
             // Avoid division with zero
-            if(vertices[I0] == Vector3.Zero && vertices[I1] == Vector3.Zero &&
+            if(vertices[I0] == Vector3.Zero &&
+               vertices[I1] == Vector3.Zero &&
                vertices[I2] == Vector3.Zero) {
                 return Vector3.Zero;
             }
 
-            var result = Vector3.Normalize(Vector3.Cross(vertices[I1] - vertices[I0],
-                vertices[I2] - vertices[I0]));
-            return float.IsNaN(result.X) || float.IsNaN(result.Y) || float.IsNaN(result.Z) ? Vector3.Zero : result;
+            var result = Vector3.Normalize(
+                Vector3.Cross(vertices[I1] - vertices[I0], vertices[I2] - vertices[I0]));
+            return result.IsNaN() ? Vector3.Zero : result;
         }
 
-        public bool Contains(Vector3 vertex, Vector3[] vertices) {
+        public bool Contains(Vector3 vertex, IReadOnlyList<Vector3> vertices) {
             return vertices[I0] == vertex || vertices[I1] == vertex || vertices[I2] == vertex;
         }
 
@@ -54,7 +57,7 @@ namespace SoftRenderingApp3D {
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool isOutsideFrustum(VertexBuffer vbx) {
+        public bool IsOutsideFrustum(VertexBuffer vbx) {
             var projectionVertices = vbx.ProjectionVertices;
             var p0 = projectionVertices[I0];
             var p1 = projectionVertices[I1];
@@ -114,9 +117,9 @@ namespace SoftRenderingApp3D {
         public void TransformWorld(VertexBuffer vbx) {
             var worldMatrix = vbx.WorldMatrix;
 
-            var worldNormVertices = vbx.WorldNormVertices;
-            var normVertices = vbx.Volume.NormVertices;
-            var textureCoordinates = vbx.Volume.TexCoordinates;
+            var worldNormVertices = vbx.WorldVertexNormals;
+            var normVertices = vbx.Mesh.VertexNormals;
+            var textureCoordinates = vbx.Mesh.TexCoordinates;
 
             if(worldNormVertices[I0] == Vector3.Zero) {
                 worldNormVertices[I0] = Vector3.TransformNormal(normVertices[I0], worldMatrix);
@@ -141,24 +144,24 @@ namespace SoftRenderingApp3D {
                 worldVertices[I2] = Vector3.Transform(worldVertices[I2], worldMatrix);
             */
 
-            // Check if volume has texture data
-            if(vbx.Volume.TexCoordinates != null) {
+            // Check if mesh has texture data
+            if(vbx.Mesh.TexCoordinates != null) {
                 if(textureCoordinates[I0] == Vector2.Zero) {
                     var temp = Vector3.Transform(new Vector3(textureCoordinates[I0].X, textureCoordinates[I0].Y, 1.0f),
                         worldMatrix);
-                    textureCoordinates[I0] = new Vector2(temp.X, temp.Y);
+                    vbx.Mesh.SetVertexTextureCoordinate(I0, new Vector2(temp.X, temp.Y));
                 }
 
                 if(textureCoordinates[I1] == Vector2.Zero) {
                     var temp = Vector3.Transform(new Vector3(textureCoordinates[I1].X, textureCoordinates[I1].Y, 1.0f),
                         worldMatrix);
-                    textureCoordinates[I1] = new Vector2(temp.X, temp.Y);
+                    vbx.Mesh.SetVertexTextureCoordinate(I1, new Vector2(temp.X, temp.Y));
                 }
 
                 if(textureCoordinates[I2] == Vector2.Zero) {
                     var temp = Vector3.Transform(new Vector3(textureCoordinates[I2].X, textureCoordinates[I2].Y, 1.0f),
                         worldMatrix);
-                    textureCoordinates[I2] = new Vector2(temp.X, temp.Y);
+                    vbx.Mesh.SetVertexTextureCoordinate(I2, new Vector2(temp.X, temp.Y));
                 }
             }
         }
