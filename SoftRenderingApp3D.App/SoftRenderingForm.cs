@@ -32,30 +32,10 @@ namespace SoftRenderingApp3D.App
             chkShowTexture.Checked = panel3D1.RendererSettings.ShowTextures;
             chkLinearFiltering.Checked = panel3D1.RendererSettings.LiearTextureFiltering;
 
-            chkShowTexture.CheckedChanged += (s, e) =>
-            {
-                panel3D1.RendererSettings.ShowTextures = chkShowTexture.Checked;
-                panel3D1.Invalidate();
-            };
-            chkLinearFiltering.CheckedChanged += (s, e) =>
-            {
-                panel3D1.RendererSettings.LiearTextureFiltering = chkLinearFiltering.Checked;
-                panel3D1.Invalidate();
-            };
+            chkShowTexture.CheckedChanged += ChkShowTextureOnCheckedChanged;
+            chkLinearFiltering.CheckedChanged += ChkLinearFilteringOnCheckedChanged;
 
-            btnBench.Click += (s, e) =>
-            {
-                var sw = Stopwatch.StartNew();
-                arcBallCam.Position = new Vector3(0, 0, -5);
-                arcBallCam.Rotation = Quaternion.Identity;
-                for(var i = 0; i < 10; i++)
-                {
-                    arcBallCam.Rotation *= Quaternion.CreateFromYawPitchRoll(.1f, .1f, .1f);
-                    panel3D1.Render();
-                }
-                sw.Stop();
-                lblSw.Text = sw.ElapsedMilliseconds.ToString();
-            };
+            btnBench.Click += BtnBenchOnClick;
 
             var projection = new FovPerspectiveProjection(40f * (float)Math.PI / 180f, .01f, 500f);
 
@@ -70,6 +50,33 @@ namespace SoftRenderingApp3D.App
             panel3D1.Camera = arcBallCam;
 
             LstDemos_DoubleClick(this, null);
+        }
+
+        private void BtnBenchOnClick(object s, EventArgs e)
+        {
+            var sw = Stopwatch.StartNew();
+            arcBallCam.Position = new Vector3(0, 0, -5);
+            arcBallCam.Rotation = Quaternion.Identity;
+            for(var i = 0; i < 10; i++)
+            {
+                arcBallCam.Rotation *= Quaternion.CreateFromYawPitchRoll(.1f, .1f, .1f);
+                panel3D1.Render();
+            }
+
+            sw.Stop();
+            lblSw.Text = sw.ElapsedMilliseconds.ToString();
+        }
+
+        private void ChkLinearFilteringOnCheckedChanged(object s, EventArgs e)
+        {
+            panel3D1.RendererSettings.LiearTextureFiltering = chkLinearFiltering.Checked;
+            panel3D1.Invalidate();
+        }
+
+        private void ChkShowTextureOnCheckedChanged(object s, EventArgs e)
+        {
+            panel3D1.RendererSettings.ShowTextures = chkShowTexture.Checked;
+            panel3D1.Invalidate();
         }
 
         private void PopulateLstDemos(IEnumerable<DisplayModelData> data)
