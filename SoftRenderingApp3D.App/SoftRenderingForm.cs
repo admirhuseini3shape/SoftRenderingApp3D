@@ -16,6 +16,7 @@ namespace SoftRenderingApp3D.App
 
     public partial class SoftRenderingForm : Form
     {
+        private Panel3D panel3D1;
         private readonly ArcBallCam arcBallCam;
         private FlyCam flyCam;
         private readonly List<DisplayModelData> displayModels;
@@ -24,6 +25,7 @@ namespace SoftRenderingApp3D.App
         {
 
             InitializeComponent();
+            Initialize3DPanel();
             displayModels = JsonHelpers.GetDisplayModelsFromJson();
             PopulateLstDemos(displayModels);
 
@@ -50,6 +52,23 @@ namespace SoftRenderingApp3D.App
             panel3D1.Camera = arcBallCam;
 
             LstDemos_DoubleClick(this, null);
+        }
+
+        private void Initialize3DPanel()
+        {
+            this.panel3D1 = new SoftRenderingApp3D.App.Panel3D();
+            this.groupBox6.Controls.Add(this.panel3D1);
+            // 
+            // panel3D1
+            // 
+            this.panel3D1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
+            this.panel3D1.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.panel3D1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.panel3D1.Location = new System.Drawing.Point(11, 16);
+            this.panel3D1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.panel3D1.Name = "panel3D1";
+            this.panel3D1.Size = new System.Drawing.Size(716, 566);
+            this.panel3D1.TabIndex = 0;
         }
 
         private void BtnBenchOnClick(object s, EventArgs e)
