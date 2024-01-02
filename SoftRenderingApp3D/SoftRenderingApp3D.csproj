@@ -93,6 +93,7 @@
     <Compile Include="DataStructures\Meshes\MeshExtensions.cs" />
     <Compile Include="DataStructures\World\ILightSource.cs" />
     <Compile Include="DataStructures\World\IWorld.cs" />
+    <Compile Include="Factories\Factory.cs" />
     <Compile Include="Painter\GouraudPainter.cs" />
     <Compile Include="Painter\IPainter.cs" />
     <Compile Include="RenderContext.cs" />
