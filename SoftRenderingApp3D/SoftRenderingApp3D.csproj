@@ -80,8 +80,12 @@
     <Compile Include="DataStructures\FileReaders\ColladaReader.cs" />
     <Compile Include="DataStructures\FileReaders\FileReader.cs" />
     <Compile Include="DataStructures\FileReaders\STLReader.cs" />
+    <Compile Include="DataStructures\Materials\FacetColorMaterial.cs" />
     <Compile Include="DataStructures\Materials\IMaterial.cs" />
     <Compile Include="DataStructures\Materials\IMaterialOptions.cs" />
+    <Compile Include="DataStructures\Materials\MaterialBase.cs" />
+    <Compile Include="DataStructures\Materials\TextureMaterial.cs" />
+    <Compile Include="DataStructures\Materials\VertexColorMaterial.cs" />
     <Compile Include="DataStructures\Shapes\Sphere.cs" />
     <Compile Include="DataStructures\TextureReaders\ITextureReader.cs" />
     <Compile Include="DataStructures\Shapes\Cube.cs" />
@@ -111,8 +115,10 @@
     <Compile Include="Shaders\IShader.cs" />
     <Compile Include="Shaders\IShaderProvider.cs" />
     <Compile Include="Shaders\ShaderAbstract.cs" />
+    <Compile Include="Shaders\ShaderProvider.cs" />
     <Compile Include="Stats.cs" />
     <Compile Include="Triangle.cs" />
+    <Compile Include="Utils\Constants.cs" />
     <Compile Include="Utils\GaussianBlur.cs" />
     <Compile Include="Utils\GeomUtils.cs" />
     <Compile Include="Utils\ImageUtils.cs" />

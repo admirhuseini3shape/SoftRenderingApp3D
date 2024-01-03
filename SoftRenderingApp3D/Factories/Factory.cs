@@ -4,15 +4,12 @@ using System.Linq;
 
 namespace SoftRenderingApp3D.Factories
 {
-    public interface IFactoryInput{}
-
     public interface IFactory<out TInstance>
     {
-        TInstance Create<TInput>(TInput input) where TInput :IFactoryInput;
+        TInstance Create<TInput>(TInput input);
 
     }
     public interface ICanCreate<in TInput, TInstance>
-        where TInput : IFactoryInput
     {
         TInstance Create(TInput input, IFactory<TInstance> factory);
     }
@@ -23,7 +20,6 @@ namespace SoftRenderingApp3D.Factories
             new Dictionary<Type, Func<object, TInstance>>();
 
         public TInstance Create<TInput>(TInput input)
-            where TInput : IFactoryInput
         {
             var inputType = input.GetType();
             var hasMapping = _dictionary.Keys.Any(x => x.IsAssignableFrom(inputType));
@@ -38,7 +34,6 @@ namespace SoftRenderingApp3D.Factories
         }
 
         public void Add<TInput>(ICanCreate<TInput, TInstance> target)
-            where TInput : IFactoryInput
         {
             if(_dictionary.TryGetValue(typeof(TInput), out _))
                 return;

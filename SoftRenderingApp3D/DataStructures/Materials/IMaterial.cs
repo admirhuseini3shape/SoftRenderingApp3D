@@ -1,22 +1,22 @@
 ﻿using SoftRenderingApp3D.DataStructures.Textures;
+using System.Collections.Generic;
 
 namespace SoftRenderingApp3D.DataStructures.Materials
 {
     public interface IMaterial : IMaterialOptions
+    { }
+
+    public interface IVertexColorMaterial : IMaterial
     {
+        IReadOnlyList<ColorRGB> VertexColors { get; }
     }
 
-    public interface IVertexColorMaterial
+    public interface IFacetColorMaterial : IMaterial
     {
-        ColorRGB[] VertexColors { get; }
+        IReadOnlyList<ColorRGB> FacetColors { get; }
     }
 
-    public interface IFacetColorMaterial
-    {
-        ColorRGB[] VertexColors { get; }
-    }
-
-    public interface ITextureMaterial : ITextureMaterialOptions
+    public interface ITextureMaterial : IMaterial, ITextureMaterialOptions
     {
         Texture Texture { get; }
     }

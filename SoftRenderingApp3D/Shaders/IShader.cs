@@ -4,8 +4,15 @@ using SoftRenderingApp3D.DataStructures.Materials;
 
 namespace SoftRenderingApp3D.Shaders
 {
+    public interface IVertexOutput{}
+    public interface IFragmentOutput{}
+
+    public interface IShader:IShader<IMaterial, IVertexOutput, IFragmentOutput>{}
+
     public interface IShader<TMaterial, TVertexOutput, TFragmentOutput>
     where TMaterial : IMaterial
+    where TVertexOutput : IVertexOutput
+    where TFragmentOutput : IFragmentOutput
     {
         VertexBuffer VertexBuffer { get; }
         FrameBuffer FrameBuffer { get; }

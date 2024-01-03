@@ -6,6 +6,8 @@ namespace SoftRenderingApp3D.Shaders
 {
     public abstract class ShaderAbstract<TMaterial, TVertexOutput, TFragmentOutput> : IShader<TMaterial, TVertexOutput, TFragmentOutput>
     where TMaterial : IMaterial
+    where TVertexOutput : IVertexOutput
+    where TFragmentOutput : IFragmentOutput
     {
         public virtual VertexBuffer VertexBuffer { get; }
         public virtual FrameBuffer FrameBuffer { get; }

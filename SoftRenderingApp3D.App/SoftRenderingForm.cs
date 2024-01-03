@@ -26,6 +26,7 @@ namespace SoftRenderingApp3D.App
 
             InitializeComponent();
             Initialize3DPanel();
+
             displayModels = JsonHelpers.GetDisplayModelsFromJson();
             PopulateLstDemos(displayModels);
 
