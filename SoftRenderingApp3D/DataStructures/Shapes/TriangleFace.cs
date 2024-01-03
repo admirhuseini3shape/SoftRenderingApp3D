@@ -11,7 +11,7 @@ namespace SoftRenderingApp3D.DataStructures.Shapes
             new Vector3(0, 0, 1)
         };
 
-        private static readonly Triangle[] triangleIndices = new[] { 0, 1, 2 }.BuildTriangleIndices();
+        private static readonly Facet[] triangleIndices = new[] { 0, 1, 2 }.BuildTriangleIndices();
         public static Mesh GetMesh()
         {
             var mesh = new Mesh(vertices, triangleIndices);

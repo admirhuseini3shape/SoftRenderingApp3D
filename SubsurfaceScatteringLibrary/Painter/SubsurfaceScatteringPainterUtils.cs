@@ -14,7 +14,7 @@ namespace SubsurfaceScatteringLibrary.Painter
             int triangleIndices, out PaintedVertex v0, out PaintedVertex v1, out PaintedVertex v2, out int index0,
             out int index1, out int index2)
         {
-            var t = vbx.Mesh.Triangles[triangleIndices];
+            var t = vbx.Drawable.Mesh.Facets[triangleIndices];
 
             var worldNormVertices = vbx.WorldVertexNormals;
             var projectionVertices = vbx.ProjectionVertices;

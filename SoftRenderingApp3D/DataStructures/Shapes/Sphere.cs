@@ -1,4 +1,5 @@
-﻿using SoftRenderingApp3D.DataStructures.Meshes;
+﻿using SoftRenderingApp3D.DataStructures.Drawables;
+using SoftRenderingApp3D.DataStructures.Meshes;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
@@ -17,7 +18,7 @@ namespace SoftRenderingApp3D.DataStructures.Shapes
         }
 
         public List<Vector3> points { get; } = new List<Vector3>();
-        public List<Triangle> faces { get; private set; } = new List<Triangle>();
+        public List<Facet> faces { get; private set; } = new List<Facet>();
 
         // return index of point in the middle of p1 and p2
         private int getMiddlePoint(int p1, int p2)
@@ -80,41 +81,41 @@ namespace SoftRenderingApp3D.DataStructures.Shapes
 
 
             // create 20 triangles of the icosahedron
-            faces = new List<Triangle> {
+            faces = new List<Facet> {
                     // 5 faces around point 0
-                    new Triangle(0, 11, 5),
-                    new Triangle(0, 5, 1),
-                    new Triangle(0, 1, 7),
-                    new Triangle(0, 7, 10),
-                    new Triangle(0, 10, 11),
+                    new Facet(0, 11, 5),
+                    new Facet(0, 5, 1),
+                    new Facet(0, 1, 7),
+                    new Facet(0, 7, 10),
+                    new Facet(0, 10, 11),
                     
                     // 5 adjacent faces 
-                    new Triangle(1, 5, 9),
-                    new Triangle(5, 11, 4),
-                    new Triangle(11, 10, 2),
-                    new Triangle(10, 7, 6),
-                    new Triangle(7, 1, 8),
+                    new Facet(1, 5, 9),
+                    new Facet(5, 11, 4),
+                    new Facet(11, 10, 2),
+                    new Facet(10, 7, 6),
+                    new Facet(7, 1, 8),
                     
                     // 5 faces around point 3
-                    new Triangle(3, 9, 4),
-                    new Triangle(3, 4, 2),
-                    new Triangle(3, 2, 6),
-                    new Triangle(3, 6, 8),
-                    new Triangle(3, 8, 9),
+                    new Facet(3, 9, 4),
+                    new Facet(3, 4, 2),
+                    new Facet(3, 2, 6),
+                    new Facet(3, 6, 8),
+                    new Facet(3, 8, 9),
                     
                     // 5 adjacent faces 
-                    new Triangle(4, 9, 5),
-                    new Triangle(2, 4, 11),
-                    new Triangle(6, 2, 10),
-                    new Triangle(8, 6, 7),
-                    new Triangle(9, 8, 1)
+                    new Facet(4, 9, 5),
+                    new Facet(2, 4, 11),
+                    new Facet(6, 2, 10),
+                    new Facet(8, 6, 7),
+                    new Facet(9, 8, 1)
                 };
 
 
             // refine triangles
             for(var r = 0; r < recursionLevel; r++)
             {
-                var faces2 = new List<Triangle>();
+                var faces2 = new List<Facet>();
                 foreach(var tri in faces)
                 {
                     // replace triangle by 4 triangles
@@ -122,20 +123,21 @@ namespace SoftRenderingApp3D.DataStructures.Shapes
                     var b = getMiddlePoint(tri.I1, tri.I2);
                     var c = getMiddlePoint(tri.I2, tri.I0);
 
-                    faces2.Add(new Triangle(tri.I0, a, c));
-                    faces2.Add(new Triangle(tri.I1, b, a));
-                    faces2.Add(new Triangle(tri.I2, c, b));
-                    faces2.Add(new Triangle(a, b, c));
+                    faces2.Add(new Facet(tri.I0, a, c));
+                    faces2.Add(new Facet(tri.I1, b, a));
+                    faces2.Add(new Facet(tri.I2, c, b));
+                    faces2.Add(new Facet(a, b, c));
                 }
 
                 faces = faces2;
             }
         }
 
-        public static Mesh GetMesh(int recursionLevel)
+        public static IDrawable GetDrawable(int recursionLevel)
         {
             var sphere = new Sphere(recursionLevel);
-            return new Mesh(sphere.points.ToArray(), sphere.faces.ToArray());
+            return new Mesh(sphere.points.ToArray(), sphere.faces.ToArray())
+                .ToDrawable();
         }
     }
 }

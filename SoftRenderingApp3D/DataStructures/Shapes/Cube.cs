@@ -1,4 +1,6 @@
-﻿using SoftRenderingApp3D.DataStructures.Meshes;
+﻿using SoftRenderingApp3D.DataStructures.Drawables;
+using SoftRenderingApp3D.DataStructures.Materials;
+using SoftRenderingApp3D.DataStructures.Meshes;
 using System.Numerics;
 
 namespace SoftRenderingApp3D.DataStructures.Shapes
@@ -16,7 +18,7 @@ namespace SoftRenderingApp3D.DataStructures.Shapes
             new Vector3(0, 0, 0)
         };
 
-        private static readonly Triangle[] _triangleIndices = new[] {
+        private static readonly Facet[] _triangleIndices = new[] {
                 0, 1, 2, 2, 3, 0, 0, 3, 4,
                 4, 5, 0, 0, 5, 6, 6, 1, 0,
                 1, 6, 7, 7, 2, 1, 7, 4, 3,
@@ -39,18 +41,15 @@ namespace SoftRenderingApp3D.DataStructures.Shapes
             ColorRGB.Blue, ColorRGB.Blue
         };
 
-        public static Mesh GetMesh()
+        public static IDrawable GetDrawable()
         {
-            var cube = new Mesh(
-                _vertices, _triangleIndices,
-                null, null,
-                _textureCoordinates, _triangleColors);
-
+            var cube = new Mesh(_vertices, _triangleIndices, null, _textureCoordinates);
             var translateToOrigin = Matrix4x4.CreateTranslation(-new Vector3(.5f, .5f, .5f));
-
             cube.Transform(translateToOrigin);
-
-            return cube;
+            
+            var triangleColorMaterial = new FacetColorMaterial(_triangleColors);
+            
+            return new Drawable(cube, triangleColorMaterial);
         }
     }
 }

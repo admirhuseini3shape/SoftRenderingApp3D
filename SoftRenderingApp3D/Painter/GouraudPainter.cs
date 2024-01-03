@@ -12,13 +12,13 @@ namespace SoftRenderingApp3D.Painter
         public RenderContext RendererContext { get; set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DrawTriangle(VertexBuffer vbx, int triangleIndex)
+        public void DrawTriangle(VertexBuffer vbx, int faId)
         {
-            vbx.Mesh.Triangles[triangleIndex].TransformWorld(vbx);
+            vbx.Drawable.Mesh.Facets[faId].TransformWorld(vbx);
 
             var surface = RendererContext.Surface;
-            PainterUtils.SortTrianglePoints(vbx, surface, triangleIndex, out var v0, out var v1, out var v2,
-                out var index0, out var index1, out var index2);
+            PainterUtils.SortTrianglePoints(vbx, surface, faId, out var v0, out var v1, out var v2,
+                out _, out _, out _);
 
             var p0 = v0.ScreenPoint;
             var p1 = v1.ScreenPoint;
@@ -71,8 +71,8 @@ namespace SoftRenderingApp3D.Painter
         private void PaintHalfTriangle(int yStart, int yEnd, Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd, float nla,
             float nlb, float nlc, float nld, PaintedVertex v0, PaintedVertex v1, PaintedVertex v2)
         {
-            var mg1 = pa.Y == pb.Y ? 1f : 1 / (pb.Y - pa.Y);
-            var mg2 = pd.Y == pc.Y ? 1f : 1 / (pd.Y - pc.Y);
+            var mg1 = Math.Abs(pa.Y - pb.Y) < float.Epsilon ? 1f : 1 / (pb.Y - pa.Y);
+            var mg2 = Math.Abs(pd.Y - pc.Y) < float.Epsilon ? 1f : 1 / (pd.Y - pc.Y);
 
             for(var y = yStart; y <= yEnd; y++)
             {
@@ -93,12 +93,12 @@ namespace SoftRenderingApp3D.Painter
                 var sz = MathUtils.Lerp(pa.Z, pb.Z, gradient1);
                 var ez = MathUtils.Lerp(pc.Z, pd.Z, gradient2);
 
-                PaintScanline(y, sx, ex, sz, ez, sl, el, v0, v1, v2);
+                PaintScanLine(y, sx, ex, sz, ez, sl, el, v0, v1, v2);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PaintScanline(float y, float sx, float ex, float sz, float ez, float sl, float el,
+        private void PaintScanLine(float y, float sx, float ex, float sz, float ez, float sl, float el,
             PaintedVertex v0, PaintedVertex v1, PaintedVertex v2)
         {
             var surface = RendererContext.Surface;
@@ -236,12 +236,13 @@ namespace SoftRenderingApp3D.Painter
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DrawTriangleTextured(Texture texture, VertexBuffer vbx, int triangleIndice, bool linearFiltering)
+        public void DrawTriangleTextured(Texture texture, VertexBuffer vbx, int faId, bool linearFiltering)
         {
-            vbx.Mesh.Triangles[triangleIndice].TransformWorld(vbx);
+            var mesh = vbx.Drawable.Mesh;
+            mesh.Facets[faId].TransformWorld(vbx);
 
             var surface = RendererContext.Surface;
-            PainterUtils.SortTrianglePoints(vbx, surface, triangleIndice, out var v0, out var v1, out var v2,
+            PainterUtils.SortTrianglePoints(vbx, surface, faId, out var v0, out var v1, out var v2,
                 out var index0, out var index1, out var index2);
 
             var p0 = v0.ScreenPoint;
@@ -249,9 +250,9 @@ namespace SoftRenderingApp3D.Painter
             var p2 = v2.ScreenPoint;
 
             // Get the texture coordinates of each point of the triangle
-            var texCoord0 = vbx.Mesh.TexCoordinates[index0];
-            var texCoord1 = vbx.Mesh.TexCoordinates[index1];
-            var texCoord2 = vbx.Mesh.TexCoordinates[index2];
+            var uv0 = mesh.TexCoordinates[index0];
+            var uv1 = mesh.TexCoordinates[index1];
+            var uv2 = mesh.TexCoordinates[index2];
 
 
             var yStart = (int)Math.Max(p0.Y, 0);
@@ -281,9 +282,9 @@ namespace SoftRenderingApp3D.Painter
                 //   P1
                 // P2
                 paintHalfTriangleTextured(yStart, (int)yMiddle - 1, texture, p0, p2, p0, p1, nl0, nl2, nl0, nl1,
-                    linearFiltering, p0, p1, p2, texCoord0, texCoord1, texCoord2);
+                    linearFiltering, p0, p1, p2, uv0, uv1, uv2);
                 paintHalfTriangleTextured((int)yMiddle, yEnd, texture, p0, p2, p1, p2, nl0, nl2, nl1, nl2,
-                    linearFiltering, p0, p1, p2, texCoord0, texCoord1, texCoord2);
+                    linearFiltering, p0, p1, p2, uv0, uv1, uv2);
             }
             else
             {
@@ -291,9 +292,9 @@ namespace SoftRenderingApp3D.Painter
                 // P1 
                 //   P2
                 paintHalfTriangleTextured(yStart, (int)yMiddle - 1, texture, p0, p1, p0, p2, nl0, nl1, nl0, nl2,
-                    linearFiltering, p0, p1, p2, texCoord0, texCoord1, texCoord2);
+                    linearFiltering, p0, p1, p2, uv0, uv1, uv2);
                 paintHalfTriangleTextured((int)yMiddle, yEnd, texture, p1, p2, p0, p2, nl1, nl2, nl0, nl2,
-                    linearFiltering, p0, p1, p2, texCoord0, texCoord1, texCoord2);
+                    linearFiltering, p0, p1, p2, uv0, uv1, uv2);
             }
         }
 

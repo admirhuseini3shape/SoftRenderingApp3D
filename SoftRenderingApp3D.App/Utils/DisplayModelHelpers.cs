@@ -61,8 +61,8 @@ namespace SoftRenderingApp3D.App.Utils
                 if(!_readers.TryGetValue(data.ReaderType, out var reader))
                     throw new Exception($"Could not find reader for {data.ReaderType}!");
 
-                var volumes = reader.ReadFile(data.InputFileName);
-                world.Meshes.AddRange(volumes);
+                var drawables = reader.ReadFile(data.InputFileName);
+                world.Drawables.AddRange(drawables);
             }
             else if(functionName != null)
             {

@@ -1,4 +1,4 @@
-﻿using SoftRenderingApp3D.DataStructures.Meshes;
+﻿using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.DataStructures.World;
 using SoftRenderingApp3D.Utils;
 using System;
@@ -13,14 +13,14 @@ namespace SoftRenderingApp3D.Buffer
 
         public WorldBuffer(IWorld w)
         {
-            var meshes = w.Meshes;
-            Size = meshes.Count;
+            var drawables = w.Drawables;
+            Size = drawables.Count;
 
             VertexBuffer = VertexBuffer3Bag.Rent(Size);
 
             for(var i = 0; i < Size; i++)
             {
-                VertexBuffer[i] = new VertexBuffer(meshes[i].Vertices.Count);
+                VertexBuffer[i] = new VertexBuffer(drawables[i].Mesh.Vertices.Count);
             }
         }
 
@@ -44,7 +44,7 @@ namespace SoftRenderingApp3D.Buffer
     {
         private static readonly ArrayPool<Vector3> Vector3Bag = ArrayPool<Vector3>.Shared;
         private static readonly ArrayPool<Vector4> Vector4Bag = ArrayPool<Vector4>.Shared;
-        private static readonly ArrayPool<ColorRGB> ColorRGBBag = ArrayPool<ColorRGB>.Shared;
+        private static readonly ArrayPool<ColorRGB> ColorRgbBag = ArrayPool<ColorRGB>.Shared;
 
         public VertexBuffer(int vertexCount)
         {
@@ -53,10 +53,10 @@ namespace SoftRenderingApp3D.Buffer
             WorldVertices = Vector3Bag.Rent(vertexCount);
             WorldVertexNormals = Vector3Bag.Rent(vertexCount);
             ProjectionVertices = Vector4Bag.Rent(vertexCount);
-            VertexColors = ColorRGBBag.Rent(vertexCount);
+            VertexColors = ColorRgbBag.Rent(vertexCount);
         }
 
-        public IMesh Mesh { get; set; } // Meshes
+        public IDrawable Drawable { get; set; } // Drawables
         public Vector3[] ViewVertices { get; } // Vertices in view
         public Vector3[] WorldVertices { get; } // Vertices in _subsurfaceScatteringWorld
         public Vector3[] WorldVertexNormals { get; } // Vertices normals in _subsurfaceScatteringWorld
@@ -79,31 +79,32 @@ namespace SoftRenderingApp3D.Buffer
             Vector3Bag.Return(WorldVertices);
             Vector3Bag.Return(WorldVertexNormals);
             Vector4Bag.Return(ProjectionVertices);
-            ColorRGBBag.Return(VertexColors);
+            ColorRgbBag.Return(VertexColors);
         }
 
         public void TransformVertices(Matrix4x4 matrix)
         {
-            for(var i = 0; i < Mesh.Vertices.Count; i++)
+            var mesh = Drawable.Mesh;
+            for(var i = 0; i < mesh.Vertices.Count; i++)
             {
-                WorldVertices[i] = matrix.Transform(Mesh.Vertices[i]);
-                WorldVertexNormals[i] = matrix.TransformWithoutTranslation(Mesh.VertexNormals[i]);
+                WorldVertices[i] = matrix.Transform(mesh.Vertices[i]);
+                WorldVertexNormals[i] = matrix.TransformWithoutTranslation(mesh.VertexNormals[i]);
             }
         }
 
         public void TransformWorld()
         {
-            for(var i = 0; i < Mesh.Vertices.Count; i++)
+            for(var i = 0; i < Drawable.Mesh.Vertices.Count; i++)
             {
-                WorldVertices[i] = Vector3.Transform(Mesh.Vertices[i], WorldMatrix);
+                WorldVertices[i] = Vector3.Transform(Drawable.Mesh.Vertices[i], WorldMatrix);
             }
         }
 
         public void TransformWorldView()
         {
-            for(var i = 0; i < Mesh.Vertices.Count; i++)
+            for(var i = 0; i < Drawable.Mesh.Vertices.Count; i++)
             {
-                ViewVertices[i] = Vector3.Transform(Mesh.Vertices[i], WorldViewMatrix);
+                ViewVertices[i] = Vector3.Transform(Drawable.Mesh.Vertices[i], WorldViewMatrix);
             }
         }
     }

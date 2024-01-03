@@ -1,4 +1,6 @@
 ﻿using g3;
+using SoftRenderingApp3D.DataStructures.Drawables;
+using SoftRenderingApp3D.DataStructures.Materials;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -20,9 +22,9 @@ namespace SoftRenderingApp3D.DataStructures.Meshes
         private static List<int> GetTriangleIndexesHaving(this Vector3 vertex, IMesh mesh)
         {
             var indexList = new List<int>();
-            for(var i = 0; i < mesh.Triangles.Count; i++)
+            for(var i = 0; i < mesh.Facets.Count; i++)
             {
-                if(mesh.Triangles[i].Contains(vertex, mesh.Vertices))
+                if(mesh.Facets[i].Contains(vertex, mesh.Vertices))
                 {
                     indexList.Add(i);
                 }
@@ -41,7 +43,7 @@ namespace SoftRenderingApp3D.DataStructures.Meshes
             var sum = new Vector3(0, 0, 0);
             foreach(var idx in inTriangles)
             {
-                sum += mesh.Triangles[idx].CalculateNormal(mesh.Vertices);
+                sum += mesh.Facets[idx].CalculateNormal(mesh.Vertices);
             }
 
             return Vector3.Normalize(sum);
@@ -60,23 +62,23 @@ namespace SoftRenderingApp3D.DataStructures.Meshes
         public static List<Vector3> CalculateTriangleNormals(this IMesh mesh)
         {
             var result = new List<Vector3>();
-            for(var i = 0; i < mesh.Triangles.Count; i++)
+            for(var i = 0; i < mesh.Facets.Count; i++)
             {
-                result.Add(mesh.Triangles[i].CalculateNormal(mesh.Vertices));
+                result.Add(mesh.Facets[i].CalculateNormal(mesh.Vertices));
             }
             return result;
         }
 
 
-        public static Triangle[] BuildTriangleIndices(this int[] indices)
+        public static Facet[] BuildTriangleIndices(this int[] indices)
         {
-            var result = new Triangle[indices.Length / 3];
+            var result = new Facet[indices.Length / 3];
             for(var i = 0; i < indices.Length; i += 3)
-                result[i / 3] = new Triangle(indices[i], indices[i + 1], indices[i + 2]);
+                result[i / 3] = new Facet(indices[i], indices[i + 1], indices[i + 2]);
             return result;
         }
 
-        public static IEnumerable<Vector3d> ToVector3d(this IEnumerable<Triangle> triangles)
+        public static IEnumerable<Vector3d> ToVector3d(this IEnumerable<Facet> triangles)
         {
             foreach(var triangle in triangles)
             {
@@ -87,6 +89,11 @@ namespace SoftRenderingApp3D.DataStructures.Meshes
         public static Vector3d ToVector3d(this Vector3 vector)
         {
             return new Vector3d(vector.X, vector.Y, vector.Z);
+        }
+
+        public static Drawables.IDrawable ToDrawable(this IMesh mesh)
+        {
+            return new Drawable(mesh, new MaterialBase());
         }
     }
 }

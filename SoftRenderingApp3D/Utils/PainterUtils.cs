@@ -1,4 +1,5 @@
 ﻿using SoftRenderingApp3D.Buffer;
+using SoftRenderingApp3D.DataStructures.Materials;
 using SoftRenderingApp3D.Painter;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -8,25 +9,32 @@ namespace SoftRenderingApp3D.Utils
     internal static class PainterUtils
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SortTrianglePoints(VertexBuffer vbx, FrameBuffer frameBuffer, int triangleIndices,
+        public static void SortTrianglePoints(VertexBuffer vbx, FrameBuffer frameBuffer, int faId,
             out PaintedVertex v0, out PaintedVertex v1, out PaintedVertex v2, out int index0, out int index1,
             out int index2)
         {
-            var t = vbx.Mesh.Triangles[triangleIndices];
+            var t = vbx.Drawable.Mesh.Facets[faId];
 
             var worldNormVertices = vbx.WorldVertexNormals;
             var projectionVertices = vbx.ProjectionVertices;
             var worldVertices = vbx.WorldVertices;
-            var triangleColor = vbx.Mesh.TriangleColors != null ?
-                vbx.Mesh.TriangleColors[triangleIndices] : ColorRGB.Gray;
+            var triangleColor = Constants.StandardColor;
+            
+            if(vbx.Drawable.Material is IFacetColorMaterial facetColorMaterial)
+                triangleColor = facetColorMaterial.FacetColors[faId];
+            
             var color0 = triangleColor;
             var color1 = triangleColor;
             var color2 = triangleColor;
-            //if(vbx.VertexColors != null) {
-            //    color0 = vbx.VertexColors[t.I0];
-            //    color1 = vbx.VertexColors[t.I1];
-            //    color2 = vbx.VertexColors[t.I2];
-            //}
+            
+            if(vbx.Drawable.Material is IVertexColorMaterial vertexColorMaterial)
+            {
+                color0 = vertexColorMaterial.VertexColors[t.I0];
+                color1 = vertexColorMaterial.VertexColors[t.I1];
+                color2 = vertexColorMaterial.VertexColors[t.I2];
+            }
+
+
             v0 = new PaintedVertex(worldNormVertices[t.I0],
                 frameBuffer.ToScreen3(projectionVertices[t.I0]),
                 worldVertices[t.I0], color0);

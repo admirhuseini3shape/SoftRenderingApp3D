@@ -1,4 +1,5 @@
 ﻿using SoftRenderingApp3D.Buffer;
+using SoftRenderingApp3D.DataStructures.Materials;
 using SoftRenderingApp3D.Utils;
 using System.Collections.Generic;
 using System.Numerics;
@@ -6,9 +7,9 @@ using System.Runtime.CompilerServices;
 
 namespace SoftRenderingApp3D
 {
-    public readonly struct Triangle
+    public readonly struct Facet
     {
-        public Triangle(int p0, int p1, int p2)
+        public Facet(int p0, int p1, int p2)
         {
             I0 = p0;
             I1 = p1;
@@ -138,10 +139,10 @@ namespace SoftRenderingApp3D
         public void TransformWorld(VertexBuffer vbx)
         {
             var worldMatrix = vbx.WorldMatrix;
-
+            var mesh = vbx.Drawable.Mesh;
             var worldNormVertices = vbx.WorldVertexNormals;
-            var normVertices = vbx.Mesh.VertexNormals;
-            var textureCoordinates = vbx.Mesh.TexCoordinates;
+            var normVertices = mesh.VertexNormals;
+            var textureCoordinates = mesh.TexCoordinates;
 
             if(worldNormVertices[I0] == Vector3.Zero)
             {
@@ -170,28 +171,28 @@ namespace SoftRenderingApp3D
             */
 
             // Check if mesh has texture data
-            if(vbx.Mesh.TexCoordinates != null)
+            if(!(vbx.Drawable.Material is ITextureMaterial) || mesh.TexCoordinates == null)
+                return;
+
+            if(textureCoordinates[I0] == Vector2.Zero)
             {
-                if(textureCoordinates[I0] == Vector2.Zero)
-                {
-                    var temp = Vector3.Transform(new Vector3(textureCoordinates[I0].X, textureCoordinates[I0].Y, 1.0f),
-                        worldMatrix);
-                    vbx.Mesh.SetVertexTextureCoordinate(I0, new Vector2(temp.X, temp.Y));
-                }
+                var temp = Vector3.Transform(new Vector3(textureCoordinates[I0].X, textureCoordinates[I0].Y, 1.0f),
+                    worldMatrix);
+                mesh.SetVertexTextureCoordinate(I0, new Vector2(temp.X, temp.Y));
+            }
 
-                if(textureCoordinates[I1] == Vector2.Zero)
-                {
-                    var temp = Vector3.Transform(new Vector3(textureCoordinates[I1].X, textureCoordinates[I1].Y, 1.0f),
-                        worldMatrix);
-                    vbx.Mesh.SetVertexTextureCoordinate(I1, new Vector2(temp.X, temp.Y));
-                }
+            if(textureCoordinates[I1] == Vector2.Zero)
+            {
+                var temp = Vector3.Transform(new Vector3(textureCoordinates[I1].X, textureCoordinates[I1].Y, 1.0f),
+                    worldMatrix);
+                mesh.SetVertexTextureCoordinate(I1, new Vector2(temp.X, temp.Y));
+            }
 
-                if(textureCoordinates[I2] == Vector2.Zero)
-                {
-                    var temp = Vector3.Transform(new Vector3(textureCoordinates[I2].X, textureCoordinates[I2].Y, 1.0f),
-                        worldMatrix);
-                    vbx.Mesh.SetVertexTextureCoordinate(I2, new Vector2(temp.X, temp.Y));
-                }
+            if(textureCoordinates[I2] == Vector2.Zero)
+            {
+                var temp = Vector3.Transform(new Vector3(textureCoordinates[I2].X, textureCoordinates[I2].Y, 1.0f),
+                    worldMatrix);
+                mesh.SetVertexTextureCoordinate(I2, new Vector2(temp.X, temp.Y));
             }
         }
 

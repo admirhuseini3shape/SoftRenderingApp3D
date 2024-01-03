@@ -11,9 +11,11 @@ namespace SoftRenderingApp3D.DataStructures.Materials
             FacetColors = facetColors;
         }
 
-        public FacetColorMaterial(int facetCount)
+        public FacetColorMaterial(int facetCount, ColorRGB? color = null)
         {
-            FacetColors = Enumerable.Repeat(Constants.StandardColor, facetCount).ToArray();
+            color ??= Constants.StandardColor;
+
+            FacetColors = Enumerable.Repeat(color.Value, facetCount).ToArray();
         }
 
         public IReadOnlyList<ColorRGB> FacetColors { get; }

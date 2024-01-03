@@ -13,16 +13,18 @@ namespace SubsurfaceScatteringLibrary.Painter
         public SubsurfaceScatteringRenderContext RendererContext { get; set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DrawTriangle(VertexBuffer vbx, int triangleIndex)
+        public void DrawTriangle(VertexBuffer vbx, int faId)
         {
-            vbx.Mesh.Triangles[triangleIndex].TransformWorld(vbx);
+            var mesh = vbx.Drawable.Mesh;
+            mesh.Facets[faId].TransformWorld(vbx);
 
             // Get z _subsurfaceScatteringWorld coordinate
-            var zWorld = vbx.Mesh.Triangles[triangleIndex].CalculateCentroid(vbx.Mesh.Vertices);
+            var zWorld = mesh.Facets[faId].CalculateCentroid(mesh.Vertices);
 
             var surface = RendererContext.Surface;
-            SubsurfaceScatteringPainterUtils.SortTrianglePoints(vbx, surface, triangleIndex, out var v0, out var v1,
-                out var v2, out var index0, out var index1, out var index2);
+            SubsurfaceScatteringPainterUtils.SortTrianglePoints(vbx, surface, faId, 
+                out var v0, out var v1, out var v2, 
+                out _, out _, out _);
 
             var p0 = v0.ScreenPoint;
             var p1 = v1.ScreenPoint;
@@ -54,25 +56,25 @@ namespace SubsurfaceScatteringLibrary.Painter
                 // P0
                 //   P1
                 // P2
-                paintHalfTriangle(yStart, yMiddle, p0, p2, p0, p1, nl0, nl2, nl0, nl1, zWorld);
-                paintHalfTriangle(yMiddle + 1, yEnd, p0, p2, p1, p2, nl0, nl2, nl1, nl2, zWorld);
+                PaintHalfTriangle(yStart, yMiddle, p0, p2, p0, p1, nl0, nl2, nl0, nl1, zWorld);
+                PaintHalfTriangle(yMiddle + 1, yEnd, p0, p2, p1, p2, nl0, nl2, nl1, nl2, zWorld);
             }
             else
             {
                 //   P0
                 // P1 
                 //   P2
-                paintHalfTriangle(yStart, yMiddle - 1, p0, p1, p0, p2, nl0, nl1, nl0, nl2, zWorld);
-                paintHalfTriangle(yMiddle, yEnd, p1, p2, p0, p2, nl1, nl2, nl0, nl2, zWorld);
+                PaintHalfTriangle(yStart, yMiddle - 1, p0, p1, p0, p2, nl0, nl1, nl0, nl2, zWorld);
+                PaintHalfTriangle(yMiddle, yEnd, p1, p2, p0, p2, nl1, nl2, nl0, nl2, zWorld);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void paintHalfTriangle(int yStart, int yEnd, Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd, float nla,
+        private void PaintHalfTriangle(int yStart, int yEnd, Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd, float nla,
             float nlb, float nlc, float nld, Vector3 zWorld)
         {
-            var mg1 = pa.Y == pb.Y ? 1f : 1 / (pb.Y - pa.Y);
-            var mg2 = pd.Y == pc.Y ? 1f : 1 / (pd.Y - pc.Y);
+            var mg1 = Math.Abs(pa.Y - pb.Y) < float.Epsilon ? 1f : 1 / (pb.Y - pa.Y);
+            var mg2 = Math.Abs(pd.Y - pc.Y) < float.Epsilon ? 1f : 1 / (pd.Y - pc.Y);
 
             for(var y = yStart; y <= yEnd; y++)
             {
@@ -93,12 +95,12 @@ namespace SubsurfaceScatteringLibrary.Painter
                 var sz = MathUtils.Lerp(pa.Z, pb.Z, gradient1);
                 var ez = MathUtils.Lerp(pc.Z, pd.Z, gradient2);
 
-                paintScanline(y, sx, ex, sz, ez, sl, el, zWorld);
+                PaintScanLine(y, sx, ex, sz, ez, sl, el, zWorld);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void paintScanline(float y, float sx, float ex, float sz, float ez, float sl, float el,
+        private void PaintScanLine(float y, float sx, float ex, float sz, float ez, float sl, float el,
             Vector3 zWorld)
         {
             var surface = RendererContext.Surface;

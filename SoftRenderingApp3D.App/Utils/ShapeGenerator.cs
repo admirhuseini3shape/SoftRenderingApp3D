@@ -8,17 +8,17 @@ namespace SoftRenderingApp3D.App.Utils
     {
         public static void CreateCube(World world)
         {
-            world.Meshes.Add(Cube.GetMesh());
+            world.Drawables.Add(Cube.GetDrawable());
         }
 
         public static void CreateBigCube(World world)
         {
-            var cube = Cube.GetMesh();
+            var cube = Cube.GetDrawable();
             var scaling = new Vector3(100, 100, 100);
             var matrix = Matrix4x4.CreateScale(scaling);
-            cube.Transform(matrix);
+            cube.Mesh.Transform(matrix);
 
-            world.Meshes.Add(cube);
+            world.Drawables.Add(cube);
         }
 
         public static void CreateCubes(World world)
@@ -31,7 +31,7 @@ namespace SoftRenderingApp3D.App.Utils
                 for(var y = -d; y <= d; y += s)
                     for(var z = -d; z <= d; z += s)
                     {
-                        var cube = Cube.GetMesh();
+                        var cube = Cube.GetDrawable();
 
                         var rotation = new Rotation3D(
                                 r.Next(-maxAngle, maxAngle),
@@ -42,8 +42,8 @@ namespace SoftRenderingApp3D.App.Utils
                         var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(
                             rotation.YYaw, rotation.XPitch, rotation.ZRoll);
                         var matrix = rotationMatrix * Matrix4x4.CreateTranslation(position);
-                        cube.Transform(matrix);
-                        world.Meshes.Add(cube);
+                        cube.Mesh.Transform(matrix);
+                        world.Drawables.Add(cube);
                     }
         }
         public static void CreateTown(World world)
@@ -55,15 +55,15 @@ namespace SoftRenderingApp3D.App.Utils
             for(var x = -d; x <= d; x += s)
                 for(var z = -d; z <= d; z += s)
                 {
-                    var cube = Cube.GetMesh();
+                    var cube = Cube.GetDrawable();
 
                     var position = new Vector3(x, 0, z);
                     var scaling = new Vector3(1, random.Next(1, 10), 1);
                     var matrix = Matrix4x4.CreateTranslation(translateToOriginY) *
                                  Matrix4x4.CreateScale(scaling) *
                                  Matrix4x4.CreateTranslation(position);
-                    cube.Transform(matrix);
-                    world.Meshes.Add(cube);
+                    cube.Mesh.Transform(matrix);
+                    world.Drawables.Add(cube);
                 }
         }
 
@@ -76,15 +76,15 @@ namespace SoftRenderingApp3D.App.Utils
             for(var x = -d; x <= d; x += s)
                 for(var z = -d; z <= d; z += s)
                 {
-                    var cube = Cube.GetMesh();
+                    var cube = Cube.GetDrawable();
                     var position = new Vector3(x, 0, z);
                     var scaling = new Vector3(1, random.Next(1, 10), 1);
 
                     var matrix = Matrix4x4.CreateTranslation(translateToOriginY) *
                                  Matrix4x4.CreateScale(scaling) *
                                  Matrix4x4.CreateTranslation(position);
-                    cube.Transform(matrix);
-                    world.Meshes.Add(cube);
+                    cube.Mesh.Transform(matrix);
+                    world.Drawables.Add(cube);
                 }
         }
 
@@ -97,14 +97,14 @@ namespace SoftRenderingApp3D.App.Utils
             for(var x = -d; x <= d; x += s)
                 for(var z = -d; z <= d; z += s)
                 {
-                    var cube = Cube.GetMesh();
+                    var cube = Cube.GetDrawable();
                     var position = new Vector3(x, 0, z);
                     var scaling = new Vector3(1, random.Next(1, 10), 1);
                     var matrix = Matrix4x4.CreateTranslation(translateToOriginY) *
                                  Matrix4x4.CreateScale(scaling) *
                                  Matrix4x4.CreateTranslation(position);
-                    cube.Transform(matrix);
-                    world.Meshes.Add(cube);
+                    cube.Mesh.Transform(matrix);
+                    world.Drawables.Add(cube);
                 }
         }
 
@@ -117,7 +117,7 @@ namespace SoftRenderingApp3D.App.Utils
                 for(var y = -d; y <= d; y += s)
                     for(var z = -d; z <= d; z += s)
                     {
-                        var sphere = Sphere.GetMesh(2);
+                        var sphere = Sphere.GetDrawable(2);
                         var rotation = new Rotation3D(
                                 r.Next(-90, 90),
                                 r.Next(-90, 90),
@@ -127,8 +127,8 @@ namespace SoftRenderingApp3D.App.Utils
                         var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(
                             rotation.YYaw, rotation.XPitch, rotation.ZRoll);
                         var matrix = rotationMatrix * Matrix4x4.CreateTranslation(position);
-                        sphere.Transform(matrix);
-                        world.Meshes.Add(sphere);
+                        sphere.Mesh.Transform(matrix);
+                        world.Drawables.Add(sphere);
                     }
         }
     }

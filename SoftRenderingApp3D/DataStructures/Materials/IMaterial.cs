@@ -3,8 +3,7 @@ using System.Collections.Generic;
 
 namespace SoftRenderingApp3D.DataStructures.Materials
 {
-    public interface IMaterial : IMaterialOptions
-    { }
+    public interface IMaterial : IMaterialOptions { }
 
     public interface IVertexColorMaterial : IMaterial
     {

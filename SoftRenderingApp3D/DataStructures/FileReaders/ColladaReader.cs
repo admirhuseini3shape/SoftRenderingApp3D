@@ -41,7 +41,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
 
         // Work in progress
 
-        public static IEnumerable<Mesh> NewImportCollada(string fileName)
+        public static IEnumerable<Drawables.IDrawable> NewImportCollada(string fileName)
         {
             XNamespace ns = "http://www.collada.org/2005/11/COLLADASchema";
 
@@ -82,8 +82,9 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
                     yield return new Mesh(
                         vertices_position.ToArray(),
                         polylist_p.ToArray().BuildTriangleIndices(),
-                        vertices_normal.ToArray(), null,
-                        texture_coordinates.ToArray());
+                        vertices_normal.ToArray(),
+                        texture_coordinates.ToArray())
+                        .ToDrawable();
                 }
 
                 var triangles = mesh.Element(ns + "triangles");
@@ -94,7 +95,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
 
                     var stride = triangles_p.Count() / triangles_count;
 
-                    getSource(triangles, "VERTEX", out var triangles_vertex_id, out var triangle_vertex_offset);
+                    getSource(triangles, "VERTEX", out var triangles_vertex_id, out _);
                     // getSource(triangles, "NORMAL", out var triangles_normal_id, out _);
 
                     var vertices = mesh.Elements(ns + "vertices")
@@ -106,17 +107,18 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
 
                     yield return new Mesh(
                         vertices_position.ToArray(),
-                        getTriangles(triangles_p, stride).ToArray());
+                        getTriangles(triangles_p, stride).ToArray())
+                        .ToDrawable();
                 }
             }
         }
 
-        private static IEnumerable<Triangle> getTriangles(int[] array, int stride, int offset = 0)
+        private static IEnumerable<Facet> getTriangles(int[] array, int stride, int offset = 0)
         {
             var l = array.Length / stride;
             for(var i = 0; i < l; i++)
             {
-                yield return new Triangle(array[i * stride + offset], array[i * stride + 4 + offset],
+                yield return new Facet(array[i * stride + offset], array[i * stride + 4 + offset],
                     array[i * stride + 8 + offset]);
             }
         }
@@ -165,7 +167,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
             }
         }
 
-        public override IEnumerable<Mesh> ReadFile(string fileName)
+        public override IEnumerable<Drawables.IDrawable> ReadFile(string fileName)
         {
             return NewImportCollada(fileName);
         }

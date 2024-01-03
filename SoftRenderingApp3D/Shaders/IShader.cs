@@ -9,7 +9,7 @@ namespace SoftRenderingApp3D.Shaders
 
     public interface IShader:IShader<IMaterial, IVertexOutput, IFragmentOutput>{}
 
-    public interface IShader<TMaterial, TVertexOutput, TFragmentOutput>
+    public interface IShader<in TMaterial, TVertexOutput, TFragmentOutput>
     where TMaterial : IMaterial
     where TVertexOutput : IVertexOutput
     where TFragmentOutput : IFragmentOutput

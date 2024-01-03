@@ -56,7 +56,7 @@ namespace SubsurfaceScatteringLibrary.Utils
             return array.Select(ToVector3d).ToList();
         }
 
-        public static float[] ToFloatArray(this IReadOnlyList<Vector3> array)
+        public static float[] ToFloats(this IReadOnlyList<Vector3> array)
         {
             var resultArray = new float[array.Count * 3];
             for(var i = 0; i < array.Count * 3; i += 3)
@@ -69,7 +69,7 @@ namespace SubsurfaceScatteringLibrary.Utils
             return resultArray;
         }
 
-        public static int[] ToIntArray(this IReadOnlyList<Triangle> triangles)
+        public static int[] ToInts(this IReadOnlyList<Facet> triangles)
         {
             var array = new int[triangles.Count * 3];
             for(var i = 0; i < triangles.Count * 3; i += 3)

@@ -30,7 +30,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
             indices = new Dictionary<Vector3, int>();
         }
 
-        public override IEnumerable<Mesh> ReadFile(string fileName)
+        public override IEnumerable<Drawables.IDrawable> ReadFile(string fileName)
         {
             path = fileName;
             return NewSTLImport();
@@ -53,17 +53,17 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
         * @param  none
         * @retval SubsurfaceScatteringVolume
         */
-        public IEnumerable<Mesh> NewSTLImport()
+        public IEnumerable<Drawables.IDrawable> NewSTLImport()
         {
             var stlFileType = GetFileType(path);
 
             if(stlFileType == FileType.ASCII)
             {
-                yield return ReadASCIIFile(path);
+                yield return ReadASCIIFile(path).ToDrawable();
             }
             else if(stlFileType == FileType.BINARY)
             {
-                yield return ReadBinaryFile(path);
+                yield return ReadBinaryFile(path).ToDrawable();
             }
             else
             {
@@ -122,7 +122,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
         {
             var vertices = new List<Vector3>();
             var normals = new List<Vector3>();
-            var triangleIndices = new List<Triangle>();
+            var triangleIndices = new List<Facet>();
 
             var fileBytes = File.ReadAllBytes(filePath);
 
@@ -288,7 +288,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
                         }
 
                         // Add triangle to list of triangles
-                        triangleIndices.Add(new Triangle(I1, I2, I3));
+                        triangleIndices.Add(new Facet(I1, I2, I3));
 
                         byteIndex += 2; // Attribute byte count
                     }
@@ -321,7 +321,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
         {
             var vertices = new List<Vector3>();
             var normals = new List<Vector3>();
-            var triangleIndices = new List<Triangle>();
+            var triangleIndices = new List<Facet>();
 
             var txtReader = new StreamReader(filePath);
 
@@ -451,7 +451,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
                             }
 
                             // Add triangle to list of triangles
-                            triangleIndices.Add(new Triangle(I1, I2, I3));
+                            triangleIndices.Add(new Facet(I1, I2, I3));
                         }
                         catch
                         {

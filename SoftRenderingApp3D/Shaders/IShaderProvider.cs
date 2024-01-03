@@ -1,5 +1,4 @@
 ﻿using SoftRenderingApp3D.DataStructures.Drawables;
-using SoftRenderingApp3D.DataStructures.Materials;
 using SoftRenderingApp3D.Factories;
 
 namespace SoftRenderingApp3D.Shaders
@@ -8,6 +7,6 @@ namespace SoftRenderingApp3D.Shaders
     {
         void RegisterShaders();
 
-        IShader GetShader<TDrawable>(TDrawable drawable) where TDrawable : IDrawable<IMaterial>;
+        IShader GetShader<TDrawable>(TDrawable drawable) where TDrawable : IDrawable;
     }
 }

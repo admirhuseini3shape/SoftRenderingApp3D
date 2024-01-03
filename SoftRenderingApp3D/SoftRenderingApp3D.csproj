@@ -76,6 +76,7 @@
     </Compile>
     <Compile Include="Clipping\CohenSutherlandClipping2D.cs" />
     <Compile Include="Clipping\CohenSutherlandClippingHomogeneous.cs" />
+    <Compile Include="DataStructures\Drawables\Drawable.cs" />
     <Compile Include="DataStructures\Drawables\IDrawable.cs" />
     <Compile Include="DataStructures\FileReaders\ColladaReader.cs" />
     <Compile Include="DataStructures\FileReaders\FileReader.cs" />
@@ -86,6 +87,8 @@
     <Compile Include="DataStructures\Materials\MaterialBase.cs" />
     <Compile Include="DataStructures\Materials\TextureMaterial.cs" />
     <Compile Include="DataStructures\Materials\VertexColorMaterial.cs" />
+    <Compile Include="DataStructures\Meshes\IPointCloud.cs" />
+    <Compile Include="DataStructures\Meshes\PointCloud.cs" />
     <Compile Include="DataStructures\Shapes\Sphere.cs" />
     <Compile Include="DataStructures\TextureReaders\ITextureReader.cs" />
     <Compile Include="DataStructures\Shapes\Cube.cs" />
@@ -117,7 +120,7 @@
     <Compile Include="Shaders\ShaderAbstract.cs" />
     <Compile Include="Shaders\ShaderProvider.cs" />
     <Compile Include="Stats.cs" />
-    <Compile Include="Triangle.cs" />
+    <Compile Include="Facet.cs" />
     <Compile Include="Utils\Constants.cs" />
     <Compile Include="Utils\GaussianBlur.cs" />
     <Compile Include="Utils\GeomUtils.cs" />

@@ -76,7 +76,7 @@ namespace SoftRenderingApp3D.Utils
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static int[] ToIntArray(this Triangle[] triangles)
+        public static int[] ToIntArray(this Facet[] triangles)
         {
             var array = new int[triangles.Length * 3];
             for(var i = 0; i < triangles.Length * 3; i += 3)

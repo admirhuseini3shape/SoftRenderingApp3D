@@ -227,7 +227,7 @@ namespace SoftRenderingApp3D.App
 
             sb.Clear();
             sb.AppendFormat(Format,
-                world.Meshes.Count,
+                world.Drawables.Count,
                 RenderContext.Stats.TotalTriangleCount,
                 RenderContext.Stats.FacingBackTriangleCount,
                 RenderContext.Stats.OutOfViewTriangleCount,

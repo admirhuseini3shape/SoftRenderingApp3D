@@ -35,7 +35,6 @@ namespace SoftRenderingApp3D.Renderer
 
             var viewMatrix = camera.ViewMatrix();
             var projectionMatrix = projection.ProjectionMatrix(surface.Width, surface.Height);
-            var world2Projection = viewMatrix * projectionMatrix;
 
             // Allocate arrays to store transformed vertices
             using var worldBuffer = new WorldBuffer(world);
@@ -45,25 +44,24 @@ namespace SoftRenderingApp3D.Renderer
             var textureIndex = rendererSettings.activeTexture % world.Textures.Count;
             var texture = world.Textures[textureIndex];
 
-            var volumes = world.Meshes;
+            var volumes = world.Drawables;
             var volumeCount = volumes.Count;
             for(var idxVolume = 0; idxVolume < volumeCount; idxVolume++)
             {
                 var vbx = worldBuffer.VertexBuffer[idxVolume];
-                var volume = volumes[idxVolume];
+                var mesh = volumes[idxVolume].Mesh;
 
                 //var worldMatrix = volume.WorldMatrix();
                 //var modelViewMatrix = worldMatrix * viewMatrix;
-                var modelViewMatrix = viewMatrix;
 
 
-                vbx.Mesh = volume;
+                vbx.Drawable = volumes[idxVolume];
                 vbx.TransformVertices(viewMatrix);
                 //vbx.WorldMatrix = worldMatrix;
 
-                stats.TotalTriangleCount += volume.Triangles.Count;
+                stats.TotalTriangleCount += mesh.Facets.Count;
 
-                var vertices = volume.Vertices;
+                var vertices = mesh.Vertices;
                 var viewVertices = vbx.ViewVertices;
 
                 // Transform and store vertices to View
@@ -73,10 +71,10 @@ namespace SoftRenderingApp3D.Renderer
                     viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex], viewMatrix);
                 }
 
-                var triangleCount = volume.Triangles.Count;
+                var triangleCount = mesh.Facets.Count;
                 for(var idxTriangle = 0; idxTriangle < triangleCount; idxTriangle++)
                 {
-                    var t = volume.Triangles[idxTriangle];
+                    var t = mesh.Facets[idxTriangle];
 
                     // Discard if behind far plane
                     if(t.IsBehindFarPlane(vbx))
@@ -110,7 +108,7 @@ namespace SoftRenderingApp3D.Renderer
                     }
                     else
                     {
-                        if(Painter.GetType() == typeof(GouraudPainter))
+                        if(Painter != null && Painter.GetType() == typeof(GouraudPainter))
                         {
                             var painter = (GouraudPainter)Painter;
                             painter.DrawTriangleTextured(texture, vbx, idxTriangle,

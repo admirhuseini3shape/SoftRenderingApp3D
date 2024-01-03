@@ -233,7 +233,7 @@ namespace SubsurfaceScatteringSoftRenderingApp3D
 
             sb.Clear();
             sb.AppendFormat(format,
-                world.Meshes.Count,
+                world.Drawables.Count,
                 renderContext.Stats.TotalTriangleCount,
                 renderContext.Stats.FacingBackTriangleCount,
                 renderContext.Stats.OutOfViewTriangleCount,
