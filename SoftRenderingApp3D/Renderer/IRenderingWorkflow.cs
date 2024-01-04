@@ -9,6 +9,6 @@ namespace SoftRenderingApp3D.Renderer
         IReadOnlyList<IDrawable>  Drawables { get; }
 
         int[] DrawFrame(IDrawable drawable, IShaderProvider shaderProvider);
-        int[] DrawFrames(IReadOnlyList<IDrawable> drawables, IShaderProvider shaderProvider);
+        int[] DrawFrame(IReadOnlyList<IDrawable> drawables, IShaderProvider shaderProvider);
     }
 }
