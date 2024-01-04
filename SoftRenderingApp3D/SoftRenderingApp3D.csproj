@@ -105,6 +105,7 @@
     <Compile Include="Painter\IPainter.cs" />
     <Compile Include="RenderContext.cs" />
     <Compile Include="Renderer\IRenderer.cs" />
+    <Compile Include="Renderer\IRenderingJob.cs" />
     <Compile Include="Renderer\IRenderingWorkflow.cs" />
     <Compile Include="Renderer\RendererSettings.cs" />
     <Compile Include="Painter\PaintedVertex.cs" />

@@ -6,9 +6,10 @@ namespace SoftRenderingApp3D.Renderer
 {
     public interface IRenderingWorkflow
     {
-        IReadOnlyList<IDrawable>  Drawables { get; }
+        IReadOnlyList<IDrawable> Drawables { get; }
 
         int[] DrawFrame(IDrawable drawable, IShaderProvider shaderProvider);
         int[] DrawFrame(IReadOnlyList<IDrawable> drawables, IShaderProvider shaderProvider);
     }
+    
 }
