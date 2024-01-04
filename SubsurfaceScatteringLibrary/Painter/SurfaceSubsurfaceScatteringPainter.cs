@@ -14,12 +14,12 @@ namespace SubsurfaceScatteringLibrary.Painter
         public SubsurfaceScatteringRenderContext RendererContext { get; set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DrawTriangle(VertexBuffer vbx, int faId)
+        public void DrawTriangle(VertexBuffer vertexBuffer, int faId)
         {
-            vbx.Drawable.Mesh.Facets[faId].TransformWorld(vbx);
+            vertexBuffer.Drawable.Mesh.Facets[faId].TransformWorld(vertexBuffer);
 
             var surface = RendererContext.Surface;
-            SubsurfaceScatteringPainterUtils.SortTrianglePoints(vbx, surface, faId, out var v0, out var v1,
+            SubsurfaceScatteringPainterUtils.SortTrianglePoints(vertexBuffer, surface, faId, out var v0, out var v1,
                 out var v2, out _, out _, out _);
 
             var p0 = v0.ScreenPoint;
@@ -53,21 +53,21 @@ namespace SubsurfaceScatteringLibrary.Painter
                 // P0
                 //   P1
                 // P2
-                paintHalfTriangle(yStart, (int)yMiddle - 1, p0, p2, p0, p1, nl0, nl2, nl0, nl1, v0, v1, v2);
-                paintHalfTriangle((int)yMiddle, yEnd, p0, p2, p1, p2, nl0, nl2, nl1, nl2, v0, v1, v2);
+                PaintHalfTriangle(yStart, (int)yMiddle - 1, p0, p2, p0, p1, nl0, nl2, nl0, nl1, v0, v1, v2);
+                PaintHalfTriangle((int)yMiddle, yEnd, p0, p2, p1, p2, nl0, nl2, nl1, nl2, v0, v1, v2);
             }
             else
             {
                 //   P0
                 // P1 
                 //   P2
-                paintHalfTriangle(yStart, (int)yMiddle - 1, p0, p1, p0, p2, nl0, nl1, nl0, nl2, v0, v1, v2);
-                paintHalfTriangle((int)yMiddle, yEnd, p1, p2, p0, p2, nl1, nl2, nl0, nl2, v0, v1, v2);
+                PaintHalfTriangle(yStart, (int)yMiddle - 1, p0, p1, p0, p2, nl0, nl1, nl0, nl2, v0, v1, v2);
+                PaintHalfTriangle((int)yMiddle, yEnd, p1, p2, p0, p2, nl1, nl2, nl0, nl2, v0, v1, v2);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void paintHalfTriangle(int yStart, int yEnd, Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd, float nla,
+        private void PaintHalfTriangle(int yStart, int yEnd, Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd, float nla,
             float nlb, float nlc, float nld, PaintedVertex v0, PaintedVertex v1, PaintedVertex v2)
         {
             var mg1 = pa.Y == pb.Y ? 1f : 1 / (pb.Y - pa.Y);
@@ -117,12 +117,12 @@ namespace SubsurfaceScatteringLibrary.Painter
                 var surfaceColor = SubsurfaceScatteringRenderUtils.surfaceColor;
                 var scatteringColor = InterpolateTriangleVerticesColors(x, y, z, v0, v1, v2);
 
-                var R = (int)(SubsurfaceScatteringRenderUtils.lightWeight * c * surfaceColor.R) +
-                        (int)(SubsurfaceScatteringRenderUtils.subsurfaceScatteringWeight * scatteringColor.R);
-                var G = (int)(SubsurfaceScatteringRenderUtils.lightWeight * c * surfaceColor.G) +
-                        (int)(SubsurfaceScatteringRenderUtils.subsurfaceScatteringWeight * scatteringColor.G);
-                var B = (int)(SubsurfaceScatteringRenderUtils.lightWeight * c * surfaceColor.B) +
-                        (int)(SubsurfaceScatteringRenderUtils.subsurfaceScatteringWeight * scatteringColor.B);
+                var R = (int)(SubsurfaceScatteringRenderUtils.LightWeight * c * surfaceColor.R) +
+                        (int)(SubsurfaceScatteringRenderUtils.SubsurfaceScatteringWeight * scatteringColor.R);
+                var G = (int)(SubsurfaceScatteringRenderUtils.LightWeight * c * surfaceColor.G) +
+                        (int)(SubsurfaceScatteringRenderUtils.SubsurfaceScatteringWeight * scatteringColor.G);
+                var B = (int)(SubsurfaceScatteringRenderUtils.LightWeight * c * surfaceColor.B) +
+                        (int)(SubsurfaceScatteringRenderUtils.SubsurfaceScatteringWeight * scatteringColor.B);
 
                 var finalColor = new ColorRGB((byte)R, (byte)G, (byte)B, 255);
                 //Console.WriteLine($"newColor {newColor}. alpha {newColor.Alpha}");
@@ -142,13 +142,13 @@ namespace SubsurfaceScatteringLibrary.Painter
             var maxG = Math.Max(v0.Color.G, Math.Max(v1.Color.G, v2.Color.G));
             var maxB = Math.Max(v0.Color.B, Math.Max(v1.Color.B, v2.Color.B));
             // interpolate
-            var R = (int)(barycentric.X * v0.Color.R + barycentric.Y * v1.Color.R +
+            var r = (int)(barycentric.X * v0.Color.R + barycentric.Y * v1.Color.R +
                           barycentric.Z * v2.Color.R).Clamp(0, maxR);
             var G = (int)(barycentric.X * v0.Color.G + barycentric.Y * v1.Color.G +
                           barycentric.Z * v2.Color.G).Clamp(0, maxG);
             var B = (int)(barycentric.X * v0.Color.B + barycentric.Y * v1.Color.B +
                           barycentric.Z * v2.Color.B).Clamp(0, maxB);
-            var finalColor = new ColorRGB((byte)R, (byte)G, (byte)B, 255);
+            var finalColor = new ColorRGB((byte)r, (byte)G, (byte)B, 255);
 
 
             return finalColor;

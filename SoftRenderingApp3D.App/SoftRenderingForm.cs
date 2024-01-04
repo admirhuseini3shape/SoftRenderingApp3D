@@ -33,7 +33,7 @@ namespace SoftRenderingApp3D.App
             lstDemos.DoubleClick += LstDemos_DoubleClick;
 
             chkShowTexture.Checked = panel3D1.RendererSettings.ShowTextures;
-            chkLinearFiltering.Checked = panel3D1.RendererSettings.LiearTextureFiltering;
+            chkLinearFiltering.Checked = panel3D1.RendererSettings.LinearTextureFiltering;
 
             chkShowTexture.CheckedChanged += ChkShowTextureOnCheckedChanged;
             chkLinearFiltering.CheckedChanged += ChkLinearFilteringOnCheckedChanged;
@@ -89,7 +89,7 @@ namespace SoftRenderingApp3D.App
 
         private void ChkLinearFilteringOnCheckedChanged(object s, EventArgs e)
         {
-            panel3D1.RendererSettings.LiearTextureFiltering = chkLinearFiltering.Checked;
+            panel3D1.RendererSettings.LinearTextureFiltering = chkLinearFiltering.Checked;
             panel3D1.Invalidate();
         }
 

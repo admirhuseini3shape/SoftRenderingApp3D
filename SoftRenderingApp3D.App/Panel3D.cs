@@ -41,7 +41,7 @@ namespace SoftRenderingApp3D.App
 
             RendererSettings = new RendererSettings { BackFaceCulling = true };
 
-            Renderer = new SimpleRenderer();
+            Renderer = new SimpleRenderer(new FrameBuffer(Width, Height, RenderContext));
             Painter = new GouraudPainter();
 
             ResizeRedraw = true;
@@ -96,15 +96,7 @@ namespace SoftRenderingApp3D.App
             }
             set
             {
-                if(!value.TryUpdateOther(ref painter))
-                    return;
-
-                if(painter != null)
-                {
-                    painter.RendererContext = RenderContext;
-                }
-
-                Assign(renderer, painter);
+                value.TryUpdateOther(ref painter);
             }
         }
 
@@ -117,11 +109,7 @@ namespace SoftRenderingApp3D.App
             }
             set
             {
-                if(!value.TryUpdateOther(ref renderer))
-                    return;
-
-                renderer.RenderContext = RenderContext;
-                Assign(renderer, painter);
+                value.TryUpdateOther(ref renderer);
             }
         }
 
@@ -184,16 +172,6 @@ namespace SoftRenderingApp3D.App
             }
         }
 
-        private static void Assign(IRenderer renderer, IPainter painter)
-        {
-            if(renderer == null)
-            {
-                return;
-            }
-
-            renderer.Painter = painter;
-        }
-
         private void ProjectionChanged(object sender, EventArgs e)
         {
             Invalidate();
@@ -215,7 +193,7 @@ namespace SoftRenderingApp3D.App
 
         public int[] Render()
         {
-            return renderer.Render();
+            return renderer.Render(RenderContext, Painter);
         }
 
         private void Panel3D_Paint(object sender, PaintEventArgs e)
@@ -250,13 +228,13 @@ namespace SoftRenderingApp3D.App
                 return;
             }
 
-            RenderContext.Surface = new FrameBuffer(Width, Height, RenderContext);
+            Renderer = new SimpleRenderer(new FrameBuffer(Width, Height, RenderContext));
             bmp = new Bitmap(Width, Height, PixelFormat.Format32bppPArgb);
         }
 
         private void BuildFrame()
         {
-            var buffer = renderer.Render();
+            var buffer = Render();
             ImageUtils.FillBitmap(bmp, buffer, Width, Height);
         }
     }

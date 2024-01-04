@@ -7,62 +7,62 @@ namespace SoftRenderingApp3D.Renderer
 {
     public class SimpleRenderer : IRenderer
     {
-        public RenderContext RenderContext { get; set; }
-
-        public IPainter Painter { get; set; }
-
-        public int[] Render()
+        public SimpleRenderer(FrameBuffer frameBuffer)
         {
-            var stats = RenderContext.Stats;
-            var surface = RenderContext.Surface;
-            var camera = RenderContext.Camera;
-            var projection = RenderContext.Projection;
-            var world = RenderContext.World;
-            var rendererSettings = RenderContext.RendererSettings;
+            FrameBuffer = frameBuffer;
+        }
 
-            if(surface == null || camera == null || projection == null ||
-               world == null || rendererSettings == null)
+        public FrameBuffer FrameBuffer { get; }
+
+        public int[] Render(RenderContext renderContext, IPainter painter)
+        {
+            var stats = renderContext.Stats;
+            var frameBuffer = FrameBuffer;
+            var viewMatrix = renderContext.Camera.ViewMatrix();
+            var projectionMatrix = renderContext.Projection.ProjectionMatrix(frameBuffer.Width, frameBuffer.Height);
+            var world = renderContext.World;
+            var rendererSettings = renderContext.RendererSettings;
+
+            if(world == null || rendererSettings == null)
                 return Array.Empty<int>();
 
             stats.Clear();
 
             stats.PaintTime();
-            surface.Clear();
+            frameBuffer.Clear();
 
             stats.CalcTime();
 
             // model => worldMatrix => world => viewMatrix => view => projectionMatrix => projection => toNdc => ndc => toScreen => screen
 
-            var viewMatrix = camera.ViewMatrix();
-            var projectionMatrix = projection.ProjectionMatrix(surface.Width, surface.Height);
 
             // Allocate arrays to store transformed vertices
-            using var worldBuffer = new WorldBuffer(world);
-            RenderContext.WorldBuffer = worldBuffer;
+            using var allVertexBuffers = new AllVertexBuffers(world.Drawables);
+            renderContext.AllVertexBuffers = allVertexBuffers;
 
             // This needs work, this is only for testing
-            var textureIndex = rendererSettings.activeTexture % world.Textures.Count;
+            var textureIndex = rendererSettings.ActiveTexture % world.Textures.Count;
             var texture = world.Textures[textureIndex];
 
             var volumes = world.Drawables;
             var volumeCount = volumes.Count;
             for(var idxVolume = 0; idxVolume < volumeCount; idxVolume++)
             {
-                var vbx = worldBuffer.VertexBuffer[idxVolume];
+                var vertexBuffer = allVertexBuffers.VertexBuffer[idxVolume];
                 var mesh = volumes[idxVolume].Mesh;
 
                 //var worldMatrix = volume.WorldMatrix();
                 //var modelViewMatrix = worldMatrix * viewMatrix;
 
 
-                vbx.Drawable = volumes[idxVolume];
-                vbx.TransformVertices(viewMatrix);
-                //vbx.WorldMatrix = worldMatrix;
+                vertexBuffer.Drawable = volumes[idxVolume];
+                vertexBuffer.TransformVertices(viewMatrix);
+                //vertexBuffer.WorldMatrix = worldMatrix;
 
                 stats.TotalTriangleCount += mesh.Facets.Count;
 
                 var vertices = mesh.Vertices;
-                var viewVertices = vbx.ViewVertices;
+                var viewVertices = vertexBuffer.ViewVertices;
 
                 // Transform and store vertices to View
                 var vertexCount = vertices.Count;
@@ -77,24 +77,24 @@ namespace SoftRenderingApp3D.Renderer
                     var t = mesh.Facets[idxTriangle];
 
                     // Discard if behind far plane
-                    if(t.IsBehindFarPlane(vbx))
+                    if(t.IsBehindFarPlane(vertexBuffer))
                     {
                         stats.BehindViewTriangleCount++;
                         continue;
                     }
 
                     // Discard if back facing 
-                    if(rendererSettings.BackFaceCulling && t.IsFacingBack(vbx))
+                    if(rendererSettings.BackFaceCulling && t.IsFacingBack(vertexBuffer))
                     {
                         stats.FacingBackTriangleCount++;
                         continue;
                     }
 
                     // Project in frustum
-                    t.TransformProjection(vbx, projectionMatrix);
+                    t.TransformProjection(vertexBuffer, projectionMatrix);
 
                     // Discard if outside view frustum
-                    if(t.IsOutsideFrustum(vbx))
+                    if(t.IsOutsideFrustum(vertexBuffer))
                     {
                         stats.OutOfViewTriangleCount++;
                         continue;
@@ -104,15 +104,15 @@ namespace SoftRenderingApp3D.Renderer
 
                     if(!rendererSettings.ShowTextures)
                     {
-                        Painter?.DrawTriangle(vbx, idxTriangle);
+                        painter?.DrawTriangle(vertexBuffer, frameBuffer, idxTriangle);
                     }
                     else
                     {
-                        if(Painter != null && Painter.GetType() == typeof(GouraudPainter))
+                        if(painter != null && painter.GetType() == typeof(GouraudPainter))
                         {
-                            var painter = (GouraudPainter)Painter;
-                            painter.DrawTriangleTextured(texture, vbx, idxTriangle,
-                                rendererSettings.LiearTextureFiltering);
+                            var gouraudPainter = (GouraudPainter)painter;
+                            gouraudPainter.DrawTriangleTextured(texture, vertexBuffer,frameBuffer, idxTriangle,
+                                rendererSettings.LinearTextureFiltering);
                         }
                     }
 
@@ -122,7 +122,7 @@ namespace SoftRenderingApp3D.Renderer
                 }
             }
 
-            return surface.Screen;
+            return frameBuffer.Screen;
         }
     }
 }

@@ -13,16 +13,16 @@ namespace SubsurfaceScatteringLibrary.Painter
         public SubsurfaceScatteringRenderContext RendererContext { get; set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DrawTriangle(VertexBuffer vbx, int faId)
+        public void DrawTriangle(VertexBuffer vertexBuffer, int faId)
         {
-            var mesh = vbx.Drawable.Mesh;
-            mesh.Facets[faId].TransformWorld(vbx);
+            var mesh = vertexBuffer.Drawable.Mesh;
+            mesh.Facets[faId].TransformWorld(vertexBuffer);
 
             // Get z _subsurfaceScatteringWorld coordinate
             var zWorld = mesh.Facets[faId].CalculateCentroid(mesh.Vertices);
 
             var surface = RendererContext.Surface;
-            SubsurfaceScatteringPainterUtils.SortTrianglePoints(vbx, surface, faId, 
+            SubsurfaceScatteringPainterUtils.SortTrianglePoints(vertexBuffer, surface, faId, 
                 out var v0, out var v1, out var v2, 
                 out _, out _, out _);
 

@@ -16,6 +16,6 @@ namespace SubsurfaceScatteringLibrary.Renderer
         public Stats Stats { get; set; }
 
         public SubsurfaceScatteringFrameBuffer Surface { get; set; }
-        internal WorldBuffer WorldBuffer { get; set; }
+        internal AllVertexBuffers AllVertexBuffers { get; set; }
     }
 }

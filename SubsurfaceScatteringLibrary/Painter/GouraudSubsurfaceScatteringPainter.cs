@@ -14,12 +14,12 @@ namespace SubsurfaceScatteringLibrary.Painter
         public SubsurfaceScatteringRenderContext RendererContext { get; set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DrawTriangle(VertexBuffer vbx, int faId)
+        public void DrawTriangle(VertexBuffer vertexBuffer, int faId)
         {
-            vbx.Drawable.Mesh.Facets[faId].TransformWorld(vbx);
+            vertexBuffer.Drawable.Mesh.Facets[faId].TransformWorld(vertexBuffer);
 
             var surface = RendererContext.Surface;
-            SubsurfaceScatteringPainterUtils.SortTrianglePoints(vbx, surface, faId, out var v0, out var v1,
+            SubsurfaceScatteringPainterUtils.SortTrianglePoints(vertexBuffer, surface, faId, out var v0, out var v1,
                 out var v2, out _, out _, out _);
 
             var p0 = v0.ScreenPoint;
@@ -92,12 +92,12 @@ namespace SubsurfaceScatteringLibrary.Painter
                 var sz = MathUtils.Lerp(pa.Z, pb.Z, gradient1);
                 var ez = MathUtils.Lerp(pc.Z, pd.Z, gradient2);
 
-                paintScanline(y, sx, ex, sz, ez, sl, el, v0, v1, v2);
+                PaintScanline(y, sx, ex, sz, ez, sl, el, v0, v1, v2);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void paintScanline(float y, float sx, float ex, float sz, float ez, float sl, float el,
+        private void PaintScanline(float y, float sx, float ex, float sz, float ez, float sl, float el,
             PaintedVertex v0, PaintedVertex v1, PaintedVertex v2)
         {
             var surface = RendererContext.Surface;
@@ -117,12 +117,12 @@ namespace SubsurfaceScatteringLibrary.Painter
                 var surfaceColor = SubsurfaceScatteringRenderUtils.surfaceColor;
                 var scatteringColor = InterpolateTriangleVerticesColors(x, y, z, v0, v1, v2);
 
-                var R = (int)(SubsurfaceScatteringRenderUtils.lightWeight * c * surfaceColor.R) +
-                        (int)(SubsurfaceScatteringRenderUtils.subsurfaceScatteringWeight * scatteringColor.R);
-                var G = (int)(SubsurfaceScatteringRenderUtils.lightWeight * c * surfaceColor.G) +
-                        (int)(SubsurfaceScatteringRenderUtils.subsurfaceScatteringWeight * scatteringColor.G);
-                var B = (int)(SubsurfaceScatteringRenderUtils.lightWeight * c * surfaceColor.B) +
-                        (int)(SubsurfaceScatteringRenderUtils.subsurfaceScatteringWeight * scatteringColor.B);
+                var R = (int)(SubsurfaceScatteringRenderUtils.LightWeight * c * surfaceColor.R) +
+                        (int)(SubsurfaceScatteringRenderUtils.SubsurfaceScatteringWeight * scatteringColor.R);
+                var G = (int)(SubsurfaceScatteringRenderUtils.LightWeight * c * surfaceColor.G) +
+                        (int)(SubsurfaceScatteringRenderUtils.SubsurfaceScatteringWeight * scatteringColor.G);
+                var B = (int)(SubsurfaceScatteringRenderUtils.LightWeight * c * surfaceColor.B) +
+                        (int)(SubsurfaceScatteringRenderUtils.SubsurfaceScatteringWeight * scatteringColor.B);
 
                 var finalColor = new ColorRGB((byte)R, (byte)G, (byte)B, 255);
                 //Console.WriteLine($"newColor {newColor}. alpha {newColor.Alpha}");

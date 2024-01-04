@@ -13,12 +13,12 @@ namespace SubsurfaceScatteringLibrary.Buffer
 {
     public class SubsurfaceScatteringFrameBuffer
     {
-        private readonly SubsurfaceScatteringRenderContext _subsurfaceScatteringRenderContext;
+        private readonly SubsurfaceScatteringRenderContext subsurfaceScatteringRenderContext;
         private readonly int[] emptyBuffer;
         private readonly Vector3[] emptyWorldBuffer;
         private readonly int[] emptyZBuffer;
-        private readonly Vector3[] SubsurfaceWorldBuffer;
-        private readonly Vector3[] WorldBuffer;
+        private readonly Vector3[] subsurfaceWorldBuffer;
+        private readonly Vector3[] worldBuffer;
         private readonly float[] zBuffer;
         private readonly float[] zCariesBuffer;
         private readonly float[] zSubsurfaceBuffer;
@@ -36,8 +36,8 @@ namespace SubsurfaceScatteringLibrary.Buffer
             zBuffer = new float[width * height];
             zSubsurfaceBuffer = new float[width * height];
             zCariesBuffer = new float[width * height];
-            WorldBuffer = new Vector3[width * height];
-            SubsurfaceWorldBuffer = new Vector3[width * height];
+            worldBuffer = new Vector3[width * height];
+            subsurfaceWorldBuffer = new Vector3[width * height];
 
             emptyBuffer = new int[width * height];
             emptyBuffer.Fill(new ColorRGB(0, 0, 0, 255).Color);
@@ -46,9 +46,9 @@ namespace SubsurfaceScatteringLibrary.Buffer
             emptyWorldBuffer.Fill(Vector3.Zero);
             Width = width;
             Height = height;
-            _subsurfaceScatteringRenderContext = subsurfaceScatteringRenderContext;
-            widthMinus1By2 = (width - 1) / 2f;
-            heightMinus1By2 = (height - 1) / 2f;
+            this.subsurfaceScatteringRenderContext = subsurfaceScatteringRenderContext;
+            WidthMinus1By2 = (width - 1) / 2f;
+            HeightMinus1By2 = (height - 1) / 2f;
         }
 
         public int[] Screen { get; }
@@ -61,15 +61,15 @@ namespace SubsurfaceScatteringLibrary.Buffer
         internal int Height { get; }
         internal int Depth { get; set; } = 65535; // Build a true Z buffer based on Zfar/Znear planes
 
-        private float widthMinus1By2 { get; }
-        private float heightMinus1By2 { get; }
+        private float WidthMinus1By2 { get; }
+        private float HeightMinus1By2 { get; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector3 ToScreen3(Vector4 p)
         {
             return new Vector3(
-                widthMinus1By2 * (p.X / p.W + 1), // Using width - 1 to prevent overflow by -1 and 1 NDC coordinates
-                -heightMinus1By2 * (p.Y / p.W - 1), // Using height - 1 to prevent overflow by -1 and 1 NDC coordinates
+                WidthMinus1By2 * (p.X / p.W + 1), // Using width - 1 to prevent overflow by -1 and 1 NDC coordinates
+                -HeightMinus1By2 * (p.Y / p.W - 1), // Using height - 1 to prevent overflow by -1 and 1 NDC coordinates
                 Depth * p.Z / p.W);
         }
 
@@ -84,8 +84,8 @@ namespace SubsurfaceScatteringLibrary.Buffer
             Array.Copy(emptyZBuffer, zBuffer, zBuffer.Length);
             Array.Copy(emptyZBuffer, zSubsurfaceBuffer, zSubsurfaceBuffer.Length);
             Array.Copy(emptyZBuffer, zCariesBuffer, zCariesBuffer.Length);
-            Array.Copy(emptyWorldBuffer, WorldBuffer, WorldBuffer.Length);
-            Array.Copy(emptyWorldBuffer, SubsurfaceWorldBuffer, SubsurfaceWorldBuffer.Length);
+            Array.Copy(emptyWorldBuffer, worldBuffer, worldBuffer.Length);
+            Array.Copy(emptyWorldBuffer, subsurfaceWorldBuffer, subsurfaceWorldBuffer.Length);
         }
 
         // Called to put a pixel on screen at a specific X,Y coordinates
@@ -101,11 +101,11 @@ namespace SubsurfaceScatteringLibrary.Buffer
             var index = x + y * Width;
             if(z >= zBuffer[index])
             {
-                _subsurfaceScatteringRenderContext.Stats.BehindZPixelCount++;
+                subsurfaceScatteringRenderContext.Stats.BehindZPixelCount++;
                 return;
             }
 
-            _subsurfaceScatteringRenderContext.Stats.DrawnPixelCount++;
+            subsurfaceScatteringRenderContext.Stats.DrawnPixelCount++;
             zBuffer[index] = z;
             color.Alpha = (byte)(RenderUtils.surfaceOpacity * 255);
             TempScreen[index] = color.Color;
@@ -125,13 +125,13 @@ namespace SubsurfaceScatteringLibrary.Buffer
             var index = x + y * Width;
             if(z >= zSubsurfaceBuffer[index])
             {
-                _subsurfaceScatteringRenderContext.Stats.BehindZPixelCount++;
+                subsurfaceScatteringRenderContext.Stats.BehindZPixelCount++;
                 return;
             }
 
-            _subsurfaceScatteringRenderContext.Stats.DrawnPixelCount++;
+            subsurfaceScatteringRenderContext.Stats.DrawnPixelCount++;
             zSubsurfaceBuffer[index] = z;
-            SubsurfaceWorldBuffer[index] = world;
+            subsurfaceWorldBuffer[index] = world;
 
             color.Alpha = 255;
 
@@ -243,11 +243,11 @@ namespace SubsurfaceScatteringLibrary.Buffer
 
             if(z >= zSubsurfaceBuffer[index])
             {
-                _subsurfaceScatteringRenderContext.Stats.BehindZPixelCount++;
+                subsurfaceScatteringRenderContext.Stats.BehindZPixelCount++;
                 return;
             }
 
-            _subsurfaceScatteringRenderContext.Stats.DrawnPixelCount++;
+            subsurfaceScatteringRenderContext.Stats.DrawnPixelCount++;
 
             zCariesBuffer[index] = z;
 

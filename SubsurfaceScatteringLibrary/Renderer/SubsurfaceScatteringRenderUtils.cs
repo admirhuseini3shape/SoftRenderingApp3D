@@ -5,16 +5,16 @@ namespace SubsurfaceScatteringLibrary.Renderer
 {
     public class SubsurfaceScatteringRenderUtils
     {
-        public static float surfaceOpacity = 0.5f;
-        public static float subsurfaceVisibility = 1.0f - surfaceOpacity;
-        public static float lightWeight = 0.6f;
-        public static float subsurfaceScatteringWeight = 1.0f - lightWeight;
+        public static float SurfaceOpacity = 0.5f;
+        public static float SubsurfaceVisibility = 1.0f - SurfaceOpacity;
+        public static float LightWeight = 0.6f;
+        public static float SubsurfaceScatteringWeight = 1.0f - LightWeight;
 
         // Controls the drop off for the subsurface scattering effect
-        public static float subsurfaceDecay = 0.1f;
+        public static float SubsurfaceDecay = 0.1f;
 
         // Describes whether subsurface scattering needs recalculation
-        public static bool recalcSubsurfaceScattering = true;
+        public static bool RecalcSubsurfaceScattering = true;
 
         // These are kept permanent so the color can be reverted
         //public static ColorRGB SubsurfaceColor = new ColorRGB(127, 127, 255, (byte)(subsurfaceVisibility * 255));
@@ -85,7 +85,7 @@ namespace SubsurfaceScatteringLibrary.Renderer
         /// <returns></returns>
         public static float[,] CalculateGaussianMatrix(int length, double weight)
         {
-            var Kernel = new float[length, length];
+            var kernel = new float[length, length];
             float sumTotal = 0;
 
 
@@ -110,12 +110,12 @@ namespace SubsurfaceScatteringLibrary.Renderer
                                (2 * (weight * weight));
 
 
-                    Kernel[filterY + kernelRadius,
+                    kernel[filterY + kernelRadius,
                             filterX + kernelRadius] =
                         (float)(calculatedEuler * Math.Exp(-distance));
 
 
-                    sumTotal += Kernel[filterY + kernelRadius,
+                    sumTotal += kernel[filterY + kernelRadius,
                         filterX + kernelRadius];
                 }
             }
@@ -125,25 +125,25 @@ namespace SubsurfaceScatteringLibrary.Renderer
             {
                 for(var x = 0; x < length; x++)
                 {
-                    Kernel[y, x] = Kernel[y, x] *
+                    kernel[y, x] = kernel[y, x] *
                                    (1.0f / sumTotal);
                 }
             }
 
-            return Kernel;
+            return kernel;
         }
 
 
         public static void ChangeVisibility(int value)
         {
-            surfaceOpacity = value / 100.0f;
-            subsurfaceVisibility = 1.0f - surfaceOpacity;
+            SurfaceOpacity = value / 100.0f;
+            SubsurfaceVisibility = 1.0f - SurfaceOpacity;
         }
 
         public static void ChangeSubsurfaceScatteringStrength(int value)
         {
-            lightWeight = 1 - value / 100.0f;
-            subsurfaceScatteringWeight = 1.0f - lightWeight;
+            LightWeight = 1 - value / 100.0f;
+            SubsurfaceScatteringWeight = 1.0f - LightWeight;
         }
 
         public static void ChangeSubsurfaceColor(int value)
@@ -158,9 +158,9 @@ namespace SubsurfaceScatteringLibrary.Renderer
 
         public static void ChangeSubsurfaceDecay(int value)
         {
-            subsurfaceDecay = value / 100.0f;
+            SubsurfaceDecay = value / 100.0f;
             // Subsurface scattering needs recalculation
-            recalcSubsurfaceScattering = true;
+            RecalcSubsurfaceScattering = true;
         }
 
         public static void ChangeGaussianBlurStDev(int value)

@@ -46,16 +46,16 @@ namespace SoftRenderingApp3D
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsBehindFarPlane(VertexBuffer vbx)
+        public bool IsBehindFarPlane(VertexBuffer vertexBuffer)
         {
-            var viewVertices = vbx.ViewVertices;
+            var viewVertices = vertexBuffer.ViewVertices;
             return viewVertices[I0].Z > 0 && viewVertices[I1].Z > 0 && viewVertices[I2].Z > 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsFacingBack(VertexBuffer vbx)
+        public bool IsFacingBack(VertexBuffer vertexBuffer)
         {
-            var viewVertices = vbx.ViewVertices;
+            var viewVertices = vertexBuffer.ViewVertices;
             var p0 = viewVertices[I0];
             var p1 = viewVertices[I1];
             var p2 = viewVertices[I2];
@@ -67,9 +67,9 @@ namespace SoftRenderingApp3D
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsOutsideFrustum(VertexBuffer vbx)
+        public bool IsOutsideFrustum(VertexBuffer vertexBuffer)
         {
-            var projectionVertices = vbx.ProjectionVertices;
+            var projectionVertices = vertexBuffer.ProjectionVertices;
             var p0 = projectionVertices[I0];
             var p1 = projectionVertices[I1];
             var p2 = projectionVertices[I2];
@@ -114,10 +114,10 @@ namespace SoftRenderingApp3D
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void TransformProjection(VertexBuffer vbx, Matrix4x4 projectionMatrix)
+        public void TransformProjection(VertexBuffer vertexBuffer, Matrix4x4 projectionMatrix)
         {
-            var projectionVertices = vbx.ProjectionVertices;
-            var viewVertices = vbx.ViewVertices;
+            var projectionVertices = vertexBuffer.ProjectionVertices;
+            var viewVertices = vertexBuffer.ViewVertices;
 
             if(projectionVertices[I0] == Vector4.Zero)
             {
@@ -136,11 +136,11 @@ namespace SoftRenderingApp3D
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void TransformWorld(VertexBuffer vbx)
+        public void TransformWorld(VertexBuffer vertexBuffer)
         {
-            var worldMatrix = vbx.WorldMatrix;
-            var mesh = vbx.Drawable.Mesh;
-            var worldNormVertices = vbx.WorldVertexNormals;
+            var worldMatrix = vertexBuffer.WorldMatrix;
+            var mesh = vertexBuffer.Drawable.Mesh;
+            var worldNormVertices = vertexBuffer.WorldVertexNormals;
             var normVertices = mesh.VertexNormals;
             var textureCoordinates = mesh.TexCoordinates;
 
@@ -159,7 +159,7 @@ namespace SoftRenderingApp3D
                 worldNormVertices[I2] = Vector3.TransformNormal(normVertices[I2], worldMatrix);
             }
 
-            /*var worldVertices = vbx.WorldVertices;
+            /*var worldVertices = vertexBuffer.WorldVertices;
             if(worldVertices[I0] == Vector3.Zero)
                 worldVertices[I0] = Vector3.Transform(worldVertices[I0], worldMatrix);
 
@@ -171,7 +171,7 @@ namespace SoftRenderingApp3D
             */
 
             // Check if mesh has texture data
-            if(!(vbx.Drawable.Material is ITextureMaterial) || mesh.TexCoordinates == null)
+            if(!(vertexBuffer.Drawable.Material is ITextureMaterial) || mesh.TexCoordinates == null)
                 return;
 
             if(textureCoordinates[I0] == Vector2.Zero)
@@ -196,11 +196,12 @@ namespace SoftRenderingApp3D
             }
         }
 
-        public Vector3 GetCenterCoordinates(VertexBuffer vbx)
+        public Vector3 GetCenterCoordinates(VertexBuffer vertexBuffer)
         {
-            var x = (vbx.WorldVertices[I0].X + vbx.WorldVertices[I1].X + vbx.WorldVertices[I2].X) / 3.0f;
-            var y = (vbx.WorldVertices[I0].Y + vbx.WorldVertices[I1].Y + vbx.WorldVertices[I2].Y) / 3.0f;
-            var z = (vbx.WorldVertices[I0].Z + vbx.WorldVertices[I1].Z + vbx.WorldVertices[I2].Z) / 3.0f;
+            var vertices = vertexBuffer.WorldVertices;
+            var x = (vertices[I0].X + vertices[I1].X + vertices[I2].X) / 3.0f;
+            var y = (vertices[I0].Y + vertices[I1].Y + vertices[I2].Y) / 3.0f;
+            var z = (vertices[I0].Z + vertices[I1].Z + vertices[I2].Z) / 3.0f;
 
             return new Vector3(x, y, z);
         }

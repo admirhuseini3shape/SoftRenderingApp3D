@@ -4,7 +4,6 @@ using SoftRenderingApp3D.Controls;
 using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.DataStructures.FileReaders;
 using SoftRenderingApp3D.DataStructures.Materials;
-using SoftRenderingApp3D.DataStructures.Meshes;
 using SoftRenderingApp3D.DataStructures.World;
 using SoftRenderingApp3D.Projection;
 using SoftRenderingApp3D.Utils;

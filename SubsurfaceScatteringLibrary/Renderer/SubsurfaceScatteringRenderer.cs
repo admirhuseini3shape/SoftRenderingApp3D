@@ -3,7 +3,6 @@ using SoftRenderingApp3D;
 using SoftRenderingApp3D.Buffer;
 using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.DataStructures.Materials;
-using SoftRenderingApp3D.DataStructures.Meshes;
 using SubsurfaceScatteringLibrary.Painter;
 using SubsurfaceScatteringLibrary.Utils;
 using System;
@@ -21,10 +20,12 @@ namespace SubsurfaceScatteringLibrary.Renderer
         {
             var stats = SubsurfaceScatteringRenderContext.Stats;
             var surface = SubsurfaceScatteringRenderContext.Surface;
-            var camera = SubsurfaceScatteringRenderContext.Camera;
             var projection = SubsurfaceScatteringRenderContext.Projection;
-            var world = SubsurfaceScatteringRenderContext.World;
+            //var world = SubsurfaceScatteringRenderContext.World;
+            var drawables = SubsurfaceScatteringRenderContext.World.Drawables;
             var rendererSettings = SubsurfaceScatteringRenderContext.RendererSettings;
+            var viewMatrix = SubsurfaceScatteringRenderContext.Camera.ViewMatrix();
+            var projectionMatrix = projection.ProjectionMatrix(surface.Width, surface.Height);
 
             stats.Clear();
 
@@ -35,47 +36,43 @@ namespace SubsurfaceScatteringLibrary.Renderer
 
             // model => worldMatrix => _subsurfaceScatteringWorld => viewMatrix => view => projectionMatrix => projection => toNdc => ndc => toScreen => screen
 
-            var viewMatrix = camera.ViewMatrix();
-            var projectionMatrix = projection.ProjectionMatrix(surface.Width, surface.Height);
-
             // Allocate arrays to store transformed vertices
-            using var worldBuffer = new WorldBuffer(world);
-            SubsurfaceScatteringRenderContext.WorldBuffer = worldBuffer;
+            using var allVertexBuffers = new AllVertexBuffers(drawables);
+            SubsurfaceScatteringRenderContext.AllVertexBuffers = allVertexBuffers;
 
-            var volumes = world.Drawables;
-            var volumeCount = volumes.Count;
-            for(var idxVolume = 0; idxVolume < volumeCount; idxVolume++)
+            var drawablesCount = drawables.Count;
+            for(var idxVolume = 0; idxVolume < drawablesCount; idxVolume++)
             {
-                var vbx = worldBuffer.VertexBuffer[idxVolume];
-                var mesh = volumes[idxVolume].Mesh;
+                var vertexBuffer = allVertexBuffers.VertexBuffer[idxVolume];
+                var mesh = drawables[idxVolume].Mesh;
 
                 //var worldMatrix = volume.WorldMatrix();
                 //var modelViewMatrix = worldMatrix * viewMatrix;
                 var modelViewMatrix = viewMatrix;
 
-                vbx.Drawable = volumes[idxVolume];
-                //vbx.WorldMatrix = worldMatrix;
-                vbx.WorldViewMatrix = modelViewMatrix;
+                vertexBuffer.Drawable = drawables[idxVolume];
+                //vertexBuffer.WorldMatrix = worldMatrix;
+                vertexBuffer.WorldViewMatrix = modelViewMatrix;
 
                 stats.TotalTriangleCount += mesh.Facets.Count;
 
                 var vertices = mesh.Vertices;
-                var viewVertices = vbx.ViewVertices;
+                var viewVertices = vertexBuffer.ViewVertices;
 
                 // Initialize the offset vertexBuffer
                 var idxOffset = idxVolume + 1;
-                var offsetVbx = worldBuffer.VertexBuffer[idxOffset];
-                var offsetMesh = volumes[idxOffset].Mesh;
+                var offsetvertexBuffer = allVertexBuffers.VertexBuffer[idxOffset];
+                var offsetMesh = drawables[idxOffset].Mesh;
 
                 //var offsetWorldMatrix = offset.WorldMatrix();
                 //var offsetModelViewMatrix = offsetWorldMatrix * viewMatrix;
                 var offsetModelViewMatrix = viewMatrix;
 
-                offsetVbx.Drawable = volumes[idxOffset];
-                //offsetVbx.WorldMatrix = offsetWorldMatrix;
-                offsetVbx.WorldViewMatrix = offsetModelViewMatrix;
+                offsetvertexBuffer.Drawable = drawables[idxOffset];
+                //offsetvertexBuffer.WorldMatrix = offsetWorldMatrix;
+                offsetvertexBuffer.WorldViewMatrix = offsetModelViewMatrix;
 
-                var offsetViewVertices = offsetVbx.ViewVertices;
+                var offsetViewVertices = offsetvertexBuffer.ViewVertices;
 
 
                 var triangleCount = mesh.Facets.Count;
@@ -94,15 +91,15 @@ namespace SubsurfaceScatteringLibrary.Renderer
                     offsetViewVertices[idxVertex] = Vector3.Transform(offsetMesh.Vertices[idxVertex], viewMatrix);
                 }
 
-                vbx.TransformWorld();
-                vbx.TransformWorldView();
-                offsetVbx.TransformWorld();
-                offsetVbx.TransformWorldView();
+                vertexBuffer.TransformWorld();
+                vertexBuffer.TransformWorldView();
+                offsetvertexBuffer.TransformWorld();
+                offsetvertexBuffer.TransformWorldView();
 
-                if(SubsurfaceScatteringRenderUtils.recalcSubsurfaceScattering)
+                if(SubsurfaceScatteringRenderUtils.RecalcSubsurfaceScattering)
                 {
-                    CalculateSubsurfaceScattering(vbx);
-                    SubsurfaceScatteringRenderUtils.recalcSubsurfaceScattering = false;
+                    CalculateSubsurfaceScattering(vertexBuffer);
+                    SubsurfaceScatteringRenderUtils.RecalcSubsurfaceScattering = false;
                 }
 
                 // Render surface mesh
@@ -112,24 +109,24 @@ namespace SubsurfaceScatteringLibrary.Renderer
                     var t = mesh.Facets[idxTriangle];
 
                     // Discard if behind far plane
-                    if(t.IsBehindFarPlane(vbx))
+                    if(t.IsBehindFarPlane(vertexBuffer))
                     {
                         stats.BehindViewTriangleCount++;
                         continue;
                     }
 
                     // Discard if back facing 
-                    if(rendererSettings.BackFaceCulling && t.IsFacingBack(vbx))
+                    if(rendererSettings.BackFaceCulling && t.IsFacingBack(vertexBuffer))
                     {
                         stats.FacingBackTriangleCount++;
                         continue;
                     }
 
                     // Project in frustum
-                    t.TransformProjection(vbx, projectionMatrix);
+                    t.TransformProjection(vertexBuffer, projectionMatrix);
 
                     // Discard if outside view frustum
-                    if(t.IsOutsideFrustum(vbx))
+                    if(t.IsOutsideFrustum(vertexBuffer))
                     {
                         stats.OutOfViewTriangleCount++;
                         continue;
@@ -137,7 +134,7 @@ namespace SubsurfaceScatteringLibrary.Renderer
 
                     stats.PaintTime();
 
-                    SubsurfaceScatteringPainter?.DrawTriangle(vbx, idxTriangle);
+                    SubsurfaceScatteringPainter?.DrawTriangle(vertexBuffer, idxTriangle);
 
                     stats.DrawnTriangleCount++;
 
@@ -153,24 +150,24 @@ namespace SubsurfaceScatteringLibrary.Renderer
                     var t = offsetMesh.Facets[idxTriangle];
 
                     // Discard if behind far plane
-                    if(t.IsBehindFarPlane(offsetVbx))
+                    if(t.IsBehindFarPlane(offsetvertexBuffer))
                     {
                         stats.BehindViewTriangleCount++;
                         continue;
                     }
 
                     // Discard if back facing 
-                    if(rendererSettings.BackFaceCulling && t.IsFacingBack(offsetVbx))
+                    if(rendererSettings.BackFaceCulling && t.IsFacingBack(offsetvertexBuffer))
                     {
                         stats.FacingBackTriangleCount++;
                         continue;
                     }
 
                     // Project in frustum
-                    t.TransformProjection(offsetVbx, projectionMatrix);
+                    t.TransformProjection(offsetvertexBuffer, projectionMatrix);
 
                     // Discard if outside view frustum
-                    if(t.IsOutsideFrustum(offsetVbx))
+                    if(t.IsOutsideFrustum(offsetvertexBuffer))
                     {
                         stats.OutOfViewTriangleCount++;
                         continue;
@@ -178,7 +175,7 @@ namespace SubsurfaceScatteringLibrary.Renderer
 
                     var subSurfacePainter = new SubsurfaceSubsurfaceScatteringPainter();
                     subSurfacePainter.RendererContext = SubsurfaceScatteringRenderContext;
-                    subSurfacePainter.DrawTriangle(offsetVbx, idxTriangle);
+                    subSurfacePainter.DrawTriangle(offsetvertexBuffer, idxTriangle);
 
                     stats.DrawnTriangleCount++;
 
@@ -202,19 +199,19 @@ namespace SubsurfaceScatteringLibrary.Renderer
                 }
 
                 var idxCaries = idxVolume + 2;
-                var cariesVbx = worldBuffer.VertexBuffer[idxCaries];
-                var caries = volumes[idxCaries];
+                var cariesvertexBuffer = allVertexBuffers.VertexBuffer[idxCaries];
+                var caries = drawables[idxCaries];
 
                 //var cariesWorldMatrix = caries.WorldMatrix();
                 //var cariesModelViewMatrix = cariesWorldMatrix * viewMatrix;
                 var cariesModelViewMatrix = viewMatrix;
 
-                cariesVbx.Drawable = caries;
-                //cariesVbx.WorldMatrix = cariesWorldMatrix;
-                cariesVbx.WorldViewMatrix = cariesModelViewMatrix;
+                cariesvertexBuffer.Drawable = caries;
+                //cariesvertexBuffer.WorldMatrix = cariesWorldMatrix;
+                cariesvertexBuffer.WorldViewMatrix = cariesModelViewMatrix;
                 var cariesMesh = caries.Mesh;
                 var cariesVertices = cariesMesh.Vertices;
-                var cariesViewVertices = cariesVbx.ViewVertices;
+                var cariesViewVertices = cariesvertexBuffer.ViewVertices;
 
 
                 var cariesTriangleCount = cariesMesh.Facets.Count;
@@ -226,8 +223,8 @@ namespace SubsurfaceScatteringLibrary.Renderer
                     cariesViewVertices[idxVertex] = Vector3.Transform(cariesVertices[idxVertex], viewMatrix);
                 }
 
-                cariesVbx.TransformWorld();
-                cariesVbx.TransformWorldView();
+                cariesvertexBuffer.TransformWorld();
+                cariesvertexBuffer.TransformWorldView();
 
 
                 for(var idxTriangle = 0; idxTriangle < cariesTriangleCount; idxTriangle++)
@@ -236,24 +233,24 @@ namespace SubsurfaceScatteringLibrary.Renderer
                     var t = cariesMesh.Facets[idxTriangle];
 
                     // Discard if behind far plane
-                    if(t.IsBehindFarPlane(cariesVbx))
+                    if(t.IsBehindFarPlane(cariesvertexBuffer))
                     {
                         stats.BehindViewTriangleCount++;
                         continue;
                     }
 
                     // Discard if back facing 
-                    if(rendererSettings.BackFaceCulling && t.IsFacingBack(cariesVbx))
+                    if(rendererSettings.BackFaceCulling && t.IsFacingBack(cariesvertexBuffer))
                     {
                         stats.FacingBackTriangleCount++;
                         continue;
                     }
 
                     // Project in frustum
-                    t.TransformProjection(cariesVbx, projectionMatrix);
+                    t.TransformProjection(cariesvertexBuffer, projectionMatrix);
 
                     // Discard if outside view frustum
-                    if(t.IsOutsideFrustum(cariesVbx))
+                    if(t.IsOutsideFrustum(cariesvertexBuffer))
                     {
                         stats.OutOfViewTriangleCount++;
                         continue;
@@ -261,7 +258,7 @@ namespace SubsurfaceScatteringLibrary.Renderer
 
                     var cariesPainter = new CariesSubsurfaceScatteringPainter();
                     cariesPainter.RendererContext = SubsurfaceScatteringRenderContext;
-                    cariesPainter.DrawTriangle(cariesVbx, idxTriangle);
+                    cariesPainter.DrawTriangle(cariesvertexBuffer, idxTriangle);
 
                     stats.DrawnTriangleCount++;
 
@@ -292,22 +289,22 @@ namespace SubsurfaceScatteringLibrary.Renderer
                 subsurfaceScatteringMesh.VertexNormals.ToFloats());
         }
 
-        public void CalculateSubsurfaceScattering(VertexBuffer vbx)
+        public void CalculateSubsurfaceScattering(VertexBuffer vertexBuffer)
         {
-            var originalG3 = GetDMesh3FromVolume(vbx.Drawable.Mesh);
+            var originalG3 = GetDMesh3FromVolume(vertexBuffer.Drawable.Mesh);
 
-            var verticesCount = vbx.Drawable.Mesh.VertexCount;
+            var verticesCount = vertexBuffer.Drawable.Mesh.VertexCount;
 
             var lightPos = new Vector3(0, 10, 50);
 
-            vbx.Drawable = new Drawable(vbx.Drawable.Mesh, new FacetColorMaterial(verticesCount, ColorRGB.Black));
+            vertexBuffer.Drawable = new Drawable(vertexBuffer.Drawable.Mesh, new FacetColorMaterial(verticesCount, ColorRGB.Black));
 
             var spatial = new DMeshAABBTree3(originalG3);
             spatial.Build();
             for(var i = 0; i < verticesCount; i++)
             {
-                CalculateVertexSubsurfaceScattering(vbx.Drawable.Mesh.Vertices[i], lightPos, spatial, originalG3,
-                    vbx.VertexColors, i);
+                CalculateVertexSubsurfaceScattering(vertexBuffer.Drawable.Mesh.Vertices[i], lightPos, spatial, originalG3,
+                    vertexBuffer.VertexColors, i);
             }
         }
 
@@ -319,16 +316,16 @@ namespace SubsurfaceScatteringLibrary.Renderer
 
             var ray = new Ray3d(SubsurfaceScatteringMiscUtils.ToVector3d(lightPos),
                 SubsurfaceScatteringMiscUtils.ToVector3d(direction));
-            var hit_tid = spatial.FindNearestHitTriangle(ray);
+            var hitTid = spatial.FindNearestHitTriangle(ray);
             // Check if ray misses
-            if(hit_tid != DMesh3.InvalidID)
+            if(hitTid != DMesh3.InvalidID)
             {
-                var intr = MeshQueries.TriangleIntersection(originalG3, hit_tid, ray);
+                var intr = MeshQueries.TriangleIntersection(originalG3, hitTid, ray);
                 // Calculate distance traveled after passing through the surface
-                var hit_dist = SubsurfaceScatteringMiscUtils.ToVector3d(vertex)
+                var hitDist = SubsurfaceScatteringMiscUtils.ToVector3d(vertex)
                     .Distance(ray.PointAt(intr.RayParameter));
                 // Calculate the decay of the light
-                var decay = (float)Math.Exp(-hit_dist * SubsurfaceScatteringRenderUtils.subsurfaceDecay);
+                var decay = (float)Math.Exp(-hitDist * SubsurfaceScatteringRenderUtils.SubsurfaceDecay);
                 // Color of the vertex
                 //var color = decay * SubsurfaceScatteringRenderUtils.surfaceColor;
                 var color = decay * SubsurfaceScatteringRenderUtils.surfaceColor;

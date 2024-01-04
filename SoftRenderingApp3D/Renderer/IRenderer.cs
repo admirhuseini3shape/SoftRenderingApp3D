@@ -1,11 +1,11 @@
-﻿using SoftRenderingApp3D.Painter;
+﻿using SoftRenderingApp3D.Buffer;
+using SoftRenderingApp3D.Painter;
 
 namespace SoftRenderingApp3D.Renderer
 {
     public interface IRenderer
     {
-        RenderContext RenderContext { get; set; }
-        IPainter Painter { get; set; }
-        int[] Render();
+        FrameBuffer FrameBuffer { get; }
+        int[] Render(RenderContext renderContext, IPainter painter);
     }
 }

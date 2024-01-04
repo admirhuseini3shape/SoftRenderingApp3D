@@ -19,15 +19,14 @@ namespace SoftRenderingApp3D
                 if(value.Equals(world))
                     return;
                 world = value;
-                WorldBuffer = new WorldBuffer(world);
+                AllVertexBuffers = new AllVertexBuffers(world.Drawables);
             }
         }
 
         public IProjection Projection { get; set; }
         public RendererSettings RendererSettings { get; set; }
         public Stats Stats { get; set; }
-
-        public FrameBuffer Surface { get; set; }
-        internal WorldBuffer WorldBuffer { get; set; }
+        
+        internal AllVertexBuffers AllVertexBuffers { get; set; }
     }
 }

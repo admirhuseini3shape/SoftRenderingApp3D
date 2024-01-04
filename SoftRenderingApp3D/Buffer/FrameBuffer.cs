@@ -25,8 +25,8 @@ namespace SoftRenderingApp3D.Buffer
             Width = width;
             Height = height;
             this.renderContext = renderContext;
-            widthMinus1By2 = (width - 1) / 2f;
-            heightMinus1By2 = (height - 1) / 2f;
+            WidthMinus1By2 = (width - 1) / 2f;
+            HeightMinus1By2 = (height - 1) / 2f;
         }
 
         public int[] Screen { get; }
@@ -34,15 +34,15 @@ namespace SoftRenderingApp3D.Buffer
         public int Height { get; }
         internal int Depth { get; set; } = 65535; // Build a true Z buffer based on Zfar/Znear planes
 
-        private float widthMinus1By2 { get; }
-        private float heightMinus1By2 { get; }
+        private float WidthMinus1By2 { get; }
+        private float HeightMinus1By2 { get; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector3 ToScreen3(Vector4 p)
         {
             return new Vector3(
-                widthMinus1By2 * (p.X / p.W + 1), // Using width - 1 to prevent overflow by -1 and 1 NDC coordinates
-                -heightMinus1By2 * (p.Y / p.W - 1), // Using height - 1 to prevent overflow by -1 and 1 NDC coordinates
+                WidthMinus1By2 * (p.X / p.W + 1), // Using width - 1 to prevent overflow by -1 and 1 NDC coordinates
+                -HeightMinus1By2 * (p.Y / p.W - 1), // Using height - 1 to prevent overflow by -1 and 1 NDC coordinates
                 Depth * p.Z / p.W);
         }
 

@@ -1,27 +1,24 @@
 ﻿using SoftRenderingApp3D.DataStructures.Drawables;
-using SoftRenderingApp3D.DataStructures.World;
 using SoftRenderingApp3D.Utils;
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace SoftRenderingApp3D.Buffer
 {
-    public class WorldBuffer : IDisposable
+    public class AllVertexBuffers : IDisposable
     {
         private static readonly ArrayPool<VertexBuffer> VertexBuffer3Bag = ArrayPool<VertexBuffer>.Shared;
 
-        public WorldBuffer(IWorld w)
+        public AllVertexBuffers(IReadOnlyList<IDrawable> drawables)
         {
-            var drawables = w.Drawables;
             Size = drawables.Count;
 
             VertexBuffer = VertexBuffer3Bag.Rent(Size);
 
             for(var i = 0; i < Size; i++)
-            {
                 VertexBuffer[i] = new VertexBuffer(drawables[i].Mesh.Vertices.Count);
-            }
         }
 
         public VertexBuffer[] VertexBuffer { get; }
