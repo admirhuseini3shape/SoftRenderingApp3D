@@ -83,6 +83,7 @@ namespace SoftRenderingApp3D.App
                 if(!value.TryUpdateOther(ref drawables))
                     return;
 
+                AllVertexBuffers?.Dispose();
                 AllVertexBuffers = new AllVertexBuffers(drawables);
                 HookPaintEvent();
             }

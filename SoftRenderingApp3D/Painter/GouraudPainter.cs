@@ -287,35 +287,95 @@ namespace SoftRenderingApp3D.Painter
         {
             var mesh = vertexBuffer.Drawable.Mesh;
             mesh.Facets[faId].TransformWorld(vertexBuffer);
-            var result = new List<(int x, int y, int z, ColorRGB Color)>();
+
             var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
 
             vertexBuffer.ScreenPointVertices[facet.I0] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I0]);
             vertexBuffer.ScreenPointVertices[facet.I1] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I1]);
             vertexBuffer.ScreenPointVertices[facet.I2] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I2]);
+
             var sortedIndices = PainterUtils.SortIndices(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
 
-            var p0 = vertexBuffer.ScreenPointVertices[sortedIndices.i0];
-            var p1 = vertexBuffer.ScreenPointVertices[sortedIndices.i1];
-            var p2 = vertexBuffer.ScreenPointVertices[sortedIndices.i2];
+            var i0 = sortedIndices.i0;
+            var i1 = sortedIndices.i1;
+            var i2 = sortedIndices.i2;
+
+            var result = ScanLineTriangle(vertexBuffer, frameBuffer, i0, i1, i2);
+
+            var p0 = vertexBuffer.ScreenPointVertices[i0];
+            var p1 = vertexBuffer.ScreenPointVertices[i1];
+            var p2 = vertexBuffer.ScreenPointVertices[i2];
+            
+
+            var delta21 = p2 - p1;
+            var delta10 = p1 - p0;
+            var delta02 = p0 - p2;
+            var numAlpha = delta10.X * delta21.Y - delta10.Y * delta21.X;
+            var numBeta = delta21.X * delta02.Y - delta21.Y * delta02.X;
+
+            var barycentricPoints = new List<Vector4>(result.Count);
+            for(var i = 0; i < result.Count; i++)
+            {
+                var x = result[i].X;
+                var y = result[i].Y;
+
+                // Barycentric coordinates are calculated
+                var alpha = (-(x - p1.X) * delta21.Y + (y - p1.Y) * delta21.X) / numAlpha;
+                var beta = (-(x - p2.X) * delta02.Y + (y - p2.Y) * delta02.X) / numBeta;
+                var gamma = 1 - alpha - beta;
+
+                barycentricPoints.Add(new Vector4(alpha, beta, gamma, result[i].W));
+            }
+
+            // Get the texture coordinates of each point of the triangle
+            var uv0 = mesh.TexCoordinates[i0];
+            var uv1 = mesh.TexCoordinates[i1];
+            var uv2 = mesh.TexCoordinates[i2];
+
+            var perPixelColors = new List<(int x, int y, int z, ColorRGB color)>(result.Count);
+            for(var i = 0; i < result.Count; i++)
+            {
+                var alpha = barycentricPoints[i].X;
+                var beta = barycentricPoints[i].Y;
+                var gamma = barycentricPoints[i].Z;
+                var lightContribution = barycentricPoints[i].W;
+
+                var texX = uv0.X * alpha + uv1.X * beta + uv2.X * gamma;
+                var texY = uv0.Y * alpha + uv1.Y * beta + uv2.Y * gamma;
+
+                var color = linearFiltering ?
+                    texture.GetPixelColorLinearFiltering(texX, texY) :
+                    texture.GetPixelColorNearestFiltering(texX, texY);
+                perPixelColors.Add(((int)result[i].X, (int)result[i].Y, (int)result[i].Z, lightContribution * color));
+            }
+
+            lock(frameBuffer)
+            {
+                for(var i = 0; i < result.Count; i++)
+                {
+                    var pixel = perPixelColors[i];
+                    frameBuffer.PutPixel(pixel.x, pixel.y, pixel.z, pixel.color);
+                }
+            }
+        }
+
+        private static List<Vector4> ScanLineTriangle(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, int i0, int i1, int i2)
+        {
+            var result = new List<Vector4>();
+
+            var p0 = vertexBuffer.ScreenPointVertices[i0];
+            var p1 = vertexBuffer.ScreenPointVertices[i1];
+            var p2 = vertexBuffer.ScreenPointVertices[i2];
 
             //if(p0.IsNaN() || p1.IsNaN() || p2.IsNaN())
             //    return;
-
-            // Get the texture coordinates of each point of the triangle
-            var uv0 = mesh.TexCoordinates[sortedIndices.i0];
-            var uv1 = mesh.TexCoordinates[sortedIndices.i1];
-            var uv2 = mesh.TexCoordinates[sortedIndices.i2];
-
 
             var yStart = (int)Math.Max(p0.Y, 0);
             var yEnd = (int)Math.Min(p2.Y, frameBuffer.Height - 1);
 
             // Out if clipped
             if(yStart > yEnd)
-            {
-                return;
-            }
+                return result;
 
             var yMiddle = MathUtils.Clamp((int)p1.Y, yStart, yEnd);
 
@@ -326,30 +386,26 @@ namespace SoftRenderingApp3D.Painter
             // it will return a value between 0 and 1 that will be used as the intensity of the color
 
             var nl0 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[sortedIndices.i0],
-                vertexBuffer.WorldVertexNormals[sortedIndices.i0],
+                vertexBuffer.WorldVertices[i0],
+                vertexBuffer.WorldVertexNormals[i0],
                 lightPos);
             var nl1 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[sortedIndices.i1],
-                vertexBuffer.WorldVertexNormals[sortedIndices.i1],
+                vertexBuffer.WorldVertices[i1],
+                vertexBuffer.WorldVertexNormals[i1],
                 lightPos);
             var nl2 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[sortedIndices.i2],
-                vertexBuffer.WorldVertexNormals[sortedIndices.i2],
+                vertexBuffer.WorldVertices[i2],
+                vertexBuffer.WorldVertexNormals[i2],
                 lightPos);
             if(PainterUtils.Cross2D(p0, p1, p2) > 0)
             {
                 // P0
                 //   P1
                 // P2
-               var firstHalf =  PaintHalfTriangleTextured(frameBuffer.Width,
-                    yStart, (int)yMiddle - 1, texture, 
-                    p0, p2, p0, p1, nl0, nl2, nl0, nl1,
-                    linearFiltering, p0, p1, p2, uv0, uv1, uv2);
-                var secondHalf = PaintHalfTriangleTextured(frameBuffer.Width,
-                    (int)yMiddle, yEnd, texture, 
-                    p0, p2, p1, p2, nl0, nl2, nl1, nl2,
-                    linearFiltering, p0, p1, p2, uv0, uv1, uv2);
+                var firstHalf = ScanLineHalfTriangle(frameBuffer.Width,
+                    yStart, (int)yMiddle - 1, p0, p2, p0, p1, nl0, nl2, nl0, nl1);
+                var secondHalf = ScanLineHalfTriangle(frameBuffer.Width,
+                    (int)yMiddle, yEnd, p0, p2, p1, p2, nl0, nl2, nl1, nl2);
                 result.AddRange(firstHalf);
                 result.AddRange(secondHalf);
             }
@@ -358,35 +414,23 @@ namespace SoftRenderingApp3D.Painter
                 //   P0
                 // P1 
                 //   P2
-                var firstHalf = PaintHalfTriangleTextured(frameBuffer.Width, 
-                    yStart, (int)yMiddle - 1, texture, 
-                    p0, p1, p0, p2, nl0, nl1, nl0, nl2,
-                    linearFiltering, p0, p1, p2, uv0, uv1, uv2);
-                var secondHalf = PaintHalfTriangleTextured(frameBuffer.Width, 
-                    (int)yMiddle, yEnd, texture, 
-                    p1, p2, p0, p2, nl1, nl2, nl0, nl2,
-                    linearFiltering, p0, p1, p2, uv0, uv1, uv2);
+                var firstHalf = ScanLineHalfTriangle(frameBuffer.Width, yStart, (int)yMiddle - 1,
+                    p0, p1, p0, p2, nl0, nl1, nl0, nl2);
+                var secondHalf = ScanLineHalfTriangle(frameBuffer.Width, (int)yMiddle,
+                    yEnd, p1, p2, p0, p2, nl1, nl2, nl0, nl2);
                 result.AddRange(firstHalf);
                 result.AddRange(secondHalf);
             }
 
-            lock(frameBuffer)
-            {
-                for(var i = 0; i < result.Count; i++)
-                {
-                    var pixel = result[i];
-                    frameBuffer.PutPixel(pixel.x, pixel.y, pixel.z, pixel.Color);
-                }
-            }
+            return result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<(int, int, int, ColorRGB)> PaintHalfTriangleTextured(
-            float frameWidth, int yStart, int yEnd, Texture texture, Vector3 pa, Vector3 pb,
-            Vector3 pc, Vector3 pd, float nla, float nlb, float nlc, float nld, bool linearFiltering, Vector3 vertex0,
-            Vector3 vertex1, Vector3 vertex2, Vector2 uv0, Vector2 uv1, Vector2 uv2)
+        private static List<Vector4> ScanLineHalfTriangle(
+            float frameWidth, int yStart, int yEnd, Vector3 pa, Vector3 pb,
+            Vector3 pc, Vector3 pd, float nla, float nlb, float nlc, float nld)
         {
-            var result = new List<(int, int, int, ColorRGB)>();
+            var result = new List<Vector4>();
             var mg1 = Math.Abs(pa.Y - pb.Y) < float.Epsilon ? 1f : 1 / (pb.Y - pa.Y);
             var mg2 = Math.Abs(pd.Y - pc.Y) < float.Epsilon ? 1f : 1 / (pd.Y - pc.Y);
 
@@ -408,9 +452,7 @@ namespace SoftRenderingApp3D.Painter
                 var sz = MathUtils.Lerp(pa.Z, pb.Z, gradient1);
                 var ez = MathUtils.Lerp(pc.Z, pd.Z, gradient2);
 
-                var line = PaintScanLineTextured(frameWidth, y,
-                    sx, ex, sz, ez, sl, el, texture, linearFiltering,
-                    vertex0, vertex1, vertex2, uv0, uv1, uv2);
+                var line = ScanLine(frameWidth, y, sx, ex, sz, ez, sl, el);
                 result.AddRange(line);
             }
             return result;
@@ -439,13 +481,10 @@ namespace SoftRenderingApp3D.Painter
         /// <param name="uv1">Texture coordinates of point B.</param>
         /// <param name="uv2">Texture coordinates of point C.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<(int, int, int, ColorRGB)> PaintScanLineTextured(
-            float frameWidth, float y, float sx, float ex, float sz, float ez, float sl, float el,
-            Texture texture, bool linearFiltering,
-            Vector3 vertex0, Vector3 vertex1, Vector3 vertex2,
-            Vector2 uv0, Vector2 uv1, Vector2 uv2)
+        private static List<Vector4> ScanLine(
+            float frameWidth, float y, float sx, float ex, float sz, float ez, float sl, float el)
         {
-            var result = new List<(int, int, int, ColorRGB)>();
+            var result = new List<Vector4>();
             var minX = Math.Max(sx, 0);
             var maxX = Math.Min(ex, frameWidth);
 
@@ -457,27 +496,8 @@ namespace SoftRenderingApp3D.Painter
                 var gradient = (x - sx) * mx;
 
                 var z = MathUtils.Lerp(sz, ez, gradient);
-                var c = MathUtils.Lerp(sl, el, gradient);
-
-                // TODO: implement the barycentric coordinates calculations using a precomputed matrix of the 3 points of the triangle
-                // This can be optimized by using matrix vector multiplication
-
-                // Barycentric coordinates are calculated
-                var alpha = (-(x - vertex1.X) * (vertex2.Y - vertex1.Y) + (y - vertex1.Y) * (vertex2.X - vertex1.X)) /
-                            (-(vertex0.X - vertex1.X) * (vertex2.Y - vertex1.Y) +
-                             (vertex0.Y - vertex1.Y) * (vertex2.X - vertex1.X));
-                var beta = (-(x - vertex2.X) * (vertex0.Y - vertex2.Y) + (y - vertex2.Y) * (vertex0.X - vertex2.X)) /
-                           (-(vertex1.X - vertex2.X) * (vertex0.Y - vertex2.Y) +
-                            (vertex1.Y - vertex2.Y) * (vertex0.X - vertex2.X));
-                var gamma = 1 - alpha - beta;
-
-                var texX = uv0.X * alpha + uv1.X * beta + uv2.X * gamma;
-                var texY = uv0.Y * alpha + uv1.Y * beta + uv2.Y * gamma;
-
-                var color = linearFiltering ?
-                    texture.GetPixelColorLinearFiltering(texX, texY) :
-                    texture.GetPixelColorNearestFiltering(texX, texY);
-                result.Add(((int)x, (int)y, (int)z, c * color));
+                var lightContribution = MathUtils.Lerp(sl, el, gradient);
+                result.Add(new Vector4(x, y, z, lightContribution));
             }
 
             return result;
