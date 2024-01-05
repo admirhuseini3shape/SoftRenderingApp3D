@@ -7,7 +7,7 @@ namespace SoftRenderingApp3D.Utils
         public static float surfaceOpacity = 0.5f;
         public static float subsurfaceVisibility = 1.0f - surfaceOpacity;
         public static float lightWeight = 0.6f;
-        public static float subsurfaceScatteringWeight = 1.0f - lightWeight;
+        public static float ColorWeight = 1.0f - lightWeight;
 
         // Controls the drop off for the subsurface scattering effect
         public static float subsurfaceDecay = 0.1f;
@@ -130,7 +130,7 @@ namespace SoftRenderingApp3D.Utils
         public static void ChangeSubsurfaceScatteringStrength(int value)
         {
             lightWeight = 1 - value / 100.0f;
-            subsurfaceScatteringWeight = 1.0f - lightWeight;
+            ColorWeight = 1.0f - lightWeight;
         }
 
         public static void ChangeSubsurfaceColor(int value)

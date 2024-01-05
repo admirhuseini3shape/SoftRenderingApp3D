@@ -45,7 +45,7 @@ namespace SoftRenderingApp3D.Utils
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static (int i0, int i1, int i2) SortPoints(Vector3[] screenPoints, int i0, int i1, int i2)
+        public static (int i0, int i1, int i2) SortIndices(Vector3[] screenPoints, int i0, int i1, int i2)
         {
             var c0 = screenPoints[i0].Y;
             var c1 = screenPoints[i1].Y;

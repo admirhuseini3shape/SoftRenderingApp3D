@@ -1,5 +1,4 @@
-﻿using g3;
-using SoftRenderingApp3D.Buffer;
+﻿using SoftRenderingApp3D.Buffer;
 using SoftRenderingApp3D.DataStructures.Materials;
 using SoftRenderingApp3D.DataStructures.Textures;
 using SoftRenderingApp3D.Utils;
@@ -34,23 +33,21 @@ namespace SoftRenderingApp3D.Painter
                     triangleColor = facetColorMaterial.FacetColors[faId];
 
                 vertexBuffer.VertexColors[facet.I0] = triangleColor;
-                vertexBuffer.VertexColors[facet.I0] = triangleColor;
-                vertexBuffer.VertexColors[facet.I0] = triangleColor;
+                vertexBuffer.VertexColors[facet.I1] = triangleColor;
+                vertexBuffer.VertexColors[facet.I2] = triangleColor;
             }
 
-            var sortedIndices = PainterUtils.SortPoints(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
-            var (v0, v1, v2) =
-                PainterUtils.GetPaintedVertices(vertexBuffer, frameBuffer, faId, sortedIndices);
+            var sortedIndices = PainterUtils.SortIndices(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
 
-            var p0 = vertexBuffer.ScreenPointVertices[sortedIndices.i0];
-            var p1 = vertexBuffer.ScreenPointVertices[sortedIndices.i1];
-            var p2 = vertexBuffer.ScreenPointVertices[sortedIndices.i2];
+            var pt0 = vertexBuffer.ScreenPointVertices[sortedIndices.i0];
+            var pt1 = vertexBuffer.ScreenPointVertices[sortedIndices.i1];
+            var pt2 = vertexBuffer.ScreenPointVertices[sortedIndices.i2];
 
-            if(p0.IsNaN() || p1.IsNaN() || p2.IsNaN())
+            if(pt0.IsNaN() || pt1.IsNaN() || pt2.IsNaN())
                 return;
 
-            var yStart = (int)Math.Max(p0.Y, 0);
-            var yEnd = (int)Math.Min(p2.Y, frameBuffer.Height - 1);
+            var yStart = (int)Math.Max(pt0.Y, 0);
+            var yEnd = (int)Math.Min(pt2.Y, frameBuffer.Height - 1);
 
             // Out if clipped
             if(yStart > yEnd)
@@ -58,7 +55,7 @@ namespace SoftRenderingApp3D.Painter
                 return;
             }
 
-            var yMiddle = MathUtils.Clamp((int)p1.Y, yStart, yEnd);
+            var yMiddle = MathUtils.Clamp((int)pt1.Y, yStart, yEnd);
 
             // This has to move elsewhere
             // var lightPos = RendererContext.Camera.GetType() == typeof(ArcBallCam) ? -(RendererContext.Camera as ArcBallCam).Position : -(RendererContext.Camera as FlyCam).Position;
@@ -80,21 +77,36 @@ namespace SoftRenderingApp3D.Painter
                 vertexBuffer.WorldVertexNormals[sortedIndices.i2],
                 lightPos);
 
-            if(PainterUtils.Cross2D(p0, p1, p2) > 0)
+            var color0 = vertexBuffer.VertexColors[sortedIndices.i0];
+            var color1 = vertexBuffer.VertexColors[sortedIndices.i1];
+            var color2 = vertexBuffer.VertexColors[sortedIndices.i2];
+            if(PainterUtils.Cross2D(pt0, pt1, pt2) > 0)
             {
                 // P0
                 //   P1
                 // P2
-                PaintHalfTriangle(ref localPixelBuffer, frameBuffer.Width, yStart, (int)yMiddle - 1, p0, p2, p0, p1, nl0, nl2, nl0, nl1, v0, v1, v2);
-                PaintHalfTriangle(ref localPixelBuffer, frameBuffer.Width, (int)yMiddle, yEnd, p0, p2, p1, p2, nl0, nl2, nl1, nl2, v0, v1, v2);
+                PaintHalfTriangle(ref localPixelBuffer, 
+                    frameBuffer.Width, yStart, (int)yMiddle - 1,
+                    pt0, pt2, pt0, pt1, nl0, nl2, nl0, nl1,
+                    pt0, pt1, pt2, color0, color1, color2);
+                PaintHalfTriangle(ref localPixelBuffer, 
+                    frameBuffer.Width, (int)yMiddle, yEnd,
+                    pt0, pt2, pt1, pt2, nl0, nl2, nl1, nl2,
+                    pt0, pt1, pt2, color0, color1, color2);
             }
             else
             {
                 //   P0
                 // P1 
                 //   P2
-                PaintHalfTriangle(ref localPixelBuffer, frameBuffer.Width, yStart, (int)yMiddle - 1, p0, p1, p0, p2, nl0, nl1, nl0, nl2, v0, v1, v2);
-                PaintHalfTriangle(ref localPixelBuffer, frameBuffer.Width, (int)yMiddle, yEnd, p1, p2, p0, p2, nl1, nl2, nl0, nl2, v0, v1, v2);
+                PaintHalfTriangle(ref localPixelBuffer, 
+                    frameBuffer.Width, yStart, (int)yMiddle - 1,
+                    pt0, pt1, pt0, pt2, nl0, nl1, nl0, nl2,
+                    pt0, pt1, pt2, color0, color1, color2);
+                PaintHalfTriangle(ref localPixelBuffer, 
+                    frameBuffer.Width, (int)yMiddle, yEnd,
+                    pt1, pt2, pt0, pt2, nl1, nl2, nl0, nl2,
+                    pt0, pt1, pt2, color0, color1, color2);
             }
 
             lock(frameBuffer)
@@ -108,8 +120,11 @@ namespace SoftRenderingApp3D.Painter
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PaintHalfTriangle(ref List<(int, int, int, ColorRGB)> localPixelBuffer, float frameWidth, int yStart, int yEnd, Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd, float nla,
-            float nlb, float nlc, float nld, PaintedVertex v0, PaintedVertex v1, PaintedVertex v2)
+        private void PaintHalfTriangle(ref List<(int, int, int, ColorRGB)> localPixelBuffer,
+            float frameWidth, int yStart, int yEnd,
+            Vector3 pa, Vector3 pb, Vector3 pc, Vector3 pd,
+            float nla, float nlb, float nlc, float nld,
+            Vector3 pt0, Vector3 pt1, Vector3 pt2, ColorRGB color0, ColorRGB color1, ColorRGB color2)
         {
             var mg1 = Math.Abs(pa.Y - pb.Y) < float.Epsilon ? 1f : 1 / (pb.Y - pa.Y);
             var mg2 = Math.Abs(pd.Y - pc.Y) < float.Epsilon ? 1f : 1 / (pd.Y - pc.Y);
@@ -133,14 +148,16 @@ namespace SoftRenderingApp3D.Painter
                 var sz = MathUtils.Lerp(pa.Z, pb.Z, gradient1);
                 var ez = MathUtils.Lerp(pc.Z, pd.Z, gradient2);
 
-                PaintScanLine(ref localPixelBuffer, frameWidth, y, sx, ex, sz, ez, sl, el, v0, v1, v2);
+                PaintScanLine(ref localPixelBuffer, frameWidth,
+                    y, sx, ex, sz, ez, sl, el,
+                    pt0, pt1, pt2, color0, color1, color2);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void PaintScanLine(ref List<(int, int, int, ColorRGB)> localPixelBuffer,
             float frameWidth, float y, float sx, float ex, float sz, float ez, float sl, float el,
-            PaintedVertex v0, PaintedVertex v1, PaintedVertex v2)
+            Vector3 pt0, Vector3 pt1, Vector3 pt2, ColorRGB color0, ColorRGB color1, ColorRGB color2)
         {
             var minX = Math.Max(sx, 0);
             var maxX = Math.Min(ex, frameWidth);
@@ -154,41 +171,34 @@ namespace SoftRenderingApp3D.Painter
                 var z = MathUtils.Lerp(sz, ez, gradient);
                 var c = MathUtils.Lerp(sl, el, gradient);
 
-                var surfaceColor = RenderUtils.surfaceColor;
-                var scatteringColor = InterpolateTriangleVerticesColors(x, y, z, v0, v1, v2);
+                var pointInTriangle = new Vector3(x, y, z);
 
-                var R = (int)(RenderUtils.lightWeight * c * surfaceColor.R) +
-                        (int)(RenderUtils.subsurfaceScatteringWeight * scatteringColor.R);
-                var G = (int)(RenderUtils.lightWeight * c * surfaceColor.G) +
-                        (int)(RenderUtils.subsurfaceScatteringWeight * scatteringColor.G);
-                var B = (int)(RenderUtils.lightWeight * c * surfaceColor.B) +
-                        (int)(RenderUtils.subsurfaceScatteringWeight * scatteringColor.B);
+                //calculate barycentric weight for each vertex
+                var barycentric = GetBarycentricCoordinates(pointInTriangle, pt0, pt1, pt2);
+                var color = InterpolateColor(barycentric, color0, color1, color2);
 
-                var finalColor = new ColorRGB((byte)R, (byte)G, (byte)B, 255);
+                var lightColor = RenderUtils.SurfaceColor;
+                var wLight = RenderUtils.lightWeight;
+                var wColor = RenderUtils.ColorWeight;
+                var R = (byte)(wLight * c * lightColor.R + wColor * color.R);
+                var G = (byte)(wLight * c * lightColor.G + wColor * color.G);
+                var B = (byte)(wLight * c * lightColor.B + wColor * color.B);
+
+                var finalColor = new ColorRGB(R, G, B, 255);
                 //Console.WriteLine($"newColor {newColor}. alpha {newColor.Alpha}");
-                //surface.PutPixel((int)x, (int)y, (int)z, finalColor);
                 localPixelBuffer.Add(((int)x, (int)y, (int)z, finalColor));
             }
         }
 
-        private ColorRGB InterpolateTriangleVerticesColors(float x, float y, float z, PaintedVertex v0,
-            PaintedVertex v1, PaintedVertex v2)
+        private static ColorRGB InterpolateColor(Vector3 barycentric, ColorRGB c0, ColorRGB c1, ColorRGB c2)
         {
-            // point to be colored
-            var pointInTriangle = new Vector3(x, y, z);
-            // calculate barycentric weight for each vertex
-            var barycentric =
-                GetBarycentricCoordinates(pointInTriangle, v0.ScreenPoint, v1.ScreenPoint, v2.ScreenPoint);
-            var maxR = Math.Max(v0.Color.R, Math.Max(v1.Color.R, v2.Color.R));
-            var maxG = Math.Max(v0.Color.G, Math.Max(v1.Color.G, v2.Color.G));
-            var maxB = Math.Max(v0.Color.B, Math.Max(v1.Color.B, v2.Color.B));
+            var maxR = Math.Max(c0.R, Math.Max(c1.R, c2.R));
+            var maxG = Math.Max(c0.G, Math.Max(c1.G, c2.G));
+            var maxB = Math.Max(c0.B, Math.Max(c1.B, c2.B));
             // interpolate
-            var R = (int)(barycentric.X * v0.Color.R + barycentric.Y * v1.Color.R +
-                          barycentric.Z * v2.Color.R).Clamp(0, maxR);
-            var G = (int)(barycentric.X * v0.Color.G + barycentric.Y * v1.Color.G +
-                          barycentric.Z * v2.Color.G).Clamp(0, maxG);
-            var B = (int)(barycentric.X * v0.Color.B + barycentric.Y * v1.Color.B +
-                          barycentric.Z * v2.Color.B).Clamp(0, maxB);
+            var R = (int)(barycentric.X * c0.R + barycentric.Y * c1.R + barycentric.Z * c2.R).Clamp(0, maxR);
+            var G = (int)(barycentric.X * c0.G + barycentric.Y * c1.G + barycentric.Z * c2.G).Clamp(0, maxG);
+            var B = (int)(barycentric.X * c0.B + barycentric.Y * c1.B + barycentric.Z * c2.B).Clamp(0, maxB);
             var finalColor = new ColorRGB((byte)R, (byte)G, (byte)B, 255);
 
 
@@ -246,15 +256,12 @@ namespace SoftRenderingApp3D.Painter
         }
 
 
-        private Vector3 GetBarycentricCoordinates(Vector3 p, Vector3 v0, Vector3 v1, Vector3 v2)
+        private Vector3 GetBarycentricCoordinates(Vector3 p, Vector3 pt0, Vector3 pt1, Vector3 pt2)
         {
-            var barycentric = CalculateBarycentricCoordinates(p, v0, v1, v2);
-            if(CheckIfBarycentricOutsideTriangle(barycentric))
-            {
-                return GetAdjustedBarycentric(barycentric);
-            }
-
-            return barycentric;
+            var barycentric = CalculateBarycentricCoordinates(p, pt0, pt1, pt2);
+            return CheckIfBarycentricOutsideTriangle(barycentric) ?
+                GetAdjustedBarycentric(barycentric)
+                : barycentric;
         }
 
         // Efficient calculation of barycentric coordinates
@@ -286,7 +293,7 @@ namespace SoftRenderingApp3D.Painter
             vertexBuffer.ScreenPointVertices[facet.I0] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I0]);
             vertexBuffer.ScreenPointVertices[facet.I1] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I1]);
             vertexBuffer.ScreenPointVertices[facet.I2] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I2]);
-            var sortedIndices = PainterUtils.SortPoints(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
+            var sortedIndices = PainterUtils.SortIndices(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
             var (v0, v1, v2) =
                 PainterUtils.GetPaintedVertices(vertexBuffer, frameBuffer, faId, sortedIndices);
 
