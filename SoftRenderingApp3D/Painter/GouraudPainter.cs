@@ -66,10 +66,13 @@ namespace SoftRenderingApp3D.Painter
                 PaintHalfTriangle(ref localPixelBuffer, frameBuffer.Width, (int)yMiddle, yEnd, p1, p2, p0, p2, nl1, nl2, nl0, nl2, v0, v1, v2);
             }
 
-            for(var i = 0; i < localPixelBuffer.Count; i++)
+            lock(frameBuffer)
             {
-                var pixel = localPixelBuffer[i];
-                frameBuffer.PutPixel(pixel.x, pixel.y, pixel.z, pixel.Color);
+                for(var i = 0; i < localPixelBuffer.Count; i++)
+                {
+                    var pixel = localPixelBuffer[i];
+                    frameBuffer.PutPixel(pixel.x, pixel.y, pixel.z, pixel.Color);
+                }
             }
         }
 
@@ -304,15 +307,18 @@ namespace SoftRenderingApp3D.Painter
                     linearFiltering, p0, p1, p2, uv0, uv1, uv2);
             }
 
-            for(var i = 0; i < localPixelBuffer.Count; i++)
+            lock(frameBuffer)
             {
-                var pixel = localPixelBuffer[i];
-                frameBuffer.PutPixel(pixel.x, pixel.y, pixel.z, pixel.Color);
+                for(var i = 0; i < localPixelBuffer.Count; i++)
+                {
+                    var pixel = localPixelBuffer[i];
+                    frameBuffer.PutPixel(pixel.x, pixel.y, pixel.z, pixel.Color);
+                }
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PaintHalfTriangleTextured(ref List<(int, int, int, ColorRGB )> localPixelBuffer, float frameWidth,
+        private void PaintHalfTriangleTextured(ref List<(int, int, int, ColorRGB)> localPixelBuffer, float frameWidth,
             int yStart, int yEnd, Texture texture, Vector3 pa, Vector3 pb,
             Vector3 pc, Vector3 pd, float nla, float nlb, float nlc, float nld, bool linearFiltering, Vector3 vertex0,
             Vector3 vertex1, Vector3 vertex2, Vector2 texCoord0, Vector2 texCoord1, Vector2 texCoord2)
