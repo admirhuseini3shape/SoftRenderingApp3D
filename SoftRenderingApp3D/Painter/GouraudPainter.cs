@@ -1,4 +1,6 @@
-﻿using SoftRenderingApp3D.Buffer;
+﻿using g3;
+using SoftRenderingApp3D.Buffer;
+using SoftRenderingApp3D.DataStructures.Materials;
 using SoftRenderingApp3D.DataStructures.Textures;
 using SoftRenderingApp3D.Utils;
 using System;
@@ -14,15 +16,35 @@ namespace SoftRenderingApp3D.Painter
         public void DrawTriangle(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, int faId)
         {
             var localPixelBuffer = new List<(int x, int y, int z, ColorRGB Color)>();
+
             vertexBuffer.Drawable.Mesh.Facets[faId].TransformWorld(vertexBuffer);
 
-            PainterUtils.SortTrianglePoints(vertexBuffer, frameBuffer, faId,
-                out var v0, out var v1, out var v2,
-                out _, out _, out _);
+            var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
 
-            var p0 = v0.ScreenPoint;
-            var p1 = v1.ScreenPoint;
-            var p2 = v2.ScreenPoint;
+            vertexBuffer.ScreenPointVertices[facet.I0] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I0]);
+            vertexBuffer.ScreenPointVertices[facet.I1] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I1]);
+            vertexBuffer.ScreenPointVertices[facet.I2] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I2]);
+
+
+            var hasVertexColors = vertexBuffer.Drawable.Material is IVertexColorMaterial;
+            if(!hasVertexColors)
+            {
+                var triangleColor = Constants.StandardColor;
+                if(vertexBuffer.Drawable.Material is IFacetColorMaterial facetColorMaterial)
+                    triangleColor = facetColorMaterial.FacetColors[faId];
+
+                vertexBuffer.VertexColors[facet.I0] = triangleColor;
+                vertexBuffer.VertexColors[facet.I0] = triangleColor;
+                vertexBuffer.VertexColors[facet.I0] = triangleColor;
+            }
+
+            var sortedIndices = PainterUtils.SortPoints(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
+            var (v0, v1, v2) =
+                PainterUtils.GetPaintedVertices(vertexBuffer, frameBuffer, faId, sortedIndices);
+
+            var p0 = vertexBuffer.ScreenPointVertices[sortedIndices.i0];
+            var p1 = vertexBuffer.ScreenPointVertices[sortedIndices.i1];
+            var p2 = vertexBuffer.ScreenPointVertices[sortedIndices.i2];
 
             if(p0.IsNaN() || p1.IsNaN() || p2.IsNaN())
                 return;
@@ -45,9 +67,18 @@ namespace SoftRenderingApp3D.Painter
             // computing the cos of the angle between the light vector and the normal vector
             // it will return a value between 0 and 1 that will be used as the intensity of the color
 
-            var nl0 = MathUtils.ComputeNDotL(v0.WorldPoint, v0.WorldNormal, lightPos);
-            var nl1 = MathUtils.ComputeNDotL(v1.WorldPoint, v1.WorldNormal, lightPos);
-            var nl2 = MathUtils.ComputeNDotL(v2.WorldPoint, v2.WorldNormal, lightPos);
+            var nl0 = MathUtils.ComputeNDotL(
+                vertexBuffer.WorldVertices[sortedIndices.i0],
+                vertexBuffer.WorldVertexNormals[sortedIndices.i0],
+                lightPos);
+            var nl1 = MathUtils.ComputeNDotL(
+            vertexBuffer.WorldVertices[sortedIndices.i1],
+            vertexBuffer.WorldVertexNormals[sortedIndices.i1],
+            lightPos);
+            var nl2 = MathUtils.ComputeNDotL(
+                vertexBuffer.WorldVertices[sortedIndices.i2],
+                vertexBuffer.WorldVertexNormals[sortedIndices.i2],
+                lightPos);
 
             if(PainterUtils.Cross2D(p0, p1, p2) > 0)
             {
@@ -250,17 +281,26 @@ namespace SoftRenderingApp3D.Painter
             var mesh = vertexBuffer.Drawable.Mesh;
             mesh.Facets[faId].TransformWorld(vertexBuffer);
             var localPixelBuffer = new List<(int x, int y, int z, ColorRGB Color)>();
-            PainterUtils.SortTrianglePoints(vertexBuffer, frameBuffer, faId, out var v0, out var v1, out var v2,
-                out var index0, out var index1, out var index2);
+            var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
 
-            var p0 = v0.ScreenPoint;
-            var p1 = v1.ScreenPoint;
-            var p2 = v2.ScreenPoint;
+            vertexBuffer.ScreenPointVertices[facet.I0] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I0]);
+            vertexBuffer.ScreenPointVertices[facet.I1] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I1]);
+            vertexBuffer.ScreenPointVertices[facet.I2] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I2]);
+            var sortedIndices = PainterUtils.SortPoints(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
+            var (v0, v1, v2) =
+                PainterUtils.GetPaintedVertices(vertexBuffer, frameBuffer, faId, sortedIndices);
+
+            var p0 = vertexBuffer.ScreenPointVertices[sortedIndices.i0];
+            var p1 = vertexBuffer.ScreenPointVertices[sortedIndices.i1];
+            var p2 = vertexBuffer.ScreenPointVertices[sortedIndices.i2];
+
+            if(p0.IsNaN() || p1.IsNaN() || p2.IsNaN())
+                return;
 
             // Get the texture coordinates of each point of the triangle
-            var uv0 = mesh.TexCoordinates[index0];
-            var uv1 = mesh.TexCoordinates[index1];
-            var uv2 = mesh.TexCoordinates[index2];
+            var uv0 = mesh.TexCoordinates[sortedIndices.i0];
+            var uv1 = mesh.TexCoordinates[sortedIndices.i1];
+            var uv2 = mesh.TexCoordinates[sortedIndices.i2];
 
 
             var yStart = (int)Math.Max(p0.Y, 0);

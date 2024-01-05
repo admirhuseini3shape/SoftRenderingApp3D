@@ -9,63 +9,63 @@ namespace SoftRenderingApp3D.Utils
     internal static class PainterUtils
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SortTrianglePoints(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, int faId,
-            out PaintedVertex v0, out PaintedVertex v1, out PaintedVertex v2, out int index0, out int index1,
-            out int index2)
+        public static (PaintedVertex v0, PaintedVertex v1, PaintedVertex v2) GetPaintedVertices(
+            VertexBuffer vertexBuffer, FrameBuffer frameBuffer,int faId, (int i0, int i1,int i2) indices)
         {
-            var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
 
             var worldNormVertices = vertexBuffer.WorldVertexNormals;
             var projectionVertices = vertexBuffer.ProjectionVertices;
             var worldVertices = vertexBuffer.WorldVertices;
             var triangleColor = Constants.StandardColor;
-            
+
             if(vertexBuffer.Drawable.Material is IFacetColorMaterial facetColorMaterial)
                 triangleColor = facetColorMaterial.FacetColors[faId];
-            
+
             var color0 = triangleColor;
             var color1 = triangleColor;
             var color2 = triangleColor;
-            
+
             if(vertexBuffer.Drawable.Material is IVertexColorMaterial vertexColorMaterial)
             {
-                color0 = vertexColorMaterial.VertexColors[facet.I0];
-                color1 = vertexColorMaterial.VertexColors[facet.I1];
-                color2 = vertexColorMaterial.VertexColors[facet.I2];
+                color0 = vertexColorMaterial.VertexColors[indices.i0];
+                color1 = vertexColorMaterial.VertexColors[indices.i1];
+                color2 = vertexColorMaterial.VertexColors[indices.i2];
             }
 
+            var v0 = new PaintedVertex(worldNormVertices[indices.i0],
+                frameBuffer.ToScreen3(projectionVertices[indices.i0]),
+                worldVertices[indices.i0], color0);
+            var v1 = new PaintedVertex(worldNormVertices[indices.i1],
+                frameBuffer.ToScreen3(projectionVertices[indices.i1]),
+                worldVertices[indices.i1], color1);
+            var v2 = new PaintedVertex(worldNormVertices[indices.i2],
+                frameBuffer.ToScreen3(projectionVertices[indices.i2]),
+                worldVertices[indices.i2], color2);
+            return (v0, v1, v2);
+        }
 
-            v0 = new PaintedVertex(worldNormVertices[facet.I0],
-                frameBuffer.ToScreen3(projectionVertices[facet.I0]),
-                worldVertices[facet.I0], color0);
-            v1 = new PaintedVertex(worldNormVertices[facet.I1],
-                frameBuffer.ToScreen3(projectionVertices[facet.I1]),
-                worldVertices[facet.I1], color1);
-            v2 = new PaintedVertex(worldNormVertices[facet.I2],
-                frameBuffer.ToScreen3(projectionVertices[facet.I2]),
-                worldVertices[facet.I2], color2);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static (int i0, int i1, int i2) SortPoints(Vector3[] screenPoints, int i0, int i1, int i2)
+        {
+            var c0 = screenPoints[i0].Y;
+            var c1 = screenPoints[i1].Y;
+            var c2 = screenPoints[i2].Y;
 
-            index0 = facet.I0;
-            index1 = facet.I1;
-            index2 = facet.I2;
-
-            if(v0.ScreenPoint.Y > v1.ScreenPoint.Y)
+            if(c0 < c1)
             {
-                Extensions.Swap(ref v0, ref v1);
-                Extensions.Swap(ref index0, ref index1);
+                if(c2 < c0)
+                    return (i2, i0, i1);
+                if(c1 < c2)
+                    return (i0, i1, i2);
+                return (i0, i2, i1);
             }
 
-            if(v1.ScreenPoint.Y > v2.ScreenPoint.Y)
-            {
-                Extensions.Swap(ref v1, ref v2);
-                Extensions.Swap(ref index1, ref index2);
-            }
+            if(c2 < c1)
+                return (i2, i1, i0);
+            if(c0 < c2)
+                return (i1, i0, i2);
+            return (i1, i2, i0);
 
-            if(v0.ScreenPoint.Y > v1.ScreenPoint.Y)
-            {
-                Extensions.Swap(ref v0, ref v1);
-                Extensions.Swap(ref index0, ref index1);
-            }
         }
 
         // https://www.geeksforgeeks.org/orientation-3-ordered-points/

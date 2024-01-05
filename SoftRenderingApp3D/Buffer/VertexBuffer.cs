@@ -49,6 +49,7 @@ namespace SoftRenderingApp3D.Buffer
             ViewVertices = Vector3Bag.Rent(vertexCount);
             WorldVertices = Vector3Bag.Rent(vertexCount);
             WorldVertexNormals = Vector3Bag.Rent(vertexCount);
+            ScreenPointVertices = Vector3Bag.Rent(vertexCount);
             ProjectionVertices = Vector4Bag.Rent(vertexCount);
             VertexColors = ColorRgbBag.Rent(vertexCount);
         }
@@ -58,6 +59,7 @@ namespace SoftRenderingApp3D.Buffer
         public Vector3[] WorldVertices { get; } // Vertices in _subsurfaceScatteringWorld
         public Vector3[] WorldVertexNormals { get; } // Vertices normals in _subsurfaceScatteringWorld
         public Vector4[] ProjectionVertices { get; } // Vertices in frustum
+        public Vector3[] ScreenPointVertices { get; } // Screen points. Vertices in NDC coordinates
         public ColorRGB[] VertexColors { get; } // Vertex colors
         private int Size { get; }
 
@@ -69,6 +71,7 @@ namespace SoftRenderingApp3D.Buffer
             Array.Clear(ViewVertices, 0, Size);
             Array.Clear(WorldVertices, 0, Size);
             Array.Clear(WorldVertexNormals, 0, Size);
+            Array.Clear(ScreenPointVertices, 0, Size);
             Array.Clear(ProjectionVertices, 0, Size);
             Array.Clear(VertexColors, 0, Size);
         }
@@ -80,6 +83,7 @@ namespace SoftRenderingApp3D.Buffer
             Vector3Bag.Return(ViewVertices);
             Vector3Bag.Return(WorldVertices);
             Vector3Bag.Return(WorldVertexNormals);
+            Vector3Bag.Return(ScreenPointVertices);
             Vector4Bag.Return(ProjectionVertices);
             ColorRgbBag.Return(VertexColors);
         }
