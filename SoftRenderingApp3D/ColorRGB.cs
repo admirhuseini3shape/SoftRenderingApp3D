@@ -127,6 +127,7 @@ namespace SoftRenderingApp3D
         public static ColorRGB LightBlue { get; } = new ColorRGB(127, 127, 255);
 
         public static ColorRGB Gray { get; } = new ColorRGB(127, 127, 127);
+        public static ColorRGB LightGray { get; } = new ColorRGB(190, 190, 190);
         public static ColorRGB Green { get; } = new ColorRGB(0, 255, 0);
         public static ColorRGB Red { get; } = new ColorRGB(255, 0, 0);
         public static ColorRGB Magenta { get; } = new ColorRGB(255, 0, 255);

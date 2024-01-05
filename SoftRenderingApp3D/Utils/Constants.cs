@@ -2,6 +2,6 @@
 {
     public static class Constants
     {
-        public static ColorRGB StandardColor = ColorRGB.Gray;
+        public static ColorRGB StandardColor = ColorRGB.LightGray;
     }
 }
