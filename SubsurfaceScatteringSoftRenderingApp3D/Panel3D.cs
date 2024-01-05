@@ -1,13 +1,14 @@
 ﻿using SoftRenderingApp3D;
 using SoftRenderingApp3D.Camera;
 using SoftRenderingApp3D.Controls;
-using SoftRenderingApp3D.DataStructures.World;
+using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.Projection;
 using SoftRenderingApp3D.Utils;
 using SubsurfaceScatteringLibrary.Buffer;
 using SubsurfaceScatteringLibrary.Painter;
 using SubsurfaceScatteringLibrary.Renderer;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -28,10 +29,10 @@ namespace SubsurfaceScatteringSoftRenderingApp3D
         private ISubsurfaceScatteringPainter painter;
         private IProjection projection;
         private ISubsurfaceScatteringRenderer renderer;
+        private List<IDrawable> drawables;
         private SubsurfaceScatteringRendererSettings rendererSettings;
 
         private readonly StringBuilder sb = new StringBuilder();
-        private IWorld world;
 
         public Panel3D()
         {
@@ -72,18 +73,18 @@ namespace SubsurfaceScatteringSoftRenderingApp3D
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public IWorld World
+        public List<IDrawable> Drawables
         {
             get
             {
-                return world;
+                return drawables;
             }
             set
             {
-                if(!value.TryUpdateOther(ref world))
+                if(!value.TryUpdateOther(ref drawables))
                     return;
 
-                renderContext.World = world;
+                renderContext.Drawables = drawables;
                 hookPaintEvent();
             }
         }
@@ -209,7 +210,7 @@ namespace SubsurfaceScatteringSoftRenderingApp3D
         private void hookPaintEvent()
         {
             Paint -= Panel3D_Paint;
-            if(camera != null && world != null && projection != null)
+            if(camera != null && drawables != null && projection != null)
             {
                 Paint += Panel3D_Paint;
             }
@@ -233,7 +234,7 @@ namespace SubsurfaceScatteringSoftRenderingApp3D
 
             sb.Clear();
             sb.AppendFormat(format,
-                world.Drawables.Count,
+                drawables.Count,
                 renderContext.Stats.TotalTriangleCount,
                 renderContext.Stats.FacingBackTriangleCount,
                 renderContext.Stats.OutOfViewTriangleCount,

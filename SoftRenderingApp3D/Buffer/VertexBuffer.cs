@@ -64,13 +64,18 @@ namespace SoftRenderingApp3D.Buffer
         public Matrix4x4 WorldMatrix { get; set; }
         public Matrix4x4 WorldViewMatrix { get; set; }
 
-        public void Dispose()
+        public void Clear()
         {
             Array.Clear(ViewVertices, 0, Size);
             Array.Clear(WorldVertices, 0, Size);
             Array.Clear(WorldVertexNormals, 0, Size);
             Array.Clear(ProjectionVertices, 0, Size);
             Array.Clear(VertexColors, 0, Size);
+        }
+
+        public void Dispose()
+        {
+            Clear();
 
             Vector3Bag.Return(ViewVertices);
             Vector3Bag.Return(WorldVertices);

@@ -4,11 +4,11 @@ using SoftRenderingApp3D.Controls;
 using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.DataStructures.FileReaders;
 using SoftRenderingApp3D.DataStructures.Materials;
-using SoftRenderingApp3D.DataStructures.World;
 using SoftRenderingApp3D.Projection;
 using SoftRenderingApp3D.Utils;
 using SubsurfaceScatteringLibrary.Renderer;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Windows.Forms;
 
@@ -44,30 +44,30 @@ namespace SubsurfaceScatteringSoftRenderingApp3D
 
         private void PrepareWorld(string id)
         {
-            var world = new World();
+            const int drawablesCount = 4;
             var stlReader = new STLReader();
-
+            var drawables = new List<IDrawable>(drawablesCount);
             switch(id)
             {
                 case "jaw":
-                    world.Drawables.AddRange(stlReader.ReadFile(@"models\original.stl"));
+                    drawables.AddRange(stlReader.ReadFile(@"models\original.stl"));
                     // Add a cube that represents the light
-                    world.Drawables.AddRange(stlReader.ReadFile(@"models\offset_3.stl"));
-                    world.Drawables.AddRange(stlReader.ReadFile(@"models\caries.stl"));
-                    var mesh1 = world.Drawables[1].Mesh;
-                    world.Drawables[1] = new Drawable(mesh1, new FacetColorMaterial(mesh1.FacetCount, ColorRGB.Black));
+                    drawables.AddRange(stlReader.ReadFile(@"models\offset_3.stl"));
+                    drawables.AddRange(stlReader.ReadFile(@"models\caries.stl"));
+                    var material1 = new FacetColorMaterial(drawables[1].Mesh.FacetCount, ColorRGB.Gray);
+                    drawables[1] = new Drawable(drawables[1].Mesh, material1);
 
-                    var mesh2 = world.Drawables[2].Mesh;
-                    world.Drawables[2] = new Drawable(mesh2, new FacetColorMaterial(mesh2.FacetCount, ColorRGB.Black));
+                    var material2 = new FacetColorMaterial(drawables[2].Mesh.FacetCount, ColorRGB.Gray);
+                    drawables[2] = new Drawable(drawables[2].Mesh, material2);
+
                     arcBallCam.Position += new Vector3(0, 10, -50 - arcBallCam.Position.Z);
                     break;
             }
 
-            world.LightSources.Add(new LightSource { Position = new Vector3(0, 0, 10) });
             arcBallCam.CameraChanged -= MainCam_CameraChanged;
             arcBallCam.CameraChanged += MainCam_CameraChanged;
             // world.Drawables.Add(camObject);
-            panel3D1.World = world;
+            panel3D1.Drawables = drawables;
             panel3D1.Invalidate();
 
             void MainCam_CameraChanged(object cam, EventArgs _1)

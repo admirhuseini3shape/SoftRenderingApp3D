@@ -2,7 +2,6 @@
 using SoftRenderingApp3D.App.Utils;
 using SoftRenderingApp3D.Camera;
 using SoftRenderingApp3D.Controls;
-using SoftRenderingApp3D.DataStructures.World;
 using SoftRenderingApp3D.Projection;
 using System;
 using System.Collections.Generic;
@@ -116,30 +115,19 @@ namespace SoftRenderingApp3D.App
             if(currentModel == null)
                 return;
 
-            var generatedWorld = DisplayModelHelpers.GenerateWorld(currentModel);
+            panel3D1.Drawables = DisplayModelHelpers.GetDrawables(currentModel);
             if(currentModel.InitialZoomLevel != 0)
             {
                 var zoom = currentModel.InitialZoomLevel;
                 var cameraPositionDelta = new Vector3(0, 0, zoom - arcBallCam.Position.Z);
                 arcBallCam.Position += cameraPositionDelta;
             }
-            generatedWorld.RaisePropertyChanged();
             chkShowTexture.Enabled = currentModel.HasTexture;
             panel3D1.RendererSettings.ShowTextures = currentModel.ShowTexture;
             chkShowTexture.Checked = currentModel.ShowTexture;
 
-            PrepareWorld(generatedWorld);
-        }
-
-        private void PrepareWorld(IWorld world)
-        {
-
-            world.LightSources.Add(new LightSource { Position = new Vector3(0, 0, 10) });
-
             arcBallCam.CameraChanged -= MainCam_CameraChanged;
             arcBallCam.CameraChanged += MainCam_CameraChanged;
-
-            panel3D1.World = world;
 
             panel3D1.Invalidate();
 
@@ -149,7 +137,7 @@ namespace SoftRenderingApp3D.App
                 // this.panel3D2.Invalidate();
             }
         }
-
+        
         private void btnChangeTexture_Click(object sender, EventArgs e)
         {
             panel3D1.RendererSettings.ChangeActiveTexture();

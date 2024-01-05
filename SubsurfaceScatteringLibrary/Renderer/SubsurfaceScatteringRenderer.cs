@@ -21,8 +21,7 @@ namespace SubsurfaceScatteringLibrary.Renderer
             var stats = SubsurfaceScatteringRenderContext.Stats;
             var surface = SubsurfaceScatteringRenderContext.Surface;
             var projection = SubsurfaceScatteringRenderContext.Projection;
-            //var world = SubsurfaceScatteringRenderContext.World;
-            var drawables = SubsurfaceScatteringRenderContext.World.Drawables;
+            var drawables = SubsurfaceScatteringRenderContext.Drawables;
             var rendererSettings = SubsurfaceScatteringRenderContext.RendererSettings;
             var viewMatrix = SubsurfaceScatteringRenderContext.Camera.ViewMatrix();
             var projectionMatrix = projection.ProjectionMatrix(surface.Width, surface.Height);

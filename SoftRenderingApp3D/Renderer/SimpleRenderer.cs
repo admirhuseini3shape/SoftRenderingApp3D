@@ -1,29 +1,21 @@
 ﻿using SoftRenderingApp3D.Buffer;
+using SoftRenderingApp3D.DataStructures.Drawables;
+using SoftRenderingApp3D.DataStructures.Materials;
 using SoftRenderingApp3D.Painter;
+using SoftRenderingApp3D.Utils;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace SoftRenderingApp3D.Renderer
 {
     public class SimpleRenderer : IRenderer
     {
-        public SimpleRenderer(FrameBuffer frameBuffer)
+        public int[] Render(AllVertexBuffers allVertexBuffers, FrameBuffer frameBuffer, IPainter painter,
+            IList<IDrawable> drawables, Stats stats, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix,
+            RendererSettings rendererSettings)
         {
-            FrameBuffer = frameBuffer;
-        }
-
-        public FrameBuffer FrameBuffer { get; }
-
-        public int[] Render(RenderContext renderContext, IPainter painter)
-        {
-            var stats = renderContext.Stats;
-            var frameBuffer = FrameBuffer;
-            var viewMatrix = renderContext.Camera.ViewMatrix();
-            var projectionMatrix = renderContext.Projection.ProjectionMatrix(frameBuffer.Width, frameBuffer.Height);
-            var world = renderContext.World;
-            var rendererSettings = renderContext.RendererSettings;
-
-            if(world == null || rendererSettings == null)
+            if(drawables == null || painter == null || rendererSettings == null)
                 return Array.Empty<int>();
 
             stats.Clear();
@@ -37,64 +29,52 @@ namespace SoftRenderingApp3D.Renderer
 
 
             // Allocate arrays to store transformed vertices
-            using var allVertexBuffers = new AllVertexBuffers(world.Drawables);
-            renderContext.AllVertexBuffers = allVertexBuffers;
+            //using var allVertexBuffers = new AllVertexBuffers(world.Drawables);
 
-            // This needs work, this is only for testing
-            var textureIndex = rendererSettings.ActiveTexture % world.Textures.Count;
-            var texture = world.Textures[textureIndex];
-
-            var volumes = world.Drawables;
-            var volumeCount = volumes.Count;
-            for(var idxVolume = 0; idxVolume < volumeCount; idxVolume++)
+            var drawablesCount = drawables.Count;
+            for(var iDrawable = 0; iDrawable < drawablesCount; iDrawable++)
             {
-                var vertexBuffer = allVertexBuffers.VertexBuffer[idxVolume];
-                var mesh = volumes[idxVolume].Mesh;
+                var vertexBuffer = allVertexBuffers.VertexBuffer[iDrawable];
+                vertexBuffer.Clear();
 
-                //var worldMatrix = volume.WorldMatrix();
-                //var modelViewMatrix = worldMatrix * viewMatrix;
-
-
-                vertexBuffer.Drawable = volumes[idxVolume];
+                var drawable = drawables[iDrawable];
+                vertexBuffer.Drawable = drawables[iDrawable];
                 vertexBuffer.TransformVertices(viewMatrix);
-                //vertexBuffer.WorldMatrix = worldMatrix;
 
-                stats.TotalTriangleCount += mesh.Facets.Count;
+                stats.TotalTriangleCount += drawable.Mesh.Facets.Count;
 
-                var vertices = mesh.Vertices;
+                var vertices = drawable.Mesh.Vertices;
                 var viewVertices = vertexBuffer.ViewVertices;
 
                 // Transform and store vertices to View
                 var vertexCount = vertices.Count;
-                for(var idxVertex = 0; idxVertex < vertexCount; idxVertex++)
-                {
-                    viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex], viewMatrix);
-                }
+                for(var veId = 0; veId < vertexCount; veId++)
+                    viewVertices[veId] = viewMatrix.Transform(vertices[veId]);
 
-                var triangleCount = mesh.Facets.Count;
-                for(var idxTriangle = 0; idxTriangle < triangleCount; idxTriangle++)
+                var triangleCount = drawable.Mesh.Facets.Count;
+                for(var faId = 0; faId < triangleCount; faId++)
                 {
-                    var t = mesh.Facets[idxTriangle];
+                    var facet = drawable.Mesh.Facets[faId];
 
                     // Discard if behind far plane
-                    if(t.IsBehindFarPlane(vertexBuffer))
+                    if(facet.IsBehindFarPlane(vertexBuffer))
                     {
                         stats.BehindViewTriangleCount++;
                         continue;
                     }
 
                     // Discard if back facing 
-                    if(rendererSettings.BackFaceCulling && t.IsFacingBack(vertexBuffer))
+                    if(rendererSettings.BackFaceCulling && facet.IsFacingBack(vertexBuffer))
                     {
                         stats.FacingBackTriangleCount++;
                         continue;
                     }
 
                     // Project in frustum
-                    t.TransformProjection(vertexBuffer, projectionMatrix);
+                    facet.TransformProjection(vertexBuffer, projectionMatrix);
 
                     // Discard if outside view frustum
-                    if(t.IsOutsideFrustum(vertexBuffer))
+                    if(facet.IsOutsideFrustum(vertexBuffer))
                     {
                         stats.OutOfViewTriangleCount++;
                         continue;
@@ -102,18 +82,14 @@ namespace SoftRenderingApp3D.Renderer
 
                     stats.PaintTime();
 
-                    if(!rendererSettings.ShowTextures)
+                    var textureMaterial = drawable.Material as ITextureMaterial;
+                    var hasTexture = textureMaterial != null && textureMaterial.Texture != null;
+                    if(!hasTexture || !rendererSettings.ShowTextures)
+                        painter.DrawTriangle(vertexBuffer, frameBuffer, faId);
+                    else if(painter is GouraudPainter gouraudPainter)
                     {
-                        painter?.DrawTriangle(vertexBuffer, frameBuffer, idxTriangle);
-                    }
-                    else
-                    {
-                        if(painter != null && painter.GetType() == typeof(GouraudPainter))
-                        {
-                            var gouraudPainter = (GouraudPainter)painter;
-                            gouraudPainter.DrawTriangleTextured(texture, vertexBuffer,frameBuffer, idxTriangle,
-                                rendererSettings.LinearTextureFiltering);
-                        }
+                        gouraudPainter.DrawTriangleTextured(textureMaterial.Texture,
+                            vertexBuffer, frameBuffer, faId, rendererSettings.LinearTextureFiltering);
                     }
 
                     stats.DrawnTriangleCount++;

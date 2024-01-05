@@ -1,12 +1,13 @@
 ﻿using SoftRenderingApp3D.Buffer;
 using SoftRenderingApp3D.Camera;
 using SoftRenderingApp3D.Controls;
-using SoftRenderingApp3D.DataStructures.World;
+using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.Painter;
 using SoftRenderingApp3D.Projection;
 using SoftRenderingApp3D.Renderer;
 using SoftRenderingApp3D.Utils;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -30,7 +31,7 @@ namespace SoftRenderingApp3D.App
         private IRenderer renderer;
 
         private readonly StringBuilder sb = new StringBuilder();
-        private IWorld world;
+        private List<IDrawable> drawables;
 
         public Panel3D()
         {
@@ -41,9 +42,9 @@ namespace SoftRenderingApp3D.App
 
             RendererSettings = new RendererSettings { BackFaceCulling = true };
 
-            Renderer = new SimpleRenderer(new FrameBuffer(Width, Height, RenderContext));
+            FrameBuffer = new FrameBuffer(Width, Height, RenderContext);
             Painter = new GouraudPainter();
-
+            Renderer = new SimpleRenderer();
             ResizeRedraw = true;
 
             Layout += Panel3D_Layout;
@@ -71,18 +72,18 @@ namespace SoftRenderingApp3D.App
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public IWorld World
+        public List<IDrawable> Drawables
         {
             get
             {
-                return world;
+                return drawables;
             }
             set
             {
-                if(!value.TryUpdateOther(ref world))
+                if(!value.TryUpdateOther(ref drawables))
                     return;
 
-                RenderContext.World = world;
+                AllVertexBuffers = new AllVertexBuffers(drawables);
                 HookPaintEvent();
             }
         }
@@ -143,6 +144,9 @@ namespace SoftRenderingApp3D.App
             }
         }
 
+        private FrameBuffer FrameBuffer { get; set; }
+        private AllVertexBuffers AllVertexBuffers { get; set; }
+
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public IProjection Projection
         {
@@ -185,7 +189,7 @@ namespace SoftRenderingApp3D.App
         private void HookPaintEvent()
         {
             Paint -= Panel3D_Paint;
-            if(camera != null && world != null && projection != null)
+            if(camera != null && drawables != null && projection != null)
             {
                 Paint += Panel3D_Paint;
             }
@@ -193,7 +197,11 @@ namespace SoftRenderingApp3D.App
 
         public int[] Render()
         {
-            return renderer.Render(RenderContext, Painter);
+            var viewMatrix = Camera.ViewMatrix();
+            var projectionMatrix = Projection.ProjectionMatrix(Width, Height);
+            var stats = RenderContext.Stats;
+            return renderer.Render(AllVertexBuffers,FrameBuffer, Painter, Drawables, 
+                stats, viewMatrix, projectionMatrix, RendererSettings);
         }
 
         private void Panel3D_Paint(object sender, PaintEventArgs e)
@@ -205,7 +213,7 @@ namespace SoftRenderingApp3D.App
 
             sb.Clear();
             sb.AppendFormat(Format,
-                world.Drawables.Count,
+                drawables.Count,
                 RenderContext.Stats.TotalTriangleCount,
                 RenderContext.Stats.FacingBackTriangleCount,
                 RenderContext.Stats.OutOfViewTriangleCount,
@@ -228,7 +236,7 @@ namespace SoftRenderingApp3D.App
                 return;
             }
 
-            Renderer = new SimpleRenderer(new FrameBuffer(Width, Height, RenderContext));
+            FrameBuffer = new FrameBuffer(Width, Height, RenderContext);
             bmp = new Bitmap(Width, Height, PixelFormat.Format32bppPArgb);
         }
 

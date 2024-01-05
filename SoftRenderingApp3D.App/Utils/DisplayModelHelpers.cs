@@ -1,25 +1,26 @@
 ﻿using SoftRenderingApp3D.App.DataStructures;
+using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.DataStructures.FileReaders;
+using SoftRenderingApp3D.DataStructures.Materials;
 using SoftRenderingApp3D.DataStructures.TextureReaders;
-using SoftRenderingApp3D.DataStructures.World;
 using System;
 using System.Collections.Generic;
-using System.Numerics;
+using System.Linq;
 
 namespace SoftRenderingApp3D.App.Utils
 {
     public static class DisplayModelHelpers
     {
 
-        private static readonly Dictionary<string, FileReader> _readers =
+        private static readonly Dictionary<string, FileReader> Readers =
             new Dictionary<string, FileReader>
         {
             { Constants.Readers.ColladaReader, new ColladaReader() },
             { Constants.Readers.StlReader, new STLReader() }
         };
 
-        private static readonly Dictionary<string, Action<World>> _generatingMethods =
-            new Dictionary<string, Action<World>>
+        private static readonly Dictionary<string, Func<List<IDrawable>>> GeneratingMethods =
+            new Dictionary<string, Func<List<IDrawable>>>
         {
             { Constants.GeneratingFunctions.CreateTown, ShapeGenerator.CreateTown},
             { Constants.GeneratingFunctions.CreateLittleTown, ShapeGenerator.CreateLittleTown},
@@ -30,47 +31,36 @@ namespace SoftRenderingApp3D.App.Utils
             { Constants.GeneratingFunctions.CreateBigTown, ShapeGenerator.CreateBigTown}
         };
 
-        public static World GenerateWorld(DisplayModelData data)
-        {
-            var world = new World();
-
-            ITextureReader textureReader = new TextureReaderBMP();
-            if(data.HasTexture)
-            {
-                world.Textures.Add(textureReader.ReadImage(@"textures\bone.bmp"));
-                world.Textures.Add(textureReader.ReadImage(@"textures\glass_effect.bmp"));
-                world.Textures.Add(textureReader.ReadImage(@"textures\bone_high.bmp"));
-            }
-            else
-            {
-                world.Textures.Add(textureReader.ReadImage(@"textures\bone.bmp"));
-            }
-
-            LoadModel(data, world);
-
-            world.LightSources.Add(new LightSource { Position = new Vector3(0, 0, 10) });
-
-            return world;
-        }
-
-        private static void LoadModel(DisplayModelData data, World world)
+        public static List<IDrawable> GetDrawables(DisplayModelData data)
         {
             var functionName = data.GeneratingFunctionName;
             if(data.InputFileName != null && data.ReaderType != null)
             {
-                if(!_readers.TryGetValue(data.ReaderType, out var reader))
+                if(!Readers.TryGetValue(data.ReaderType, out var reader))
                     throw new Exception($"Could not find reader for {data.ReaderType}!");
 
-                var drawables = reader.ReadFile(data.InputFileName);
-                world.Drawables.AddRange(drawables);
-            }
-            else if(functionName != null)
-            {
-                if(!_generatingMethods.TryGetValue(functionName, out var method))
-                    throw new Exception($"Could not find generating function for {functionName}!");
+                var drawables = reader.ReadFile(data.InputFileName).ToList();
+                if(!data.HasTexture)
+                    return drawables;
 
-                method(world);
+                var textureReader = new TextureReaderBMP();
+                var texture = textureReader.ReadImage(@"textures\bone.bmp");
+                //var texture = textureReader.ReadImage(@"textures\glass_effect.bmp");
+                //var texture = textureReader.ReadImage(@"textures\bone_high.bmp");
+                for(var i = 0; i < drawables.Count; i++)
+                    drawables[i] = new Drawable(drawables[i].Mesh, new TextureMaterial(texture));
+
+                return drawables;
             }
+
+            if(functionName == null)
+                return new List<IDrawable>();
+
+            if(!GeneratingMethods.TryGetValue(functionName, out var method))
+                throw new Exception($"Could not find generating function for {functionName}!");
+
+            return method();
+
         }
     }
 }
