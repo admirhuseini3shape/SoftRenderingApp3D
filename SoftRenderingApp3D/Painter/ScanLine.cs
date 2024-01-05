@@ -77,67 +77,44 @@ namespace SoftRenderingApp3D.Painter
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //private static List<Vector4> ScanLineHalfTriangle(
-        //    float frameWidth, int yStart, int yEnd, Vector3 pa, Vector3 pb,
-        //    Vector3 pc, Vector3 pd, float nla, float nlb, float nlc, float nld)
-        //{
-        //    var result = new List<Vector4>();
-        //    var deltaY1 = Math.Abs(pa.Y - pb.Y) < float.Epsilon ? 1f : 1 / (pb.Y - pa.Y);
-        //    var deltaY2 = Math.Abs(pd.Y - pc.Y) < float.Epsilon ? 1f : 1 / (pd.Y - pc.Y);
-
-        //    var pla = new Vector4(pa, nla);
-        //    var plb = new Vector4(pb, nlb);
-        //    var plc = new Vector4(pc, nlc);
-        //    var pld = new Vector4(pb, nlb);
-        //    for(var y = yStart; y <= yEnd; y++)
-        //    {
-        //        var gradient1 = ((y - pla.Y) * deltaY1).Clamp();
-        //        var gradient2 = ((y - plc.Y) * deltaY2).Clamp();
-
-        //        var start = Vector4.Lerp(pla, plb, gradient1);
-        //        start.Y = y;
-        //        var end = Vector4.Lerp(plc, pld, gradient2);
-        //        end.Y = y;
-
-        //        if(start.X >= end.X)
-        //            continue;
-
-        //        var line = ScanSingleLine(frameWidth, start, end);
-        //        result.AddRange(line);
-        //    }
-        //    return result;
-        //}
-
         private static List<Vector4> ScanLineHalfTriangle(
             float frameWidth, int yStart, int yEnd, Vector3 pa, Vector3 pb,
             Vector3 pc, Vector3 pd, float nla, float nlb, float nlc, float nld)
         {
+            
+            var pla = new Vector4(pa, nla);
+            var plb = new Vector4(pb, nlb);
+            var plc = new Vector4(pc, nlc);
+            var pld = new Vector4(pd, nld);
+
+            return ScanLineHalfTriangle(frameWidth, yStart, yEnd, pla, plb, pld, plc);
+        }
+
+        private static List<Vector4> ScanLineHalfTriangle(float frameWidth, int yStart, int yEnd, Vector4 pla, Vector4 plb, Vector4 pld,
+            Vector4 plc)
+        {
             var result = new List<Vector4>();
-            var mg1 = Math.Abs(pa.Y - pb.Y) < float.Epsilon ? 1f : 1 / (pb.Y - pa.Y);
-            var mg2 = Math.Abs(pd.Y - pc.Y) < float.Epsilon ? 1f : 1 / (pd.Y - pc.Y);
 
+            var deltaY1 = Math.Abs(pla.Y - plb.Y) < float.Epsilon ? 1f : 1 / (plb.Y - pla.Y);
+            var deltaY2 = Math.Abs(pld.Y - plc.Y) < float.Epsilon ? 1f : 1 / (pld.Y - plc.Y);
 
-            for(var y = yStart; y <= yEnd; y++)
+            for (var y = yStart; y <= yEnd; y++)
             {
-                var gradient1 = ((y - pa.Y) * mg1).Clamp();
-                var gradient2 = ((y - pc.Y) * mg2).Clamp();
+                var gradient1 = ((y - pla.Y) * deltaY1).Clamp();
+                var gradient2 = ((y - plc.Y) * deltaY2).Clamp();
 
-                var sx = MathUtils.Lerp(pa.X, pb.X, gradient1);
-                var ex = MathUtils.Lerp(pc.X, pd.X, gradient2);
+                var start = Vector4.Lerp(pla, plb, gradient1);
+                start.Y = y;
+                var end = Vector4.Lerp(plc, pld, gradient2);
+                end.Y = y;
 
-                if(sx >= ex)
+                if (start.X >= end.X)
                     continue;
 
-                var sl = MathUtils.Lerp(nla, nlb, gradient1);
-                var el = MathUtils.Lerp(nlc, nld, gradient2);
-
-                var sz = MathUtils.Lerp(pa.Z, pb.Z, gradient1);
-                var ez = MathUtils.Lerp(pc.Z, pd.Z, gradient2);
-                var start = new Vector4(sx, y, sz, sl);
-                var end = new Vector4(ex, y, ez, el);
                 var line = ScanSingleLine(frameWidth, start, end);
                 result.AddRange(line);
             }
+
             return result;
         }
 
