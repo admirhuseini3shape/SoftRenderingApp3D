@@ -6,7 +6,6 @@ using SoftRenderingApp3D.Utils;
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using System.Threading.Tasks;
 
 namespace SoftRenderingApp3D.Renderer
 {
@@ -29,8 +28,8 @@ namespace SoftRenderingApp3D.Renderer
             // model => worldMatrix => world => viewMatrix => view => projectionMatrix => projection => toNdc => ndc => toScreen => screen
 
             var drawablesCount = drawables.Count;
-            //for(var iDrawable = 0; iDrawable < drawablesCount; iDrawable++)
-            Parallel.For(0, drawablesCount, iDrawable =>
+            for(var iDrawable = 0; iDrawable < drawablesCount; iDrawable++)
+            //Parallel.For(0, drawablesCount, iDrawable =>
             {
                 var vertexBuffer = allVertexBuffers.VertexBuffer[iDrawable];
                 vertexBuffer.Clear();
@@ -50,8 +49,8 @@ namespace SoftRenderingApp3D.Renderer
                     viewVertices[veId] = viewMatrix.Transform(vertices[veId]);
 
                 var triangleCount = drawable.Mesh.Facets.Count;
-                //for(var faId = 0; faId < triangleCount; faId++)
-                Parallel.For(0, triangleCount, faId =>
+                for(var faId = 0; faId < triangleCount; faId++)
+                //Parallel.For(0, triangleCount, faId =>
                 {
                     var facet = drawable.Mesh.Facets[faId];
 
@@ -59,16 +58,16 @@ namespace SoftRenderingApp3D.Renderer
                     if(facet.IsBehindFarPlane(vertexBuffer))
                     {
                         stats.BehindViewTriangleCount++;
-                        //continue;
-                        return;
+                        continue;
+                        //return;
                     }
 
                     // Discard if back facing 
                     if(rendererSettings.BackFaceCulling && facet.IsFacingBack(vertexBuffer))
                     {
                         stats.FacingBackTriangleCount++;
-                        //continue;
-                        return;
+                        continue;
+                        //return;
                     }
 
                     // Project in frustum
@@ -78,8 +77,8 @@ namespace SoftRenderingApp3D.Renderer
                     if(facet.IsOutsideFrustum(vertexBuffer))
                     {
                         stats.OutOfViewTriangleCount++;
-                        //continue;
-                        return;
+                        continue;
+                        //return;
                     }
 
                     stats.PaintTime();
@@ -97,8 +96,8 @@ namespace SoftRenderingApp3D.Renderer
                     stats.DrawnTriangleCount++;
 
                     stats.CalcTime();
-                });
-            });
+                }//);
+            }//);
 
             return frameBuffer.Screen;
         }

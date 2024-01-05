@@ -2,9 +2,7 @@
 using SoftRenderingApp3D.DataStructures.Materials;
 using SoftRenderingApp3D.DataStructures.Textures;
 using SoftRenderingApp3D.Utils;
-using System;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace SoftRenderingApp3D.Painter
@@ -34,8 +32,8 @@ namespace SoftRenderingApp3D.Painter
 
             var (i0, i1, i2) = PainterUtils.SortIndices(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
 
-            var result = ScanLineTriangle(vertexBuffer, frameBuffer.Height, frameBuffer.Width, i0, i1, i2);
-            var barycentricPoints = ConvertToBarycentricPoints(result,
+            var result = ScanLine.ScanLineTriangle(vertexBuffer, frameBuffer.Height, frameBuffer.Width, i0, i1, i2);
+            var barycentricPoints = Barycentric2d.ConvertToBarycentricPoints(result,
                 vertexBuffer.ScreenPointVertices[i0],
                 vertexBuffer.ScreenPointVertices[i1],
                 vertexBuffer.ScreenPointVertices[i2]);
@@ -85,8 +83,8 @@ namespace SoftRenderingApp3D.Painter
 
             var (i0,i1,i2) = PainterUtils.SortIndices(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
 
-            var result = ScanLineTriangle(vertexBuffer, frameBuffer.Height, frameBuffer.Width, i0, i1, i2);
-            var barycentricPoints = ConvertToBarycentricPoints(result,
+            var result = ScanLine.ScanLineTriangle(vertexBuffer, frameBuffer.Height, frameBuffer.Width, i0, i1, i2);
+            var barycentricPoints = Barycentric2d.ConvertToBarycentricPoints(result,
                 vertexBuffer.ScreenPointVertices[i0],
                 vertexBuffer.ScreenPointVertices[i1],
                 vertexBuffer.ScreenPointVertices[i2]);
@@ -121,258 +119,6 @@ namespace SoftRenderingApp3D.Painter
                     frameBuffer.PutPixel(pixel.x, pixel.y, pixel.z, pixel.color);
                 }
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Vector4> ConvertToBarycentricPoints(IReadOnlyList<Vector4> trianglePoints,
-            Vector3 p0, Vector3 p1, Vector3 p2)
-        {
-            var delta21 = p2 - p1;
-            var delta10 = p1 - p0;
-            var delta02 = p0 - p2;
-            var numAlpha = delta10.X * delta21.Y - delta10.Y * delta21.X;
-            var numBeta = delta21.X * delta02.Y - delta21.Y * delta02.X;
-
-            var barycentricPoints = new List<Vector4>(trianglePoints.Count);
-            for(var i = 0; i < trianglePoints.Count; i++)
-            {
-                var x = trianglePoints[i].X;
-                var y = trianglePoints[i].Y;
-
-                // Barycentric coordinates are calculated
-                var alpha = (-(x - p1.X) * delta21.Y + (y - p1.Y) * delta21.X) / numAlpha;
-                var beta = (-(x - p2.X) * delta02.Y + (y - p2.Y) * delta02.X) / numBeta;
-                var gamma = 1 - alpha - beta;
-
-                barycentricPoints.Add(new Vector4(alpha, beta, gamma, trianglePoints[i].W));
-            }
-
-            return barycentricPoints;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Vector4> ScanLineTriangle(VertexBuffer vertexBuffer, int height, int width, int i0, int i1, int i2)
-        {
-            var result = new List<Vector4>();
-
-            var p0 = vertexBuffer.ScreenPointVertices[i0];
-            var p1 = vertexBuffer.ScreenPointVertices[i1];
-            var p2 = vertexBuffer.ScreenPointVertices[i2];
-
-            //if(p0.IsNaN() || p1.IsNaN() || p2.IsNaN())
-            //    return;
-
-            var yStart = (int)Math.Max(p0.Y, 0);
-            var yEnd = (int)Math.Min(p2.Y, height - 1);
-
-            // Out if clipped
-            if(yStart > yEnd)
-                return result;
-
-            var yMiddle = MathUtils.Clamp((int)p1.Y, yStart, yEnd);
-
-            // This has to move elsewhere
-            var lightPos = new Vector3(0, 10, 10);
-
-            // computing the cos of the angle between the light vector and the normal vector
-            // it will return a value between 0 and 1 that will be used as the intensity of the color
-
-            var nl0 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[i0],
-                vertexBuffer.WorldVertexNormals[i0],
-                lightPos);
-            var nl1 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[i1],
-                vertexBuffer.WorldVertexNormals[i1],
-                lightPos);
-            var nl2 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[i2],
-                vertexBuffer.WorldVertexNormals[i2],
-                lightPos);
-            if(PainterUtils.Cross2D(p0, p1, p2) > 0)
-            {
-                // P0
-                //   P1
-                // P2
-                var firstHalf = ScanLineHalfTriangle(width,
-                    yStart, (int)yMiddle - 1, p0, p2, p0, p1, nl0, nl2, nl0, nl1);
-                var secondHalf = ScanLineHalfTriangle(width,
-                    (int)yMiddle, yEnd, p0, p2, p1, p2, nl0, nl2, nl1, nl2);
-                result.AddRange(firstHalf);
-                result.AddRange(secondHalf);
-            }
-            else
-            {
-                //   P0
-                // P1 
-                //   P2
-                var firstHalf = ScanLineHalfTriangle(width, yStart, (int)yMiddle - 1,
-                    p0, p1, p0, p2, nl0, nl1, nl0, nl2);
-                var secondHalf = ScanLineHalfTriangle(width, (int)yMiddle,
-                    yEnd, p1, p2, p0, p2, nl1, nl2, nl0, nl2);
-                result.AddRange(firstHalf);
-                result.AddRange(secondHalf);
-            }
-
-            return result;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Vector4> ScanLineHalfTriangle(
-            float frameWidth, int yStart, int yEnd, Vector3 pa, Vector3 pb,
-            Vector3 pc, Vector3 pd, float nla, float nlb, float nlc, float nld)
-        {
-            var result = new List<Vector4>();
-            var mg1 = Math.Abs(pa.Y - pb.Y) < float.Epsilon ? 1f : 1 / (pb.Y - pa.Y);
-            var mg2 = Math.Abs(pd.Y - pc.Y) < float.Epsilon ? 1f : 1 / (pd.Y - pc.Y);
-
-
-            for(var y = yStart; y <= yEnd; y++)
-            {
-                var gradient1 = ((y - pa.Y) * mg1).Clamp();
-                var gradient2 = ((y - pc.Y) * mg2).Clamp();
-
-                var sx = MathUtils.Lerp(pa.X, pb.X, gradient1);
-                var ex = MathUtils.Lerp(pc.X, pd.X, gradient2);
-
-                if(sx >= ex)
-                    continue;
-
-                var sl = MathUtils.Lerp(nla, nlb, gradient1);
-                var el = MathUtils.Lerp(nlc, nld, gradient2);
-
-                var sz = MathUtils.Lerp(pa.Z, pb.Z, gradient1);
-                var ez = MathUtils.Lerp(pc.Z, pd.Z, gradient2);
-
-                var line = ScanLine(frameWidth, y, sx, ex, sz, ez, sl, el);
-                result.AddRange(line);
-            }
-            return result;
-        }
-
-        /// <summary>
-        ///     Colors a line of pixels using a texture.
-        /// </summary>
-        /// <param name="frameWidth"></param>
-        /// <param name="y">The y coordinate of the line.</param>
-        /// <param name="sx">The left x coordinate of the line.</param>
-        /// <param name="ex">The right x coordinate of the line.</param>
-        /// <param name="sz">The start z coordinate of the line.</param>
-        /// <param name="ez">The end z coordinate of the line</param>
-        /// <param name="sl">The start light amount.</param>
-        /// <param name="el">The end light amount.</param>
-        /// <param name="texture">The texture that will be used to color the line.</param>
-        /// <param name="linearFiltering">
-        ///     If true, color is linear interpolation of the neighbouring texels, if false, the closes
-        ///     texel is selected as the color.
-        /// </param>
-        /// <param name="vertex0">Point A of the triangle on which the line lays.</param>
-        /// <param name="vertex1">Point B of the triangle on which the line lays</param>
-        /// <param name="vertex2">Point C of the triangle on which the line lays</param>
-        /// <param name="uv0">Texture coordinates of point A.</param>
-        /// <param name="uv1">Texture coordinates of point B.</param>
-        /// <param name="uv2">Texture coordinates of point C.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Vector4> ScanLine(
-            float frameWidth, float y, float sx, float ex, float sz, float ez, float sl, float el)
-        {
-            var result = new List<Vector4>();
-            var minX = Math.Max(sx, 0);
-            var maxX = Math.Min(ex, frameWidth);
-
-            var mx = 1 / (ex - sx);
-
-
-            for(var x = minX; x < maxX; x++)
-            {
-                var gradient = (x - sx) * mx;
-
-                var z = MathUtils.Lerp(sz, ez, gradient);
-                var lightContribution = MathUtils.Lerp(sl, el, gradient);
-                result.Add(new Vector4(x, y, z, lightContribution));
-            }
-
-            return result;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector3 GetBarycentricCoordinates(Vector3 p, Vector3 pt0, Vector3 pt1, Vector3 pt2)
-        {
-            var barycentric = CalculateBarycentricCoordinates(p, pt0, pt1, pt2);
-            return CheckIfBarycentricOutsideTriangle(barycentric) ?
-                GetAdjustedBarycentric(barycentric)
-                : barycentric;
-        }
-
-        // Efficient calculation of barycentric coordinates
-        // taken from https://gamedev.stackexchange.com/a/23745
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector3 CalculateBarycentricCoordinates(Vector3 p, Vector3 v0, Vector3 v1, Vector3 v2)
-        {
-            var n = Vector3.Cross(v1 - v0, v2 - v0);
-            var na = Vector3.Cross(v2 - v1, p - v1);
-            var nb = Vector3.Cross(v0 - v2, p - v2);
-            var nc = Vector3.Cross(v1 - v0, p - v0);
-
-            var normFactor = 1 / Vector3.Dot(n, n);
-
-            var alpha = Vector3.Dot(n, na) * normFactor;
-            var beta = Vector3.Dot(n, nb) * normFactor;
-            var gamma = Vector3.Dot(n, nc) * normFactor;
-
-            return new Vector3(alpha, beta, gamma);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool CheckIfBarycentricOutsideTriangle(Vector3 barycentric)
-        {
-            return barycentric.X < 0 || barycentric.X > 1
-                                     || barycentric.Y < 0 || barycentric.Y > 1
-                                     || barycentric.Z < 0 || barycentric.Z > 1
-                                     || barycentric.X + barycentric.Y + barycentric.Z > 1;
-        }
-
-        // deals with edge cases in the scanline algorithm
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Vector3 GetAdjustedBarycentric(Vector3 barycentric)
-        {
-            if(barycentric.X > 1)
-            {
-                return new Vector3(1, 0, 0);
-            }
-
-            if(barycentric.Y > 1)
-            {
-                return new Vector3(0, 1, 0);
-            }
-
-            if(barycentric.Z > 1)
-            {
-                return new Vector3(0, 0, 1);
-            }
-
-            if(barycentric.X < 0)
-            {
-                return new Vector3(0, barycentric.Y, barycentric.Z);
-            }
-
-            if(barycentric.Y < 0)
-            {
-                return new Vector3(barycentric.X, 0, barycentric.Z);
-            }
-
-            if(barycentric.Z < 0)
-            {
-                return new Vector3(barycentric.X, barycentric.Y, 0);
-            }
-
-            if(barycentric.X + barycentric.Y + barycentric.Z > 1)
-            {
-                var sumDenom = 1 / (barycentric.X + barycentric.Y + barycentric.Z);
-                return new Vector3(barycentric.X * sumDenom, barycentric.Y * sumDenom, barycentric.Z * sumDenom);
-            }
-
-            throw new Exception("something not good if this happens");
         }
     }
 }

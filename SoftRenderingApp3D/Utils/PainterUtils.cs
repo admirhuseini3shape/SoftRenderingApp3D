@@ -28,6 +28,11 @@ namespace SoftRenderingApp3D.Utils
             return (i1, i2, i0);
 
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool HaveClockwiseOrientation(Vector3 p0, Vector3 p1, Vector3 p2)
+        {
+            return Cross2D(p0, p1, p2) > 0;
+        }
 
         // https://www.geeksforgeeks.org/orientation-3-ordered-points/
 
