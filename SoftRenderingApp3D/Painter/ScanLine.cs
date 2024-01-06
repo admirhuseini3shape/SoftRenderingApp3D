@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Windows.Forms;
 
 namespace SoftRenderingApp3D.Painter
 {
@@ -48,15 +49,31 @@ namespace SoftRenderingApp3D.Painter
                 vertexBuffer.WorldVertices[i2],
                 vertexBuffer.WorldVertexNormals[i2],
                 lightPos);
+
+            var pl0 = new Vector4(p0, nl0);
+            var pl1 = new Vector4(p1, nl1);
+            var pl2 = new Vector4(p2, nl2);
             if(PainterUtils.HaveClockwiseOrientation(p0, p1, p2))
             {
                 // P0
                 //   P1
                 // P2
-                var firstHalf = ScanLineHalfTriangle(width,
-                    yStart, (int)yMiddle - 1, p0, p2, p0, p1, nl0, nl2, nl0, nl1);
-                var secondHalf = ScanLineHalfTriangle(width,
-                    (int)yMiddle, yEnd, p0, p2, p1, p2, nl0, nl2, nl1, nl2);
+
+                // Anchor p0
+                var pla = pl0;
+                var plb = pl2;
+                var plc = pl0;
+                var pld = pl1;
+
+                var firstHalf = ScanLineHalfTriangle(width, yStart, (int)yMiddle - 1, pla, plb, plc, pld);
+                var fh = ScanLineCorner(width, yStart, (int)yMiddle - 1, pl0, pl2, pl1);
+                // Anchor p2
+                pla = pl0;
+                plb = pl2;
+                plc = pl1;
+                pld = pl2;
+                var secondHalf = ScanLineHalfTriangle(width, (int)yMiddle, yEnd, pla, plb, plc, pld);
+                var sh = ScanLineCorner(width, yStart, (int)yMiddle - 1, pl2, pl1, pl0);
                 result.AddRange(firstHalf);
                 result.AddRange(secondHalf);
             }
@@ -65,10 +82,22 @@ namespace SoftRenderingApp3D.Painter
                 //   P0
                 // P1 
                 //   P2
-                var firstHalf = ScanLineHalfTriangle(width, yStart, (int)yMiddle - 1,
-                    p0, p1, p0, p2, nl0, nl1, nl0, nl2);
-                var secondHalf = ScanLineHalfTriangle(width, (int)yMiddle,
-                    yEnd, p1, p2, p0, p2, nl1, nl2, nl0, nl2);
+
+                // Anchor p0
+                var pla = pl0;
+                var plb = pl1;
+                var plc = pl0;
+                var pld = pl2;
+                var firstHalf = ScanLineHalfTriangle(width, yStart, (int)yMiddle - 1, pla, plb, plc, pld);
+                var fh = ScanLineCorner(width, yStart, (int)yMiddle - 1, pl0, pl1, pl2);
+                
+                // Anchor p2
+                pla = pl1;
+                plb = pl2;
+                plc = pl0;
+                pld = pl2;
+                var secondHalf = ScanLineHalfTriangle(width, (int)yMiddle, yEnd, pla, plb, plc, pld);
+                var sh = ScanLineCorner(width, yStart, (int)yMiddle - 1, pl2, pl0, pl1);
                 result.AddRange(firstHalf);
                 result.AddRange(secondHalf);
             }
@@ -76,29 +105,43 @@ namespace SoftRenderingApp3D.Painter
             return result;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Vector4> ScanLineHalfTriangle(
-            float frameWidth, int yStart, int yEnd, Vector3 pa, Vector3 pb,
-            Vector3 pc, Vector3 pd, float nla, float nlb, float nlc, float nld)
+        private static List<Vector4> ScanLineCorner(float frameWidth, int yStart, int yEnd,
+            Vector4 anchor, Vector4 end1, Vector4 end2)
         {
-            
-            var pla = new Vector4(pa, nla);
-            var plb = new Vector4(pb, nlb);
-            var plc = new Vector4(pc, nlc);
-            var pld = new Vector4(pd, nld);
+            var result = new List<Vector4>();
 
-            return ScanLineHalfTriangle(frameWidth, yStart, yEnd, pla, plb, pld, plc);
+            var deltaY1 = Math.Abs(anchor.Y - end1.Y) < float.Epsilon ? 1f : 1 / (anchor.Y - end1.Y);
+            var deltaY2 = Math.Abs(anchor.Y - end2.Y) < float.Epsilon ? 1f : 1 / (anchor.Y - end2.Y);
+
+            for(var y = yStart; y <= yEnd; y++)
+            {
+                var gradient1 = ((y - end1.Y) * deltaY1).Clamp();
+                var gradient2 = ((y - end2.Y) * deltaY2).Clamp();
+
+                var start = Vector4.Lerp(anchor, end1, gradient1);
+                start.Y = y;
+                var end = Vector4.Lerp(anchor, end2, gradient2);
+                end.Y = y;
+
+                if(start.X >= end.X)
+                    continue;
+
+                var line = ScanSingleLine(frameWidth, start, end);
+                result.AddRange(line);
+            }
+
+            return result;
         }
 
-        private static List<Vector4> ScanLineHalfTriangle(float frameWidth, int yStart, int yEnd, Vector4 pla, Vector4 plb, Vector4 pld,
-            Vector4 plc)
+        private static List<Vector4> ScanLineHalfTriangle(float frameWidth, int yStart, int yEnd,
+            Vector4 pla, Vector4 plb, Vector4 pld, Vector4 plc)
         {
             var result = new List<Vector4>();
 
             var deltaY1 = Math.Abs(pla.Y - plb.Y) < float.Epsilon ? 1f : 1 / (plb.Y - pla.Y);
             var deltaY2 = Math.Abs(pld.Y - plc.Y) < float.Epsilon ? 1f : 1 / (pld.Y - plc.Y);
 
-            for (var y = yStart; y <= yEnd; y++)
+            for(var y = yStart; y <= yEnd; y++)
             {
                 var gradient1 = ((y - pla.Y) * deltaY1).Clamp();
                 var gradient2 = ((y - plc.Y) * deltaY2).Clamp();
@@ -108,7 +151,7 @@ namespace SoftRenderingApp3D.Painter
                 var end = Vector4.Lerp(plc, pld, gradient2);
                 end.Y = y;
 
-                if (start.X >= end.X)
+                if(start.X >= end.X)
                     continue;
 
                 var line = ScanSingleLine(frameWidth, start, end);
