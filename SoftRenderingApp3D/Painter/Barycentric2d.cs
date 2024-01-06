@@ -43,25 +43,34 @@ namespace SoftRenderingApp3D.Painter
                 GetAdjustedBarycentric(barycentric)
                 : barycentric;
         }
-
-        // Efficient calculation of barycentric coordinates
-        // taken from https://gamedev.stackexchange.com/a/23745
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector3 CalculateBarycentricCoordinates(Vector3 p, Vector3 v0, Vector3 v1, Vector3 v2)
         {
-            var n = Vector3.Cross(v1 - v0, v2 - v0);
-            var na = Vector3.Cross(v2 - v1, p - v1);
-            var nb = Vector3.Cross(v0 - v2, p - v2);
-            var nc = Vector3.Cross(v1 - v0, p - v0);
+            var edge1 = v1 - v0;
+            var edge2 = v2 - v0;
+            var n = Vector3.Cross(edge1, edge2);
 
-            var normFactor = 1 / Vector3.Dot(n, n);
+            // Ensure the area is not zero (or too small), otherwise the triangle is degenerate
+            var area = n.Length();
+            if (area < float.Epsilon)
+            {
+                return new Vector3(float.NaN, float.NaN, float.NaN);
+            }
 
-            var alpha = Vector3.Dot(n, na) * normFactor;
-            var beta = Vector3.Dot(n, nb) * normFactor;
-            var gamma = Vector3.Dot(n, nc) * normFactor;
+            var invArea = 1 / area;
+
+            var n1 = Vector3.Cross(v2 - v1, p - v1) * invArea;
+            var n2 = Vector3.Cross(-edge2, p - v2) * invArea;
+            var n3 = Vector3.Cross(edge1, p - v0) * invArea;  
+
+            var alpha = Vector3.Dot(n, n1);
+            var beta = Vector3.Dot(n, n2);
+            var gamma = Vector3.Dot(n, n3);
 
             return new Vector3(alpha, beta, gamma);
         }
+        
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static bool CheckIfBarycentricOutsideTriangle(Vector3 barycentric)
