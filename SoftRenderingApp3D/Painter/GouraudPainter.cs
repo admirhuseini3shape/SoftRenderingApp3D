@@ -10,7 +10,7 @@ namespace SoftRenderingApp3D.Painter
     public class GouraudPainter : IPainter
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DrawTriangle(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, int faId)
+        public void DrawTriangle(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, float[,] zBuffer, int faId)
         {
             var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
 
@@ -67,7 +67,11 @@ namespace SoftRenderingApp3D.Painter
                 for(var i = 0; i < result.Count; i++)
                 {
                     var pixel = perPixelColors[i];
-                    frameBuffer.PutPixel(pixel.x, pixel.y, pixel.z, pixel.color);
+                    if (pixel.z < zBuffer[pixel.x, pixel.y])
+                    {
+                        frameBuffer.PutPixel(pixel.x, pixel.y, pixel.z, pixel.color);
+                        zBuffer[pixel.x, pixel.y] = pixel.z;
+                    }
                 }
             }
         }

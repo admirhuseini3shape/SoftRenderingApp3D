@@ -15,6 +15,16 @@ namespace SoftRenderingApp3D.Renderer
             IList<IDrawable> drawables, Stats stats, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix,
             RendererSettings rendererSettings)
         {
+            float[,] zBuffer = new float[frameBuffer.Width, frameBuffer.Height];
+            
+            for (int x = 0; x < frameBuffer.Width; x++)
+            {
+                for (int y = 0; y < frameBuffer.Height; y++)
+                {
+                    zBuffer[x, y] = float.MaxValue;
+                }
+            }
+            
             if(drawables == null || painter == null || rendererSettings == null)
                 return Array.Empty<int>();
 
@@ -86,7 +96,7 @@ namespace SoftRenderingApp3D.Renderer
                     var textureMaterial = drawable.Material as ITextureMaterial;
                     var hasTexture = textureMaterial != null && textureMaterial.Texture != null;
                     if(!hasTexture || !rendererSettings.ShowTextures)
-                        painter.DrawTriangle(vertexBuffer, frameBuffer, faId);
+                        painter.DrawTriangle(vertexBuffer, frameBuffer, zBuffer, faId);
                     else if(painter is GouraudPainter gouraudPainter)
                     {
                         gouraudPainter.DrawTriangleTextured(textureMaterial.Texture,

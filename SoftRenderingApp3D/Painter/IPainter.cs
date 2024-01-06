@@ -4,6 +4,6 @@ namespace SoftRenderingApp3D.Painter
 {
     public interface IPainter
     {
-        void DrawTriangle(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, int faId);
+        void DrawTriangle(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, float[,] zBuffer, int faId);
     }
 }
