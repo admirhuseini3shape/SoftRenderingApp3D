@@ -18,6 +18,16 @@ namespace SoftRenderingApp3D.Painter
             var numAlpha = delta10.X * delta21.Y - delta10.Y * delta21.X;
             var numBeta = delta21.X * delta02.Y - delta21.Y * delta02.X;
 
+            
+            // Since multiplication is faster than division, we multiply by the inverse
+            var invNumAlpha = 1 / numAlpha;
+            var invNumBeta = 1 / numBeta;
+
+            if(Math.Abs(numAlpha) < float.Epsilon || Math.Abs(numBeta) < float.Epsilon)
+            {
+                return null;
+            }
+            
             var barycentricPoints = new List<Vector4>(trianglePoints.Count);
             for(var i = 0; i < trianglePoints.Count; i++)
             {
@@ -25,8 +35,8 @@ namespace SoftRenderingApp3D.Painter
                 var y = trianglePoints[i].Y;
 
                 // Barycentric coordinates are calculated
-                var alpha = (-(x - p1.X) * delta21.Y + (y - p1.Y) * delta21.X) / numAlpha;
-                var beta = (-(x - p2.X) * delta02.Y + (y - p2.Y) * delta02.X) / numBeta;
+                var alpha = (-(x - p1.X) * delta21.Y + (y - p1.Y) * delta21.X) * invNumAlpha;
+                var beta = (-(x - p2.X) * delta02.Y + (y - p2.Y) * delta02.X) * invNumBeta;
                 var gamma = 1 - alpha - beta;
 
                 barycentricPoints.Add(new Vector4(alpha, beta, gamma, trianglePoints[i].W));
