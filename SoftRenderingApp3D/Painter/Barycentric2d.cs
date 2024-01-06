@@ -95,43 +95,27 @@ namespace SoftRenderingApp3D.Painter
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static Vector3 GetAdjustedBarycentric(Vector3 barycentric)
         {
-            if(barycentric.X > 1)
-            {
-                return new Vector3(1, 0, 0);
-            }
-
-            if(barycentric.Y > 1)
-            {
-                return new Vector3(0, 1, 0);
-            }
-
-            if(barycentric.Z > 1)
-            {
-                return new Vector3(0, 0, 1);
-            }
-
-            if(barycentric.X < 0)
-            {
-                return new Vector3(0, barycentric.Y, barycentric.Z);
-            }
-
-            if(barycentric.Y < 0)
-            {
-                return new Vector3(barycentric.X, 0, barycentric.Z);
-            }
-
-            if(barycentric.Z < 0)
-            {
-                return new Vector3(barycentric.X, barycentric.Y, 0);
-            }
-
-            if(barycentric.X + barycentric.Y + barycentric.Z > 1)
+            // Check if the sum of coordinates exceeds 1 first, so we don't have to check for other conditions.
+            if (barycentric.X + barycentric.Y + barycentric.Z > 1)
             {
                 var sumDenom = 1 / (barycentric.X + barycentric.Y + barycentric.Z);
                 return new Vector3(barycentric.X * sumDenom, barycentric.Y * sumDenom, barycentric.Z * sumDenom);
             }
 
-            throw new Exception("something not good if this happens");
+            // Adjust negative coordinates to zero while keeping the sum to 1, ensure sum is still 1 and avoid accessing
+            // the array, despite it being an extremely small performance gain 
+            
+            if (barycentric.X < 0) return new Vector3(0, 1 - barycentric.Z, barycentric.Z);
+            if (barycentric.Y < 0) return new Vector3(1 - barycentric.Z, 0, barycentric.Z);
+            if (barycentric.Z < 0) return new Vector3(1 - barycentric.Y, barycentric.Y, 0);
+
+            
+            if (barycentric.X > 1) return new Vector3(1, 0, 0);
+            if (barycentric.Y > 1) return new Vector3(0, 1, 0);
+            if (barycentric.Z > 1) return new Vector3(0, 0, 1);
+            
+            throw new Exception("something went wrong");
+            
         }
     }
 }
