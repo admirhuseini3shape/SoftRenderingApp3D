@@ -329,161 +329,83 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
         * @param  filePath
         * @retval meshList
         */
+       
+        
+        private void SkipLines(StreamReader reader, int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                reader.ReadLine();
+            }
+        }
+        
+        private Vector3 ParseVector3(string[] parts, int startIndex)
+        {
+            return new Vector3(
+                float.Parse(parts[startIndex], CultureInfo.InvariantCulture),
+                float.Parse(parts[startIndex + 1], CultureInfo.InvariantCulture),
+                float.Parse(parts[startIndex + 2], CultureInfo.InvariantCulture));
+        }
+        private int ParseVertex(StreamReader reader, Dictionary<Vector3, int> indices, List<Vector3> vertices, List<Vector3> normals, Vector3 normal)
+        {
+            var line = reader.ReadLine().Trim();
+            var parts = line.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var vertex = ParseVector3(parts, 1);
+
+            if (indices.TryGetValue(vertex, out int index))
+            {
+                return index;
+            }
+            
+            int newIndex = vertices.Count;
+            vertices.Add(vertex);
+            normals.Add(normal);
+            indices[vertex] = newIndex;
+            return newIndex;
+        }
+        
         private Mesh ReadASCIIFile(string filePath)
         {
             var vertices = new List<Vector3>();
             var normals = new List<Vector3>();
             var triangleIndices = new List<Facet>();
+            var indices = new Dictionary<Vector3, int>();
 
-            var txtReader = new StreamReader(filePath);
-
-            string lineString;
-
-            while(!txtReader.EndOfStream)
+            using (var reader = new StreamReader(filePath))
             {
-                lineString = txtReader.ReadLine().Trim(); /* delete whitespace in front and tail of the string */
-                var lineData = lineString.Split(' ');
-
-                var vertexIndex = 0;
-
-                if(lineData[0] == "solid")
+                string line;
+                while ((line = reader.ReadLine()) != null)
                 {
-                    while(lineData[0] != "endsolid")
+                    var parts = line.Trim().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                    if (parts.Length < 1) continue;
+
+                    if (parts[0] == "solid") continue;
+                    if (parts[0] == "endsolid") break;
+
+                    try
                     {
-                        lineString = txtReader.ReadLine().Trim(); // facetnormal
-                        lineData = lineString.Split(' ');
-
-                        if(lineData[0] == "endsolid") // check if we reach at the end of file
+                        if (parts[0] == "facet" && parts[1] == "normal")
                         {
-                            break;
+                            var normal = ParseVector3(parts, 2);
+                            SkipLines(reader, 1);
+                            var vertex1 = ParseVertex(reader, indices, vertices, normals, normal);
+                            var vertex2 = ParseVertex(reader, indices, vertices, normals, normal);
+                            var vertex3 = ParseVertex(reader, indices, vertices, normals, normal);
+                            triangleIndices.Add(new Facet(vertex1, vertex2, vertex3));
+                            SkipLines(reader, 2);
                         }
+                    }
+                    catch
+                    {
+                        processError = true;
+                        break;
+                    }
+                }
+            }
 
-                        /* this try-catch block will be reviewed */
-                        try
-                        {
-                            // FaceNormal 
-
-                            var normal = new Vector3(float.Parse(lineData[2]), float.Parse(lineData[3]),
-                                float.Parse(lineData[4]));
-
-                            //----------------------------------------------------------------------
-                            lineString = txtReader.ReadLine(); // Just skip the OuterLoop line
-                            //----------------------------------------------------------------------
-
-                            // Vertex1
-                            lineString = txtReader.ReadLine().Trim();
-                            /* reduce spaces until string has proper format for split */
-                            while(lineString.IndexOf("  ") != -1)
-                            {
-                                lineString = lineString.Replace("  ", " ");
-                            }
-
-                            lineData = lineString.Split(' ');
-
-                            var vertex1 = new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]),
-                                float.Parse(lineData[3])); // x1
-
-                            // Vertex2
-                            lineString = txtReader.ReadLine().Trim();
-                            /* reduce spaces until string has proper format for split */
-                            while(lineString.IndexOf("  ") != -1)
-                            {
-                                lineString = lineString.Replace("  ", " ");
-                            }
-
-                            lineData = lineString.Split(' ');
-
-                            var vertex2 = new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]),
-                                float.Parse(lineData[3])); // x1
-
-                            // Vertex3
-                            lineString = txtReader.ReadLine().Trim();
-                            /* reduce spaces until string has proper format for split */
-                            while(lineString.IndexOf("  ") != -1)
-                            {
-                                lineString = lineString.Replace("  ", " ");
-                            }
-
-                            lineData = lineString.Split(' ');
-
-                            var vertex3 = new Vector3(float.Parse(lineData[1]), float.Parse(lineData[2]),
-                                float.Parse(lineData[3])); // x1
-
-                            // Create triangle, check if vertices already exist
-                            int I1, I2, I3 = -1;
-                            // First vertex
-                            if(indices.ContainsKey(vertex1))
-                            {
-                                I1 = indices[vertex1];
-                            }
-                            else
-                            {
-                                I1 = vertexIndex;
-                                // Add vertex to dictionary
-                                indices.Add(vertex1, vertexIndex);
-                                // Add vertex to list of vertices
-                                vertices.Add(vertex1);
-                                // Add the normal for the vertex, same for all vertices of a triangle
-                                normals.Add(normal);
-                                vertexIndex++;
-                            }
-
-                            // Second vertex
-                            if(indices.ContainsKey(vertex2))
-                            {
-                                I2 = indices[vertex2];
-                            }
-                            else
-                            {
-                                I2 = vertexIndex;
-                                // Add vertex to dictionary
-                                indices.Add(vertex2, vertexIndex);
-                                // Add vertex to list of vertices
-                                vertices.Add(vertex2);
-                                // Add the normal for the vertex, same for all vertices of a triangle
-                                normals.Add(normal);
-                                vertexIndex++;
-                            }
-
-                            // Third vertex
-                            if(indices.ContainsKey(vertex3))
-                            {
-                                I3 = indices[vertex3];
-                            }
-                            else
-                            {
-                                I3 = vertexIndex;
-                                // Add vertex to dictionary
-                                indices.Add(vertex3, vertexIndex);
-                                // Add vertex to list of vertices
-                                vertices.Add(vertex3);
-                                // Add the normal for the vertex, same for all vertices of a triangle
-                                normals.Add(normal);
-                                vertexIndex++;
-                            }
-
-                            // Add triangle to list of triangles
-                            triangleIndices.Add(new Facet(I1, I2, I3));
-                        }
-                        catch
-                        {
-                            processError = true;
-                            break;
-                        }
-
-                        //----------------------------------------------------------------------
-                        lineString = txtReader.ReadLine(); // Just skip the endloop
-                        //----------------------------------------------------------------------
-                        lineString = txtReader.ReadLine(); // Just skip the endfacet
-                    } // while linedata[0]
-                } // if solid
-            } // while !endofstream
-
-            return new Mesh(vertices.ToArray(),
-                triangleIndices.ToArray(),
-                normals.ToArray());
+            return processError ? null : new Mesh(vertices.ToArray(), triangleIndices.ToArray(), normals.ToArray());
         }
-
+        
         private enum FileType { NONE, BINARY, ASCII } // stl file type enumeration
     }
 }
