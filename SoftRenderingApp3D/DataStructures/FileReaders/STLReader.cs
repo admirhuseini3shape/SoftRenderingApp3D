@@ -53,7 +53,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
         * @param  none
         * @retval SubsurfaceScatteringVolume
         */
-        public IEnumerable<Drawables.IDrawable> NewSTLImport()
+        private IEnumerable<Drawables.IDrawable> NewSTLImport()
         {
             var stlFileType = GetFileType(path);
 
@@ -79,37 +79,49 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
          */
         private FileType GetFileType(string filePath)
         {
-            var stlFileType = FileType.NONE;
-
-            /* check path is exist */
-            if(File.Exists(filePath))
+            if (!File.Exists(filePath))
             {
-                var lineCount = 0;
-                lineCount = File.ReadLines(filePath).Count(); // number of lines in the file
-
-                var firstLine = File.ReadLines(filePath).First();
-
-                var endLines = File.ReadLines(filePath).Skip(lineCount - 1).Take(1).First() +
-                               File.ReadLines(filePath).Skip(lineCount - 2).Take(1).First();
-
-                /* check the file is ascii or not */
-                if((firstLine.IndexOf("solid") != -1) &
-                   (endLines.IndexOf("endsolid") != -1))
-                {
-                    stlFileType = FileType.ASCII;
-                }
-                else
-                {
-                    stlFileType = FileType.BINARY;
-                }
-            }
-            else
-            {
-                stlFileType = FileType.NONE;
+                return FileType.NONE;
             }
 
+            using (var stream = File.OpenRead(filePath))
+            {
+                // Start by reading the first line of the file and check if it matches the "solid" keyword
+                using (var reader = new StreamReader(stream))
+                {
+                    var firstLine = reader.ReadLine();
 
-            return stlFileType;
+                    if (firstLine != null && firstLine.TrimStart().StartsWith("solid"))
+                    {
+                        // Move stream pointer back to the beginning to check for binary file
+                        stream.Position = 0;
+                        var buffer = new byte[80];
+                        stream.Read(buffer, 0, 80); // Read header of binary STL
+                        var header = System.Text.Encoding.ASCII.GetString(buffer).Trim();
+                
+                        if (!header.StartsWith("solid"))
+                        {
+                            return FileType.BINARY;
+                        }
+
+                        // Additional check for "endsolid" at the end of the file
+                        if (stream.Length > 256) // Check only the last 256 bytes
+                        {
+                            stream.Position = stream.Length - 256;
+                            buffer = new byte[256];
+                            stream.Read(buffer, 0, 256);
+                            var endOfFile = System.Text.Encoding.ASCII.GetString(buffer);
+
+                            if (endOfFile.Contains("endsolid"))
+                            {
+                                return FileType.ASCII;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return FileType.BINARY;
         }
 
 
