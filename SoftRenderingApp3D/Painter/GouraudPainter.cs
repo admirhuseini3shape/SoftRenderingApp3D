@@ -31,13 +31,20 @@ namespace SoftRenderingApp3D.Painter
             }
 
             var (i0, i1, i2) = PainterUtils.SortIndices(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
+            if(i0 == i1 || i1 == i2 || i2 == i0)
+                return;
 
             var result = ScanLine.ScanLineTriangle(vertexBuffer, frameBuffer.Height, frameBuffer.Width, i0, i1, i2);
+           
+
             var barycentricPoints = Barycentric2d.ConvertToBarycentricPoints(result,
                 vertexBuffer.ScreenPointVertices[i0],
                 vertexBuffer.ScreenPointVertices[i1],
                 vertexBuffer.ScreenPointVertices[i2]);
-
+            
+            if(barycentricPoints == null)
+                return;
+            
             var color0 = vertexBuffer.VertexColors[i0];
             var color1 = vertexBuffer.VertexColors[i1];
             var color2 = vertexBuffer.VertexColors[i2];
