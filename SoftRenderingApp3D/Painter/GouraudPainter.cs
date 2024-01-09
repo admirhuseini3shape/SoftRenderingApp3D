@@ -15,10 +15,16 @@ namespace SoftRenderingApp3D.Painter
         {
             var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
 
-            vertexBuffer.ScreenPointVertices[facet.I0] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I0]);
-            vertexBuffer.ScreenPointVertices[facet.I1] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I1]);
-            vertexBuffer.ScreenPointVertices[facet.I2] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I2]);
+            var pixels = GetPixels(vertexBuffer, frameBuffer, facet);
 
+            var barycentricPoints = Barycentric2d.ConvertToBarycentricPoints(pixels,
+                vertexBuffer.ScreenPointVertices[facet.I0],
+                vertexBuffer.ScreenPointVertices[facet.I1],
+                vertexBuffer.ScreenPointVertices[facet.I2]);
+
+            if(barycentricPoints == null)
+                return;
+            
             var hasVertexColors = vertexBuffer.Drawable.Material is IVertexColorMaterial;
             if(!hasVertexColors)
             {
@@ -31,24 +37,9 @@ namespace SoftRenderingApp3D.Painter
                 vertexBuffer.VertexColors[facet.I2] = triangleColor;
             }
 
-            var (i0, i1, i2) = PainterUtils.SortIndices(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
-            if(i0 == i1 || i1 == i2 || i2 == i0)
-                return;
-
-            var result = ScanLine.ScanLineTriangle(vertexBuffer, frameBuffer.Height, frameBuffer.Width, i0, i1, i2);
-
-
-            var barycentricPoints = Barycentric2d.ConvertToBarycentricPoints(result,
-                vertexBuffer.ScreenPointVertices[i0],
-                vertexBuffer.ScreenPointVertices[i1],
-                vertexBuffer.ScreenPointVertices[i2]);
-
-            if(barycentricPoints == null)
-                return;
-
-            var color0 = vertexBuffer.VertexColors[i0];
-            var color1 = vertexBuffer.VertexColors[i1];
-            var color2 = vertexBuffer.VertexColors[i2];
+            var color0 = vertexBuffer.VertexColors[facet.I0];
+            var color1 = vertexBuffer.VertexColors[facet.I1];
+            var color2 = vertexBuffer.VertexColors[facet.I2];
 
             // This has to move elsewhere
             var lightPos = new Vector3(0, 10, 10);
@@ -56,20 +47,20 @@ namespace SoftRenderingApp3D.Painter
             // computing the cos of the angle between the light vector and the normal vector
             // it will return a value between 0 and 1 that will be used as the intensity of the color
             var nl0 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[i0],
-                vertexBuffer.WorldVertexNormals[i0],
+                vertexBuffer.WorldVertices[facet.I0],
+                vertexBuffer.WorldVertexNormals[facet.I0],
                 lightPos);
             var nl1 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[i1],
-                vertexBuffer.WorldVertexNormals[i1],
+                vertexBuffer.WorldVertices[facet.I1],
+                vertexBuffer.WorldVertexNormals[facet.I1],
                 lightPos);
             var nl2 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[i2],
-                vertexBuffer.WorldVertexNormals[i2],
+                vertexBuffer.WorldVertices[facet.I2],
+                vertexBuffer.WorldVertexNormals[facet.I2],
                 lightPos);
 
-            var perPixelColors = new List<(int x, int y, int z, ColorRGB color)>(result.Count);
-            for(var i = 0; i < result.Count; i++)
+            var perPixelColors = new List<(int x, int y, int z, ColorRGB color)>(pixels.Count);
+            for(var i = 0; i < pixels.Count; i++)
             {
                 var alpha = barycentricPoints[i].X;
                 var beta = barycentricPoints[i].Y;
@@ -80,26 +71,15 @@ namespace SoftRenderingApp3D.Painter
                 //var maxG = Math.Max(color0.G, Math.Max(color1.G, color2.G));
                 //var maxB = Math.Max(color0.B, Math.Max(color1.B, color2.B));
                 // interpolate
-                var R = (byte)(alpha * color0.R + beta * color1.R + gamma * color2.R);//.Clamp(0, maxR);
-                var G = (byte)(alpha * color0.G + beta * color1.G + gamma * color2.G);//.Clamp(0, maxG);
-                var B = (byte)(alpha * color0.B + beta * color1.B + gamma * color2.B);//.Clamp(0, maxB);
-                var color = new ColorRGB(R, G, B, 255);
+                var r = (byte)(alpha * color0.R + beta * color1.R + gamma * color2.R);//.Clamp(0, maxR);
+                var g = (byte)(alpha * color0.G + beta * color1.G + gamma * color2.G);//.Clamp(0, maxG);
+                var b = (byte)(alpha * color0.B + beta * color1.B + gamma * color2.B);//.Clamp(0, maxB);
+                var color = new ColorRGB(r, g, b, 255);
 
-                perPixelColors.Add(((int)result[i].X, (int)result[i].Y, (int)result[i].Z, lightContribution * color));
+                perPixelColors.Add(((int)pixels[i].X, (int)pixels[i].Y, (int)pixels[i].Z, lightContribution * color));
             }
 
-            lock(frameBuffer)
-            {
-                for(var i = 0; i < result.Count; i++)
-                {
-                    var pixel = perPixelColors[i];
-                    if(pixel.z < zBuffer[pixel.x, pixel.y])
-                    {
-                        frameBuffer.PutPixel(pixel.x, pixel.y, pixel.z, pixel.color);
-                        zBuffer[pixel.x, pixel.y] = pixel.z;
-                    }
-                }
-            }
+            WriteToBuffer(frameBuffer, pixels, perPixelColors);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -107,22 +87,20 @@ namespace SoftRenderingApp3D.Painter
         {
             var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
 
-            vertexBuffer.ScreenPointVertices[facet.I0] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I0]);
-            vertexBuffer.ScreenPointVertices[facet.I1] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I1]);
-            vertexBuffer.ScreenPointVertices[facet.I2] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I2]);
+            var pixels = GetPixels(vertexBuffer, frameBuffer, facet);
 
-            var (i0, i1, i2) = PainterUtils.SortIndices(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
+            var barycentricPoints = Barycentric2d.ConvertToBarycentricPoints(pixels,
+                vertexBuffer.ScreenPointVertices[facet.I0],
+                vertexBuffer.ScreenPointVertices[facet.I1],
+                vertexBuffer.ScreenPointVertices[facet.I2]);
 
-            var result = ScanLine.ScanLineTriangle(vertexBuffer, frameBuffer.Height, frameBuffer.Width, i0, i1, i2);
-            var barycentricPoints = Barycentric2d.ConvertToBarycentricPoints(result,
-                vertexBuffer.ScreenPointVertices[i0],
-                vertexBuffer.ScreenPointVertices[i1],
-                vertexBuffer.ScreenPointVertices[i2]);
+            if(barycentricPoints == null)
+                return;
 
             // Get the texture coordinates of each point of the triangle
-            var uv0 = vertexBuffer.Drawable.Mesh.TexCoordinates[i0];
-            var uv1 = vertexBuffer.Drawable.Mesh.TexCoordinates[i1];
-            var uv2 = vertexBuffer.Drawable.Mesh.TexCoordinates[i2];
+            var uv0 = vertexBuffer.Drawable.Mesh.TexCoordinates[facet.I0];
+            var uv1 = vertexBuffer.Drawable.Mesh.TexCoordinates[facet.I1];
+            var uv2 = vertexBuffer.Drawable.Mesh.TexCoordinates[facet.I2];
 
             // This has to move elsewhere
             var lightPos = new Vector3(0, 10, 10);
@@ -130,19 +108,19 @@ namespace SoftRenderingApp3D.Painter
             // computing the cos of the angle between the light vector and the normal vector
             // it will return a value between 0 and 1 that will be used as the intensity of the color
             var nl0 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[i0],
-                vertexBuffer.WorldVertexNormals[i0],
+                vertexBuffer.WorldVertices[facet.I0],
+                vertexBuffer.WorldVertexNormals[facet.I0],
                 lightPos);
             var nl1 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[i1],
-                vertexBuffer.WorldVertexNormals[i1],
+                vertexBuffer.WorldVertices[facet.I1],
+                vertexBuffer.WorldVertexNormals[facet.I1],
                 lightPos);
             var nl2 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[i2],
-                vertexBuffer.WorldVertexNormals[i2],
+                vertexBuffer.WorldVertices[facet.I2],
+                vertexBuffer.WorldVertexNormals[facet.I2],
                 lightPos);
-            var perPixelColors = new List<(int x, int y, int z, ColorRGB color)>(result.Count);
-            for(var i = 0; i < result.Count; i++)
+            var perPixelColors = new List<(int x, int y, int z, ColorRGB color)>(pixels.Count);
+            for(var i = 0; i < pixels.Count; i++)
             {
                 var alpha = barycentricPoints[i].X;
                 var beta = barycentricPoints[i].Y;
@@ -155,12 +133,34 @@ namespace SoftRenderingApp3D.Painter
                 var color = linearFiltering ?
                     texture.GetPixelColorLinearFiltering(texX, texY) :
                     texture.GetPixelColorNearestFiltering(texX, texY);
-                perPixelColors.Add(((int)result[i].X, (int)result[i].Y, (int)result[i].Z, lightContribution * color));
+                perPixelColors.Add(((int)pixels[i].X, (int)pixels[i].Y, (int)pixels[i].Z, lightContribution * color));
             }
 
+            WriteToBuffer(frameBuffer, pixels, perPixelColors);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static List<Vector3> GetPixels(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, Facet facet)
+        {
+            var result = new List<Vector3>();
+            vertexBuffer.ScreenPointVertices[facet.I0] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I0]);
+            vertexBuffer.ScreenPointVertices[facet.I1] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I1]);
+            vertexBuffer.ScreenPointVertices[facet.I2] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I2]);
+
+            var (i0, i1, i2) = PainterUtils.SortIndices(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
+            if(i0 == i1 || i1 == i2 || i2 == i0)
+                return result;
+
+            return ScanLine.ScanLineTriangle(vertexBuffer, frameBuffer.Height, frameBuffer.Width, i0, i1, i2);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void WriteToBuffer(FrameBuffer frameBuffer, IReadOnlyCollection<Vector3> pixels,
+            IReadOnlyList<(int x, int y, int z, ColorRGB color)> perPixelColors)
+        {
             lock(frameBuffer)
             {
-                for(var i = 0; i < result.Count; i++)
+                for(var i = 0; i < pixels.Count; i++)
                 {
                     var pixel = perPixelColors[i];
                     frameBuffer.PutPixel(pixel.x, pixel.y, pixel.z, pixel.color);
