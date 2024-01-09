@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System;
 
-namespace SoftRenderingApp3D.Painter
+namespace SoftRenderingApp3D.Utils
 {
     public static class Barycentric2d
     {

@@ -100,10 +100,10 @@
     <Compile Include="DataStructures\Meshes\MeshExtensions.cs" />
     <Compile Include="DataStructures\World\ILightSource.cs" />
     <Compile Include="Factories\Factory.cs" />
-    <Compile Include="Painter\Barycentric2d.cs" />
+    <Compile Include="Utils\Barycentric2d.cs" />
     <Compile Include="Painter\GouraudPainter.cs" />
     <Compile Include="Painter\IPainter.cs" />
-    <Compile Include="Painter\ScanLine.cs" />
+    <Compile Include="Rasterizers\ScanLine.cs" />
     <Compile Include="RenderContext.cs" />
     <Compile Include="Renderer\IRenderer.cs" />
     <Compile Include="Renderer\IRenderingJob.cs" />
