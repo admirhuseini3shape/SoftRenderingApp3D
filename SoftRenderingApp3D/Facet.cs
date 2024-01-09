@@ -25,6 +25,11 @@ namespace SoftRenderingApp3D
             return (vertices[I0] + vertices[I1] + vertices[I2]) / 3;
         }
 
+        public float CalculateZAverages(IReadOnlyList<Vector4> vertices)
+        {
+            return (vertices[I0].Z + vertices[I1].Z + vertices[I2].Z) / 3;
+        }
+
         public Vector3 CalculateNormal(IReadOnlyList<Vector3> vertices)
         {
             // Avoid division with zero

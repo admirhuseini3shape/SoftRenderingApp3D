@@ -40,7 +40,7 @@ namespace SoftRenderingApp3D.App
             RenderContext = new RenderContext();
             RenderContext.Stats = new Stats();
 
-            RendererSettings = new RendererSettings { BackFaceCulling = true };
+            RendererSettings = new RendererSettings { BackFaceCulling = false };
 
             FrameBuffer = new FrameBuffer(Width, Height, RenderContext);
             Painter = new GouraudPainter();

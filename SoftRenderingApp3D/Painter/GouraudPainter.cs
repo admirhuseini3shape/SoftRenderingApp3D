@@ -11,11 +11,11 @@ namespace SoftRenderingApp3D.Painter
     public class GouraudPainter : IPainter
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DrawTriangle(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, float[,] zBuffer, int faId)
+        public List<(int x, int y, float z, ColorRGB color)> DrawTriangle(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, List<Vector3> pixels, int faId)
         {
-            var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
+            var perPixelColors = new List<(int x, int y, float z, ColorRGB color)>(pixels.Count);
 
-            var pixels = GetPixels(vertexBuffer, frameBuffer, facet);
+            var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
 
             var barycentricPoints = Barycentric2d.ConvertToBarycentricPoints(pixels,
                 vertexBuffer.ScreenPointVertices[facet.I0],
@@ -23,8 +23,8 @@ namespace SoftRenderingApp3D.Painter
                 vertexBuffer.ScreenPointVertices[facet.I2]);
 
             if(barycentricPoints == null)
-                return;
-            
+                return perPixelColors;
+
             var hasVertexColors = vertexBuffer.Drawable.Material is IVertexColorMaterial;
             if(!hasVertexColors)
             {
@@ -59,7 +59,7 @@ namespace SoftRenderingApp3D.Painter
                 vertexBuffer.WorldVertexNormals[facet.I2],
                 lightPos);
 
-            var perPixelColors = new List<(int x, int y, int z, ColorRGB color)>(pixels.Count);
+            
             for(var i = 0; i < pixels.Count; i++)
             {
                 var alpha = barycentricPoints[i].X;
@@ -76,18 +76,18 @@ namespace SoftRenderingApp3D.Painter
                 var b = (byte)(alpha * color0.B + beta * color1.B + gamma * color2.B);//.Clamp(0, maxB);
                 var color = new ColorRGB(r, g, b, 255);
 
-                perPixelColors.Add(((int)pixels[i].X, (int)pixels[i].Y, (int)pixels[i].Z, lightContribution * color));
+                perPixelColors.Add(((int)pixels[i].X, (int)pixels[i].Y, pixels[i].Z, lightContribution * color));
             }
 
-            WriteToBuffer(frameBuffer, pixels, perPixelColors);
+            return perPixelColors;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DrawTriangleTextured(Texture texture, VertexBuffer vertexBuffer, FrameBuffer frameBuffer, int faId, bool linearFiltering)
+        public List<(int x, int y, float z, ColorRGB color)> DrawTriangleTextured(Texture texture, VertexBuffer vertexBuffer, FrameBuffer frameBuffer,List<Vector3> pixels, int faId, bool linearFiltering)
         {
-            var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
+            var perPixelColors = new List<(int x, int y, float z, ColorRGB color)>(pixels.Count);
 
-            var pixels = GetPixels(vertexBuffer, frameBuffer, facet);
+            var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
 
             var barycentricPoints = Barycentric2d.ConvertToBarycentricPoints(pixels,
                 vertexBuffer.ScreenPointVertices[facet.I0],
@@ -95,7 +95,7 @@ namespace SoftRenderingApp3D.Painter
                 vertexBuffer.ScreenPointVertices[facet.I2]);
 
             if(barycentricPoints == null)
-                return;
+                return perPixelColors;
 
             // Get the texture coordinates of each point of the triangle
             var uv0 = vertexBuffer.Drawable.Mesh.TexCoordinates[facet.I0];
@@ -119,7 +119,7 @@ namespace SoftRenderingApp3D.Painter
                 vertexBuffer.WorldVertices[facet.I2],
                 vertexBuffer.WorldVertexNormals[facet.I2],
                 lightPos);
-            var perPixelColors = new List<(int x, int y, int z, ColorRGB color)>(pixels.Count);
+            
             for(var i = 0; i < pixels.Count; i++)
             {
                 var alpha = barycentricPoints[i].X;
@@ -136,36 +136,8 @@ namespace SoftRenderingApp3D.Painter
                 perPixelColors.Add(((int)pixels[i].X, (int)pixels[i].Y, (int)pixels[i].Z, lightContribution * color));
             }
 
-            WriteToBuffer(frameBuffer, pixels, perPixelColors);
+            return perPixelColors;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Vector3> GetPixels(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, Facet facet)
-        {
-            var result = new List<Vector3>();
-            vertexBuffer.ScreenPointVertices[facet.I0] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I0]);
-            vertexBuffer.ScreenPointVertices[facet.I1] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I1]);
-            vertexBuffer.ScreenPointVertices[facet.I2] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I2]);
-
-            var (i0, i1, i2) = PainterUtils.SortIndices(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
-            if(i0 == i1 || i1 == i2 || i2 == i0)
-                return result;
-
-            return ScanLine.ScanLineTriangle(vertexBuffer, frameBuffer.Height, frameBuffer.Width, i0, i1, i2);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void WriteToBuffer(FrameBuffer frameBuffer, IReadOnlyCollection<Vector3> pixels,
-            IReadOnlyList<(int x, int y, int z, ColorRGB color)> perPixelColors)
-        {
-            lock(frameBuffer)
-            {
-                for(var i = 0; i < pixels.Count; i++)
-                {
-                    var pixel = perPixelColors[i];
-                    frameBuffer.PutPixel(pixel.x, pixel.y, pixel.z, pixel.color);
-                }
-            }
-        }
+        
     }
 }

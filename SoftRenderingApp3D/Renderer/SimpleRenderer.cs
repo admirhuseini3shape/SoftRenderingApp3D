@@ -2,9 +2,11 @@
 using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.DataStructures.Materials;
 using SoftRenderingApp3D.Painter;
+using SoftRenderingApp3D.Rasterizers;
 using SoftRenderingApp3D.Utils;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace SoftRenderingApp3D.Renderer
@@ -15,16 +17,6 @@ namespace SoftRenderingApp3D.Renderer
             IList<IDrawable> drawables, Stats stats, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix,
             RendererSettings rendererSettings)
         {
-            float[,] zBuffer = new float[frameBuffer.Width, frameBuffer.Height];
-            
-            for (int x = 0; x < frameBuffer.Width; x++)
-            {
-                for (int y = 0; y < frameBuffer.Height; y++)
-                {
-                    zBuffer[x, y] = float.MaxValue;
-                }
-            }
-            
             if(drawables == null || painter == null || rendererSettings == null)
                 return Array.Empty<int>();
 
@@ -60,9 +52,29 @@ namespace SoftRenderingApp3D.Renderer
 
                 var triangleCount = drawable.Mesh.Facets.Count;
                 for(var faId = 0; faId < triangleCount; faId++)
-                //Parallel.For(0, triangleCount, faId =>
                 {
                     var facet = drawable.Mesh.Facets[faId];
+                    facet.TransformProjection(vertexBuffer, projectionMatrix);
+
+                    vertexBuffer.ScreenPointVertices[facet.I0] =
+                        frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I0]);
+                    vertexBuffer.ScreenPointVertices[facet.I1] =
+                        frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I1]);
+                    vertexBuffer.ScreenPointVertices[facet.I2] =
+                        frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I2]);
+                }
+                var zSortedFacets = drawable.Mesh.Facets
+                    .Select((fa, i) => new { FaId = i, zDepth = fa.CalculateZAverages(vertexBuffer.ProjectionVertices) })
+                    .ToList();
+                zSortedFacets.Sort((x, y) => (int)(1000 * x.zDepth - 1000 * y.zDepth));
+                for(var faId = 0; faId < triangleCount; faId++)
+                //Parallel.For(0, triangleCount, faId =>
+                {
+                    var facetData = zSortedFacets[faId];
+                    //if(facetData.zDepth < 0)
+                    //    continue;
+
+                    var facet = drawable.Mesh.Facets[facetData.FaId];
 
                     // Discard if behind far plane
                     if(facet.IsBehindFarPlane(vertexBuffer))
@@ -81,7 +93,7 @@ namespace SoftRenderingApp3D.Renderer
                     }
 
                     // Project in frustum
-                    facet.TransformProjection(vertexBuffer, projectionMatrix);
+                    //facet.TransformProjection(vertexBuffer, projectionMatrix);
 
                     // Discard if outside view frustum
                     if(facet.IsOutsideFrustum(vertexBuffer))
@@ -93,16 +105,19 @@ namespace SoftRenderingApp3D.Renderer
 
                     stats.PaintTime();
 
+                    var pixels = Rasterizer.GetPixels(vertexBuffer, frameBuffer, facet);
+                    var perPixelColors = new List<(int x, int y, float z, ColorRGB color)>();
                     var textureMaterial = drawable.Material as ITextureMaterial;
                     var hasTexture = textureMaterial != null && textureMaterial.Texture != null;
                     if(!hasTexture || !rendererSettings.ShowTextures)
-                        painter.DrawTriangle(vertexBuffer, frameBuffer, zBuffer, faId);
+                        perPixelColors= painter.DrawTriangle(vertexBuffer, frameBuffer, pixels, facetData.FaId);
                     else if(painter is GouraudPainter gouraudPainter)
                     {
-                        gouraudPainter.DrawTriangleTextured(textureMaterial.Texture,
-                            vertexBuffer, frameBuffer, faId, rendererSettings.LinearTextureFiltering);
+                        perPixelColors = gouraudPainter.DrawTriangleTextured(textureMaterial.Texture,
+                            vertexBuffer, frameBuffer, pixels, facetData.FaId, rendererSettings.LinearTextureFiltering);
                     }
 
+                    frameBuffer.PutPixels(perPixelColors);
                     stats.DrawnTriangleCount++;
 
                     stats.CalcTime();

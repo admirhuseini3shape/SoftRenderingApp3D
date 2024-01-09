@@ -1,5 +1,6 @@
 ﻿using SoftRenderingApp3D.Utils;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -7,16 +8,17 @@ namespace SoftRenderingApp3D.Buffer
 {
     public class FrameBuffer
     {
+        private readonly object syncRoot = new object();
         private readonly int[] emptyBuffer;
         private readonly int[] emptyZBuffer;
 
         private readonly RenderContext renderContext;
-        private readonly int[] zBuffer;
+        private readonly float[] zBuffer;
 
         public FrameBuffer(int width, int height, RenderContext renderContext)
         {
             Screen = new int[width * height];
-            zBuffer = new int[width * height];
+            zBuffer = new float[width * height];
 
             emptyBuffer = new int[width * height];
             emptyZBuffer = new int[width * height];
@@ -30,7 +32,7 @@ namespace SoftRenderingApp3D.Buffer
         public int[] Screen { get; }
         public int Width { get; }
         public int Height { get; }
-        internal int Depth { get; set; } = 65535; // Build a true Z buffer based on Zfar/Znear planes
+        internal int Depth { get; set; } = 65535;//65535; // Build a true Z buffer based on Zfar/Znear planes
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector3 ToScreen3(Vector4 p)
@@ -49,7 +51,7 @@ namespace SoftRenderingApp3D.Buffer
 
         // Called to put a pixel on screen at a specific X,Y coordinates
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void PutPixel(int x, int y, int z, ColorRGB color)
+        public void PutPixel(int x, int y, float z, ColorRGB color)
         {
 #if DEBUG
             if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0)
@@ -67,8 +69,41 @@ namespace SoftRenderingApp3D.Buffer
             renderContext.Stats.DrawnPixelCount++;
 
             zBuffer[index] = z;
-
             Screen[index] = color.Color;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PutPixels(IReadOnlyList<(int x, int y, float z, ColorRGB color)> perPixelColors)
+        {
+            lock(syncRoot)
+            {
+                for(var i = 0; i < perPixelColors.Count; i++)
+                {
+                    var pixel = perPixelColors[i];
+                    PutPixel(pixel.x, pixel.y, pixel.z, pixel.color);
+                }
+            }
+        }
+
+        // Called to put a pixel on screen at a specific X,Y coordinates
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryUpdateZBuffer(int x, int y, float z)
+        {
+#if DEBUG
+            if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0)
+            {
+                throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}, Depth={z}");
+            }
+#endif
+            var index = x + y * Width;
+            if(z <= zBuffer[index])
+            {
+                zBuffer[index] = z;
+                renderContext.Stats.BehindZPixelCount++;
+                return true;
+            }
+
+            return false;
         }
 
 
