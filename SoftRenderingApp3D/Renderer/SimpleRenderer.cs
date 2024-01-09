@@ -106,16 +106,8 @@ namespace SoftRenderingApp3D.Renderer
                     stats.PaintTime();
 
                     var pixels = Rasterizer.GetPixels(vertexBuffer, frameBuffer, facet);
-                    var perPixelColors = new List<(int x, int y, float z, ColorRGB color)>();
-                    var textureMaterial = drawable.Material as ITextureMaterial;
-                    var hasTexture = textureMaterial != null && textureMaterial.Texture != null;
-                    if(!hasTexture || !rendererSettings.ShowTextures)
-                        perPixelColors= painter.DrawTriangle(vertexBuffer, frameBuffer, pixels, facetData.FaId);
-                    else if(painter is GouraudPainter gouraudPainter)
-                    {
-                        perPixelColors = gouraudPainter.DrawTriangleTextured(textureMaterial.Texture,
-                            vertexBuffer, frameBuffer, pixels, facetData.FaId, rendererSettings.LinearTextureFiltering);
-                    }
+                    var perPixelColors = GetColors(frameBuffer, painter, 
+                        rendererSettings, drawable, vertexBuffer, pixels, facetData.FaId);
 
                     frameBuffer.PutPixels(perPixelColors);
                     stats.DrawnTriangleCount++;
@@ -125,6 +117,23 @@ namespace SoftRenderingApp3D.Renderer
             }//);
 
             return frameBuffer.Screen;
+        }
+
+        private static List<(int x, int y, float z, ColorRGB color)> GetColors(FrameBuffer frameBuffer, IPainter painter, RendererSettings rendererSettings,
+            IDrawable drawable, VertexBuffer vertexBuffer, List<Vector3> pixels, int faId)
+        {
+            var perPixelColors = new List<(int x, int y, float z, ColorRGB color)>();
+            var textureMaterial = drawable.Material as ITextureMaterial;
+            var hasTexture = textureMaterial != null && textureMaterial.Texture != null;
+            if (!hasTexture || !rendererSettings.ShowTextures)
+                perPixelColors = painter.DrawTriangle(vertexBuffer, frameBuffer, pixels, faId);
+            else if (painter is GouraudPainter gouraudPainter)
+            {
+                perPixelColors = gouraudPainter.DrawTriangleTextured(textureMaterial.Texture,
+                    vertexBuffer, frameBuffer, pixels, faId, rendererSettings.LinearTextureFiltering);
+            }
+
+            return perPixelColors;
         }
     }
 }
