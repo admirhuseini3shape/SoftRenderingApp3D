@@ -3,6 +3,7 @@ using SoftRenderingApp3D.DataStructures.Materials;
 using SoftRenderingApp3D.DataStructures.Textures;
 using SoftRenderingApp3D.Utils;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace SoftRenderingApp3D.Painter
@@ -35,19 +36,37 @@ namespace SoftRenderingApp3D.Painter
                 return;
 
             var result = ScanLine.ScanLineTriangle(vertexBuffer, frameBuffer.Height, frameBuffer.Width, i0, i1, i2);
-           
+
 
             var barycentricPoints = Barycentric2d.ConvertToBarycentricPoints(result,
                 vertexBuffer.ScreenPointVertices[i0],
                 vertexBuffer.ScreenPointVertices[i1],
                 vertexBuffer.ScreenPointVertices[i2]);
-            
+
             if(barycentricPoints == null)
                 return;
-            
+
             var color0 = vertexBuffer.VertexColors[i0];
             var color1 = vertexBuffer.VertexColors[i1];
             var color2 = vertexBuffer.VertexColors[i2];
+
+            // This has to move elsewhere
+            var lightPos = new Vector3(0, 10, 10);
+
+            // computing the cos of the angle between the light vector and the normal vector
+            // it will return a value between 0 and 1 that will be used as the intensity of the color
+            var nl0 = MathUtils.ComputeNDotL(
+                vertexBuffer.WorldVertices[i0],
+                vertexBuffer.WorldVertexNormals[i0],
+                lightPos);
+            var nl1 = MathUtils.ComputeNDotL(
+                vertexBuffer.WorldVertices[i1],
+                vertexBuffer.WorldVertexNormals[i1],
+                lightPos);
+            var nl2 = MathUtils.ComputeNDotL(
+                vertexBuffer.WorldVertices[i2],
+                vertexBuffer.WorldVertexNormals[i2],
+                lightPos);
 
             var perPixelColors = new List<(int x, int y, int z, ColorRGB color)>(result.Count);
             for(var i = 0; i < result.Count; i++)
@@ -55,7 +74,7 @@ namespace SoftRenderingApp3D.Painter
                 var alpha = barycentricPoints[i].X;
                 var beta = barycentricPoints[i].Y;
                 var gamma = barycentricPoints[i].Z;
-                var lightContribution = barycentricPoints[i].W;
+                var lightContribution = (alpha * nl0 + beta * nl1 + gamma * nl2).Clamp();
 
                 //var maxR = Math.Max(color0.R, Math.Max(color1.R, color2.R));
                 //var maxG = Math.Max(color0.G, Math.Max(color1.G, color2.G));
@@ -74,7 +93,7 @@ namespace SoftRenderingApp3D.Painter
                 for(var i = 0; i < result.Count; i++)
                 {
                     var pixel = perPixelColors[i];
-                    if (pixel.z < zBuffer[pixel.x, pixel.y])
+                    if(pixel.z < zBuffer[pixel.x, pixel.y])
                     {
                         frameBuffer.PutPixel(pixel.x, pixel.y, pixel.z, pixel.color);
                         zBuffer[pixel.x, pixel.y] = pixel.z;
@@ -92,7 +111,7 @@ namespace SoftRenderingApp3D.Painter
             vertexBuffer.ScreenPointVertices[facet.I1] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I1]);
             vertexBuffer.ScreenPointVertices[facet.I2] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I2]);
 
-            var (i0,i1,i2) = PainterUtils.SortIndices(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
+            var (i0, i1, i2) = PainterUtils.SortIndices(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
 
             var result = ScanLine.ScanLineTriangle(vertexBuffer, frameBuffer.Height, frameBuffer.Width, i0, i1, i2);
             var barycentricPoints = Barycentric2d.ConvertToBarycentricPoints(result,
@@ -105,13 +124,30 @@ namespace SoftRenderingApp3D.Painter
             var uv1 = vertexBuffer.Drawable.Mesh.TexCoordinates[i1];
             var uv2 = vertexBuffer.Drawable.Mesh.TexCoordinates[i2];
 
+            // This has to move elsewhere
+            var lightPos = new Vector3(0, 10, 10);
+
+            // computing the cos of the angle between the light vector and the normal vector
+            // it will return a value between 0 and 1 that will be used as the intensity of the color
+            var nl0 = MathUtils.ComputeNDotL(
+                vertexBuffer.WorldVertices[i0],
+                vertexBuffer.WorldVertexNormals[i0],
+                lightPos);
+            var nl1 = MathUtils.ComputeNDotL(
+                vertexBuffer.WorldVertices[i1],
+                vertexBuffer.WorldVertexNormals[i1],
+                lightPos);
+            var nl2 = MathUtils.ComputeNDotL(
+                vertexBuffer.WorldVertices[i2],
+                vertexBuffer.WorldVertexNormals[i2],
+                lightPos);
             var perPixelColors = new List<(int x, int y, int z, ColorRGB color)>(result.Count);
             for(var i = 0; i < result.Count; i++)
             {
                 var alpha = barycentricPoints[i].X;
                 var beta = barycentricPoints[i].Y;
                 var gamma = barycentricPoints[i].Z;
-                var lightContribution = barycentricPoints[i].W;
+                var lightContribution = alpha * nl0 + beta * nl1 + gamma * nl2;
 
                 var texX = uv0.X * alpha + uv1.X * beta + uv2.X * gamma;
                 var texY = uv0.Y * alpha + uv1.Y * beta + uv2.Y * gamma;

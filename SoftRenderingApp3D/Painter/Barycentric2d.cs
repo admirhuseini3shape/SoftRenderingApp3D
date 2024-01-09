@@ -9,7 +9,7 @@ namespace SoftRenderingApp3D.Painter
     {
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static List<Vector4> ConvertToBarycentricPoints(IReadOnlyList<Vector4> trianglePoints,
+        public static List<Vector3> ConvertToBarycentricPoints(IReadOnlyList<Vector3> trianglePoints,
             Vector3 p0, Vector3 p1, Vector3 p2)
         {
             var delta21 = p2 - p1;
@@ -28,7 +28,7 @@ namespace SoftRenderingApp3D.Painter
                 return null;
             }
             
-            var barycentricPoints = new List<Vector4>(trianglePoints.Count);
+            var barycentricPoints = new List<Vector3>(trianglePoints.Count);
             for(var i = 0; i < trianglePoints.Count; i++)
             {
                 var x = trianglePoints[i].X;
@@ -38,8 +38,10 @@ namespace SoftRenderingApp3D.Painter
                 var alpha = (-(x - p1.X) * delta21.Y + (y - p1.Y) * delta21.X) * invNumAlpha;
                 var beta = (-(x - p2.X) * delta02.Y + (y - p2.Y) * delta02.X) * invNumBeta;
                 var gamma = 1 - alpha - beta;
-
-                barycentricPoints.Add(new Vector4(alpha, beta, gamma, trianglePoints[i].W));
+                var barycentric = new Vector3(alpha, beta, gamma);
+                if(CheckIfBarycentricOutsideTriangle(barycentric))
+                    barycentric = GetAdjustedBarycentric(barycentric);
+                barycentricPoints.Add(barycentric);
             }
 
             return barycentricPoints;
