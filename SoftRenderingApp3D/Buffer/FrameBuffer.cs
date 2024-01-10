@@ -32,7 +32,7 @@ namespace SoftRenderingApp3D.Buffer
         public int[] Screen { get; }
         public int Width { get; }
         public int Height { get; }
-        internal int Depth { get; set; } = 65535;//65535; // Build a true Z buffer based on Zfar/Znear planes
+        private int Depth { get; set; } = 65535;//65535; // Build a true Z buffer based on Zfar/Znear planes
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector3 ToScreen3(Vector4 p)
@@ -51,14 +51,14 @@ namespace SoftRenderingApp3D.Buffer
 
         // Called to put a pixel on screen at a specific X,Y coordinates
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void PutPixel(int x, int y, float z, ColorRGB color)
+        private void PutPixel(int x, int y, float z, ColorRGB color)
         {
-#if DEBUG
+        #if DEBUG
             if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0)
             {
                 throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}, Depth={z}");
             }
-#endif
+        #endif
             var index = x + y * Width;
             if(z > zBuffer[index])
             {
@@ -96,14 +96,15 @@ namespace SoftRenderingApp3D.Buffer
             }
 #endif
             var index = x + y * Width;
-            if(z <= zBuffer[index])
+            if(!(z <= zBuffer[index]))
             {
-                zBuffer[index] = z;
-                renderContext.Stats.BehindZPixelCount++;
-                return true;
+                return false;
             }
 
-            return false;
+            zBuffer[index] = z;
+            renderContext.Stats.BehindZPixelCount++;
+            return true;
+
         }
 
 
@@ -137,38 +138,24 @@ namespace SoftRenderingApp3D.Buffer
             x1 = y1 = z1 = dm / 2;
 
             // Start the infinite drawing loop.
-            while(true)
-            {
+            while(true) {
                 // Draw Current Pixel
                 PutPixel(x2, y2, z2, color);
 
                 // Break the loop if the end point is reached.
-                if(i-- == 0)
-                {
+                if(i-- == 0) {
                     break;
                 }
 
                 // Update the decision variables and coordinates based on the absolute differences.
                 x2 += dx;
-                if(x2 < 0)
-                {
-                    x2 += dm;
-                    x1 += sx;
-                }
+                if(x2 < 0) { x2 += dm; x1 += sx; }
 
                 y2 += dy;
-                if(y2 < 0)
-                {
-                    y2 += dm;
-                    y1 += sy;
-                }
+                if(y2 < 0) { y2 += dm; y1 += sy; }
 
                 z2 += dz;
-                if(z2 < 0)
-                {
-                    z2 += dm;
-                    z1 += sz;
-                }
+                if(z2 < 0) { z2 += dm; z1 += sz; }
             }
         }
     }

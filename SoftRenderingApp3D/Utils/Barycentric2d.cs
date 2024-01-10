@@ -105,13 +105,9 @@ namespace SoftRenderingApp3D.Utils
                     barycentric.Y * sumDenominator, 
                     barycentric.Z * sumDenominator);
             }
-
-            if(barycentric.X > 1) return new Vector3(1, 0, 0);
-            if(barycentric.Y > 1) return new Vector3(0, 1, 0);
-            if(barycentric.Z > 1) return new Vector3(0, 0, 1);
-
+            
             // Adjust negative coordinates to zero while keeping the sum to 1, ensure sum is still 1 and avoid accessing
-            // the array, despite it being an extremely small performance gain 
+            // the array, despite it being an extremely small performance gain.
 
             if (barycentric.X < 0) 
                 barycentric = new Vector3(0, 1 - barycentric.Z, barycentric.Z);
