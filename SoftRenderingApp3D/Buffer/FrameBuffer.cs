@@ -1,13 +1,18 @@
 ﻿using SoftRenderingApp3D.Utils;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace SoftRenderingApp3D.Buffer
 {
-    public class FrameBuffer
+    public class FrameBuffer : IDisposable
     {
+        
+        private ArrayPool<int> intPool = ArrayPool<int>.Shared;
+        private ArrayPool<float> floatPool = ArrayPool<float>.Shared;
+        
         private readonly object syncRoot = new object();
         private readonly int[] emptyBuffer;
         private readonly int[] emptyZBuffer;
@@ -17,8 +22,8 @@ namespace SoftRenderingApp3D.Buffer
 
         public FrameBuffer(int width, int height, RenderContext renderContext)
         {
-            Screen = new int[width * height];
-            zBuffer = new float[width * height];
+            Screen = intPool.Rent(width * height);
+            zBuffer = floatPool.Rent(width * height);
 
             emptyBuffer = new int[width * height];
             emptyZBuffer = new int[width * height];
@@ -45,8 +50,18 @@ namespace SoftRenderingApp3D.Buffer
 
         public void Clear()
         {
-            Array.Copy(emptyBuffer, Screen, Screen.Length);
-            Array.Copy(emptyZBuffer, zBuffer, zBuffer.Length);
+            
+            Span<int> screenSpan = Screen;
+            Span<float> zBufferSpan = zBuffer.AsSpan();
+            
+            screenSpan.Fill(0); 
+            zBufferSpan.Fill(Depth);
+        }
+
+        private void ReleaseBuffers()
+        {
+            intPool.Return(Screen);
+            floatPool.Return(zBuffer);
         }
 
         // Called to put a pixel on screen at a specific X,Y coordinates
@@ -157,6 +172,11 @@ namespace SoftRenderingApp3D.Buffer
                 z2 += dz;
                 if(z2 < 0) { z2 += dm; z1 += sz; }
             }
+        }
+
+        public void Dispose()
+        {
+            ReleaseBuffers();
         }
     }
 }

@@ -116,7 +116,10 @@ namespace SoftRenderingApp3D.Renderer
                 }//);
             }//);
 
+            // frameBuffer.Dispose();
+            
             return frameBuffer.Screen;
+            
         }
 
         private static List<(int x, int y, float z, ColorRGB color)> GetColors(FrameBuffer frameBuffer, IPainter painter, RendererSettings rendererSettings,
