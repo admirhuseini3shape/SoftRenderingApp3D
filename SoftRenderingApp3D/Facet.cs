@@ -72,43 +72,15 @@ namespace SoftRenderingApp3D
             var p1 = projectionVertices[I1];
             var p2 = projectionVertices[I2];
 
-            if(p0.W < 0 || p1.W < 0 || p2.W < 0)
-            {
-                return true;
-            }
+            // Will exit immediately if any w component is outside the frustum
+            if (p0.W < 0 || p1.W < 0 || p2.W < 0) return true;
 
-            if(p0.X < -p0.W && p1.X < -p1.W && p2.X < -p2.W)
-            {
-                return true;
-            }
-
-            if(p0.X > p0.W && p1.X > p1.W && p2.X > p2.W)
-            {
-                return true;
-            }
-
-            if(p0.Y < -p0.W && p1.Y < -p1.W && p2.Y < -p2.W)
-            {
-                return true;
-            }
-
-            if(p0.Y > p0.W && p1.Y > p1.W && p2.Y > p2.W)
-            {
-                return true;
-            }
-
-            if(p0.Z > p0.W && p1.Z > p1.W && p2.Z > p2.W)
-            {
-                return true;
-            }
-
-            // This last one is normally not necessary when a IsTriangleBehind check is done
-            if(p0.Z < 0 && p1.Z < 0 && p2.Z < 0)
-            {
-                return true;
-            }
-
-            return false;
+            // Check if all vertices are outside the same frustum plane to reduce redundant checks
+            return (p0.X < -p0.W && p1.X < -p1.W && p2.X < -p2.W) ||
+                   (p0.X > p0.W && p1.X > p1.W && p2.X > p2.W) ||
+                   (p0.Y < -p0.W && p1.Y < -p1.W && p2.Y < -p2.W) ||
+                   (p0.Y > p0.W && p1.Y > p1.W && p2.Y > p2.W) ||
+                   (p0.Z > p0.W && p1.Z > p1.W && p2.Z > p2.W);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
