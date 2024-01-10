@@ -32,17 +32,10 @@ namespace SoftRenderingApp3D
 
         public Vector3 CalculateNormal(IReadOnlyList<Vector3> vertices)
         {
-            // Avoid division with zero
-            if(vertices[I0] == Vector3.Zero &&
-               vertices[I1] == Vector3.Zero &&
-               vertices[I2] == Vector3.Zero)
-            {
-                return Vector3.Zero;
-            }
-
-            var result = Vector3.Normalize(
-                Vector3.Cross(vertices[I1] - vertices[I0], vertices[I2] - vertices[I0]));
-            return result.IsNaN() ? Vector3.Zero : result;
+            var edge1 = vertices[I1] - vertices[I0];
+            var edge2 = vertices[I2] - vertices[I0];
+            var normal = Vector3.Cross(edge1, edge2);
+            return Vector3.Normalize(normal);
         }
 
         public bool Contains(Vector3 vertex, IReadOnlyList<Vector3> vertices)
