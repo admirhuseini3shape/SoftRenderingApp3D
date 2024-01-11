@@ -78,6 +78,7 @@
     <Compile Include="Clipping\CohenSutherlandClippingHomogeneous.cs" />
     <Compile Include="DataStructures\Drawables\Drawable.cs" />
     <Compile Include="DataStructures\Drawables\IDrawable.cs" />
+    <Compile Include="DataStructures\FileReaders\ColladaReaderOld.cs" />
     <Compile Include="DataStructures\FileReaders\ColladaReader.cs" />
     <Compile Include="DataStructures\FileReaders\FileReader.cs" />
     <Compile Include="DataStructures\FileReaders\NewColladaParser.cs" />

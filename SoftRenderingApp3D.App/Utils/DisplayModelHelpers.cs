@@ -15,7 +15,7 @@ namespace SoftRenderingApp3D.App.Utils
         private static readonly Dictionary<string, FileReader> Readers =
             new Dictionary<string, FileReader>
         {
-            { Constants.Readers.ColladaReader, new ColladaReader() },
+            { Constants.Readers.ColladaReader, new ColladaReaderOld() },
             { Constants.Readers.StlReader, new STLReader() }
         };
 
