@@ -11,49 +11,49 @@ using System.Xml.Linq;
 
 namespace SoftRenderingApp3D.DataStructures.FileReaders
 {
-    public class ColladaReader : FileReader
+    public class NewColladaParser : FileReader
     {
         
         private static XNamespace ns = "http://www.collada.org/2005/11/COLLADASchema";
 
-        public static IEnumerable<Drawables.IDrawable> NewImportCollada(string fileName)
+        public static IEnumerable<Drawables.IDrawable> ColladaParser(string fileName)
         {
-            XNamespace ns = "http://www.collada.org/2005/11/COLLADASchema";
-
-            var xdoc = XDocument.Load(fileName);
-
-            var geometries = xdoc.Root.Element(ns + "library_geometries").Elements(ns + "geometry");
-
-            foreach(var geometry in geometries)
+            using (XmlReader reader = XmlReader.Create(new StreamReader(fileName, Encoding.UTF8)))
             {
-                var mesh = geometry.Element(ns + "mesh");
-                
-                var triangles = mesh.Element(ns + "triangles");
-                if(triangles != null)
+                reader.MoveToContent();
+
+                while (reader.Read())
                 {
-                    var triangles_count = int.Parse(triangles.Attribute("count").Value);
-                    var triangles_p = parseArray<int>(triangles.Element(ns + "p")?.Value).ToArray();
+                    if (reader.NodeType == XmlNodeType.Element && reader.LocalName == "mesh" && reader.NamespaceURI == ns.NamespaceName)
+                    {
+                        XElement geometry = XNode.ReadFrom(reader) as XElement;
+                        XElement mesh = geometry.Element(ns + "mesh");
 
-                    var stride = triangles_p.Count() / triangles_count;
+                        XElement triangles = mesh.Element(ns + "triangles");
+                        if (triangles != null)
+                        {
+                            var triangles_count = int.Parse(triangles.Attribute("count").Value);
+                            var triangles_p = parseArray<int>(triangles.Element(ns + "p")?.Value).ToArray();
 
-                    getSource(triangles, "VERTEX", out var triangles_vertex_id, out _);
-                    // getSource(triangles, "NORMAL", out var triangles_normal_id, out _);
+                            var stride = triangles_p.Length / triangles_count;
 
-                    var vertices = mesh.Elements(ns + "vertices")
-                        .FirstOrDefault(e => e.Attribute("id")?.Value == triangles_vertex_id);
-                    getSource(vertices, "POSITION", out var vertices_position_id, out _);
+                            getSource(triangles, "VERTEX", out var triangles_vertex_id, out _);
 
-                    var vertices_position = getArraySource<Vector3>(mesh, vertices_position_id);
-                    // var triangles_normal = getArraySource<Vector3>(mesh, triangles_normal_id);
+                            var vertices = mesh.Elements(ns + "vertices")
+                                .FirstOrDefault(e => e.Attribute("id")?.Value == triangles_vertex_id);
+                            getSource(vertices, "POSITION", out var vertices_position_id, out _);
 
-                    yield return new Mesh(
-                        vertices_position.ToArray(),
-                        getTriangles(triangles_p, stride).ToArray())
-                        .ToDrawable();
+                            var vertices_position = getArraySource<Vector3>(mesh, vertices_position_id);
+
+                            yield return new Mesh(
+                                vertices_position.ToArray(),
+                                getTriangles(triangles_p, stride).ToArray())
+                                .ToDrawable();
+                        }
+                    }
                 }
             }
         }
-
         
         private static IEnumerable<Facet> getTriangles(int[] array, int stride, int offset = 0)
         {
@@ -111,7 +111,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
 
         public override IEnumerable<Drawables.IDrawable> ReadFile(string fileName)
         {
-            return NewImportCollada(fileName);
+            return ColladaParser(fileName);
         }
     }
 }

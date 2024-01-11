@@ -80,6 +80,7 @@
     <Compile Include="DataStructures\Drawables\IDrawable.cs" />
     <Compile Include="DataStructures\FileReaders\ColladaReader.cs" />
     <Compile Include="DataStructures\FileReaders\FileReader.cs" />
+    <Compile Include="DataStructures\FileReaders\NewColladaParser.cs" />
     <Compile Include="DataStructures\FileReaders\STLReader.cs" />
     <Compile Include="DataStructures\Materials\FacetColorMaterial.cs" />
     <Compile Include="DataStructures\Materials\IMaterial.cs" />
@@ -160,10 +161,9 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="DataStructures\Collada\collada_schema_1_4.xsd">
+    <None Include="DataStructures\ColladaSchema\collada_schema_1_4.xsd">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
