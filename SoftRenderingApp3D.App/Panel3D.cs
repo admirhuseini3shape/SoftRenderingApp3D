@@ -37,8 +37,6 @@ namespace SoftRenderingApp3D.App
         {
             InitializeComponent();
 
-            RenderContext = new RenderContext();
-
             RendererSettings = new RendererSettings { BackFaceCulling = false };
 
             FrameBuffer = new FrameBuffer(Width, Height);
@@ -48,8 +46,6 @@ namespace SoftRenderingApp3D.App
 
             Layout += Panel3D_Layout;
         }
-
-        private RenderContext RenderContext { get; }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public RendererSettings RendererSettings
@@ -65,7 +61,6 @@ namespace SoftRenderingApp3D.App
 
 
                 _rendererSettings.ShowTriangleNormals = true;
-                RenderContext.RendererSettings = value;
                 _rendererSettings = value;
             }
         }
@@ -139,7 +134,6 @@ namespace SoftRenderingApp3D.App
                     camera.CameraChanged += CameraChanged;
                 }
 
-                RenderContext.Camera = value;
                 HookPaintEvent();
             }
         }
@@ -171,7 +165,6 @@ namespace SoftRenderingApp3D.App
                     projection.ProjectionChanged += ProjectionChanged;
                 }
 
-                RenderContext.Projection = value;
                 HookPaintEvent();
             }
         }
@@ -208,19 +201,19 @@ namespace SoftRenderingApp3D.App
 
             BuildFrame();
             g.DrawImage(bmp, Point.Empty);
-
+            var stats = StatsSingleton.Instance;
             sb.Clear();
             sb.AppendFormat(Format,
                 drawables.Count,
-                StatsSingleton.Instance.TotalTriangleCount,
-                StatsSingleton.Instance.FacingBackTriangleCount,
-                StatsSingleton.Instance.OutOfViewTriangleCount,
-                StatsSingleton.Instance.BehindViewTriangleCount,
-                StatsSingleton.Instance.DrawnPixelCount,
-                StatsSingleton.Instance.BehindZPixelCount,
-                StatsSingleton.Instance.CalculationTimeMs,
-                StatsSingleton.Instance.PainterTimeMs,
-                StatsSingleton.Instance.DrawnPixelCount + StatsSingleton.Instance.BehindZPixelCount
+                stats.TotalTriangleCount,
+                stats.FacingBackTriangleCount,
+                stats.OutOfViewTriangleCount,
+                stats.BehindViewTriangleCount,
+                stats.DrawnPixelCount,
+                stats.BehindZPixelCount,
+                stats.CalculationTimeMs,
+                stats.PainterTimeMs,
+                stats.DrawnPixelCount + stats.BehindZPixelCount
             );
 
             TextRenderer.DrawText(g, sb.ToString(), Font, Point.Empty, Color.BlueViolet, BackColor,
