@@ -235,15 +235,15 @@ namespace SubsurfaceScatteringSoftRenderingApp3D
             sb.Clear();
             sb.AppendFormat(format,
                 drawables.Count,
-                renderContext.Stats.TotalTriangleCount,
-                renderContext.Stats.FacingBackTriangleCount,
-                renderContext.Stats.OutOfViewTriangleCount,
-                renderContext.Stats.BehindViewTriangleCount,
-                renderContext.Stats.DrawnPixelCount,
-                renderContext.Stats.BehindZPixelCount,
-                renderContext.Stats.CalculationTimeMs,
-                renderContext.Stats.PainterTimeMs,
-                renderContext.Stats.DrawnPixelCount + renderContext.Stats.BehindZPixelCount
+                StatsSingleton.Instance.TotalTriangleCount,
+                StatsSingleton.Instance.FacingBackTriangleCount,
+                StatsSingleton.Instance.OutOfViewTriangleCount,
+                StatsSingleton.Instance.BehindViewTriangleCount,
+                StatsSingleton.Instance.DrawnPixelCount,
+                StatsSingleton.Instance.BehindZPixelCount,
+                StatsSingleton.Instance.CalculationTimeMs,
+                StatsSingleton.Instance.PainterTimeMs,
+                StatsSingleton.Instance.DrawnPixelCount + StatsSingleton.Instance.BehindZPixelCount
             );
 
             TextRenderer.DrawText(g, sb.ToString(), Font, Point.Empty, Color.BlueViolet, BackColor,

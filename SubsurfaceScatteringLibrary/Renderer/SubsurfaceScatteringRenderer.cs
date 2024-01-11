@@ -18,7 +18,7 @@ namespace SubsurfaceScatteringLibrary.Renderer
 
         public int[] Render()
         {
-            var stats = SubsurfaceScatteringRenderContext.Stats;
+            var stats =SubsurfaceScatteringRenderContext.Stats;
             var surface = SubsurfaceScatteringRenderContext.Surface;
             var projection = SubsurfaceScatteringRenderContext.Projection;
             var drawables = SubsurfaceScatteringRenderContext.Drawables;

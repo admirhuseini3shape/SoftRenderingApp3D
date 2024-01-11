@@ -9,6 +9,5 @@ namespace SoftRenderingApp3D
         public ICamera Camera { get; set; }
         public IProjection Projection { get; set; }
         public RendererSettings RendererSettings { get; set; }
-        public Stats Stats { get; set; }
     }
 }

@@ -38,11 +38,10 @@ namespace SoftRenderingApp3D.App
             InitializeComponent();
 
             RenderContext = new RenderContext();
-            RenderContext.Stats = new Stats();
 
             RendererSettings = new RendererSettings { BackFaceCulling = false };
 
-            FrameBuffer = new FrameBuffer(Width, Height, RenderContext);
+            FrameBuffer = new FrameBuffer(Width, Height);
             Painter = new GouraudPainter();
             Renderer = new SimpleRenderer();
             ResizeRedraw = true;
@@ -200,9 +199,7 @@ namespace SoftRenderingApp3D.App
         {
             var viewMatrix = Camera.ViewMatrix();
             var projectionMatrix = Projection.ProjectionMatrix(Width, Height);
-            var stats = RenderContext.Stats;
-            return renderer.Render(AllVertexBuffers,FrameBuffer, Painter, Drawables, 
-                stats, viewMatrix, projectionMatrix, RendererSettings);
+            return renderer.Render(AllVertexBuffers, FrameBuffer, Painter, Drawables, viewMatrix, projectionMatrix, RendererSettings);
         }
 
         private void Panel3D_Paint(object sender, PaintEventArgs e)
@@ -215,15 +212,15 @@ namespace SoftRenderingApp3D.App
             sb.Clear();
             sb.AppendFormat(Format,
                 drawables.Count,
-                RenderContext.Stats.TotalTriangleCount,
-                RenderContext.Stats.FacingBackTriangleCount,
-                RenderContext.Stats.OutOfViewTriangleCount,
-                RenderContext.Stats.BehindViewTriangleCount,
-                RenderContext.Stats.DrawnPixelCount,
-                RenderContext.Stats.BehindZPixelCount,
-                RenderContext.Stats.CalculationTimeMs,
-                RenderContext.Stats.PainterTimeMs,
-                RenderContext.Stats.DrawnPixelCount + RenderContext.Stats.BehindZPixelCount
+                StatsSingleton.Instance.TotalTriangleCount,
+                StatsSingleton.Instance.FacingBackTriangleCount,
+                StatsSingleton.Instance.OutOfViewTriangleCount,
+                StatsSingleton.Instance.BehindViewTriangleCount,
+                StatsSingleton.Instance.DrawnPixelCount,
+                StatsSingleton.Instance.BehindZPixelCount,
+                StatsSingleton.Instance.CalculationTimeMs,
+                StatsSingleton.Instance.PainterTimeMs,
+                StatsSingleton.Instance.DrawnPixelCount + StatsSingleton.Instance.BehindZPixelCount
             );
 
             TextRenderer.DrawText(g, sb.ToString(), Font, Point.Empty, Color.BlueViolet, BackColor,
@@ -237,7 +234,7 @@ namespace SoftRenderingApp3D.App
                 return;
             }
 
-            FrameBuffer = new FrameBuffer(Width, Height, RenderContext);
+            FrameBuffer = new FrameBuffer(Width, Height);
             bmp = new Bitmap(Width, Height, PixelFormat.Format32bppPArgb);
         }
 

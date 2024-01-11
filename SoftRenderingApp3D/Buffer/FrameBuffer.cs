@@ -12,10 +12,10 @@ namespace SoftRenderingApp3D.Buffer
         private readonly int[] emptyBuffer;
         private readonly int[] emptyZBuffer;
 
-        private readonly RenderContext renderContext;
         private readonly float[] zBuffer;
+        private readonly Stats stats;
 
-        public FrameBuffer(int width, int height, RenderContext renderContext)
+        public FrameBuffer(int width, int height)
         {
             Screen = new int[width * height];
             zBuffer = new float[width * height];
@@ -24,9 +24,10 @@ namespace SoftRenderingApp3D.Buffer
             emptyZBuffer = new int[width * height];
             emptyZBuffer.Fill(Depth);
 
+            stats = StatsSingleton.Instance;
+
             Width = width;
             Height = height;
-            this.renderContext = renderContext;
         }
 
         public int[] Screen { get; }
@@ -62,11 +63,11 @@ namespace SoftRenderingApp3D.Buffer
             var index = x + y * Width;
             if(z > zBuffer[index])
             {
-                renderContext.Stats.BehindZPixelCount++;
+                stats.BehindZPixelCount++;
                 return;
             }
 
-            renderContext.Stats.DrawnPixelCount++;
+            stats.DrawnPixelCount++;
 
             zBuffer[index] = z;
             Screen[index] = color.Color;
@@ -96,13 +97,14 @@ namespace SoftRenderingApp3D.Buffer
             }
 #endif
             var index = x + y * Width;
-            if(!(z <= zBuffer[index]))
+            if(z >= zBuffer[index])
             {
+                stats.BehindZPixelCount++;
                 return false;
             }
 
             zBuffer[index] = z;
-            renderContext.Stats.BehindZPixelCount++;
+            
             return true;
 
         }

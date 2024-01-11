@@ -9,7 +9,7 @@ namespace SoftRenderingApp3D.Renderer
     public interface IRenderer
     {
         int[] Render(AllVertexBuffers allVertexBuffers, FrameBuffer frameBuffer, IPainter painter, 
-            IList<IDrawable> drawables, Stats stats, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, 
+            IList<IDrawable> drawables, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, 
             RendererSettings rendererSettings);
     }
 }
