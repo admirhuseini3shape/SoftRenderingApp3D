@@ -2,6 +2,12 @@
 
 namespace SoftRenderingApp3D
 {
+    public static class StatsSingleton
+    {
+        private static Stats _instance;
+
+        public static Stats Instance => _instance ??= new Stats();
+    }
     public class Stats
     {
         private readonly Stopwatch calcSw = new Stopwatch();

@@ -107,7 +107,6 @@
     <Compile Include="Painter\GouraudPainter.cs" />
     <Compile Include="Painter\IPainter.cs" />
     <Compile Include="Rasterizers\ScanLine.cs" />
-    <Compile Include="RenderContext.cs" />
     <Compile Include="Renderer\IRenderer.cs" />
     <Compile Include="Renderer\IRenderingJob.cs" />
     <Compile Include="Renderer\IRenderingWorkflow.cs" />

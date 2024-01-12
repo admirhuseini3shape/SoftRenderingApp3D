@@ -14,12 +14,13 @@ namespace SoftRenderingApp3D.Renderer
     public class SimpleRenderer : IRenderer
     {
         public int[] Render(AllVertexBuffers allVertexBuffers, FrameBuffer frameBuffer, IPainter painter,
-            IList<IDrawable> drawables, Stats stats, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix,
+            IList<IDrawable> drawables, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix,
             RendererSettings rendererSettings)
         {
             if(drawables == null || painter == null || rendererSettings == null)
                 return Array.Empty<int>();
 
+            var stats = StatsSingleton.Instance;
             stats.Clear();
 
             stats.PaintTime();
@@ -85,11 +86,14 @@ namespace SoftRenderingApp3D.Renderer
                     }
 
                     // Discard if back facing 
-                    if(rendererSettings.BackFaceCulling && facet.IsFacingBack(vertexBuffer))
+                    if(facet.IsFacingBack(vertexBuffer))
                     {
                         stats.FacingBackTriangleCount++;
-                        continue;
-                        //return;
+                        if(rendererSettings.BackFaceCulling)
+                        {
+                            continue;
+                            //return;
+                        }
                     }
 
                     // Project in frustum
@@ -106,7 +110,7 @@ namespace SoftRenderingApp3D.Renderer
                     stats.PaintTime();
 
                     var pixels = Rasterizer.GetPixels(vertexBuffer, frameBuffer, facet);
-                    var perPixelColors = GetColors(frameBuffer, painter, 
+                    var perPixelColors = GetColors(frameBuffer, painter,
                         rendererSettings, drawable, vertexBuffer, pixels, facetData.FaId);
 
                     frameBuffer.PutPixels(perPixelColors);
@@ -128,9 +132,9 @@ namespace SoftRenderingApp3D.Renderer
             var perPixelColors = new List<(int x, int y, float z, ColorRGB color)>();
             var textureMaterial = drawable.Material as ITextureMaterial;
             var hasTexture = textureMaterial != null && textureMaterial.Texture != null;
-            if (!hasTexture || !rendererSettings.ShowTextures)
+            if(!hasTexture || !rendererSettings.ShowTextures)
                 perPixelColors = painter.DrawTriangle(vertexBuffer, frameBuffer, pixels, faId);
-            else if (painter is GouraudPainter gouraudPainter)
+            else if(painter is GouraudPainter gouraudPainter)
             {
                 perPixelColors = gouraudPainter.DrawTriangleTextured(textureMaterial.Texture,
                     vertexBuffer, frameBuffer, pixels, faId, rendererSettings.LinearTextureFiltering);

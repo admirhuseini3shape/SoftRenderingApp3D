@@ -37,20 +37,15 @@ namespace SoftRenderingApp3D.App
         {
             InitializeComponent();
 
-            RenderContext = new RenderContext();
-            RenderContext.Stats = new Stats();
-
             RendererSettings = new RendererSettings { BackFaceCulling = false };
 
-            FrameBuffer = new FrameBuffer(Width, Height, RenderContext);
+            FrameBuffer = new FrameBuffer(Width, Height);
             Painter = new GouraudPainter();
             Renderer = new SimpleRenderer();
             ResizeRedraw = true;
 
             Layout += Panel3D_Layout;
         }
-
-        private RenderContext RenderContext { get; }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public RendererSettings RendererSettings
@@ -66,7 +61,6 @@ namespace SoftRenderingApp3D.App
 
 
                 _rendererSettings.ShowTriangleNormals = true;
-                RenderContext.RendererSettings = value;
                 _rendererSettings = value;
             }
         }
@@ -140,7 +134,6 @@ namespace SoftRenderingApp3D.App
                     camera.CameraChanged += CameraChanged;
                 }
 
-                RenderContext.Camera = value;
                 HookPaintEvent();
             }
         }
@@ -172,7 +165,6 @@ namespace SoftRenderingApp3D.App
                     projection.ProjectionChanged += ProjectionChanged;
                 }
 
-                RenderContext.Projection = value;
                 HookPaintEvent();
             }
         }
@@ -200,9 +192,7 @@ namespace SoftRenderingApp3D.App
         {
             var viewMatrix = Camera.ViewMatrix();
             var projectionMatrix = Projection.ProjectionMatrix(Width, Height);
-            var stats = RenderContext.Stats;
-            return renderer.Render(AllVertexBuffers,FrameBuffer, Painter, Drawables, 
-                stats, viewMatrix, projectionMatrix, RendererSettings);
+            return renderer.Render(AllVertexBuffers, FrameBuffer, Painter, Drawables, viewMatrix, projectionMatrix, RendererSettings);
         }
 
         private void Panel3D_Paint(object sender, PaintEventArgs e)
@@ -211,19 +201,19 @@ namespace SoftRenderingApp3D.App
 
             BuildFrame();
             g.DrawImage(bmp, Point.Empty);
-
+            var stats = StatsSingleton.Instance;
             sb.Clear();
             sb.AppendFormat(Format,
                 drawables.Count,
-                RenderContext.Stats.TotalTriangleCount,
-                RenderContext.Stats.FacingBackTriangleCount,
-                RenderContext.Stats.OutOfViewTriangleCount,
-                RenderContext.Stats.BehindViewTriangleCount,
-                RenderContext.Stats.DrawnPixelCount,
-                RenderContext.Stats.BehindZPixelCount,
-                RenderContext.Stats.CalculationTimeMs,
-                RenderContext.Stats.PainterTimeMs,
-                RenderContext.Stats.DrawnPixelCount + RenderContext.Stats.BehindZPixelCount
+                stats.TotalTriangleCount,
+                stats.FacingBackTriangleCount,
+                stats.OutOfViewTriangleCount,
+                stats.BehindViewTriangleCount,
+                stats.DrawnPixelCount,
+                stats.BehindZPixelCount,
+                stats.CalculationTimeMs,
+                stats.PainterTimeMs,
+                stats.DrawnPixelCount + stats.BehindZPixelCount
             );
 
             TextRenderer.DrawText(g, sb.ToString(), Font, Point.Empty, Color.BlueViolet, BackColor,
@@ -237,7 +227,7 @@ namespace SoftRenderingApp3D.App
                 return;
             }
 
-            FrameBuffer = new FrameBuffer(Width, Height, RenderContext);
+            FrameBuffer = new FrameBuffer(Width, Height);
             bmp = new Bitmap(Width, Height, PixelFormat.Format32bppPArgb);
         }
 
