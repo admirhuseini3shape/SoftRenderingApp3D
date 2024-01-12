@@ -14,17 +14,13 @@ namespace SoftRenderingApp3D.Utils
             var rect = new Rectangle(0, 0, bmp.Width, bmp.Height);
             var bmpData = bmp.LockBits(rect, ImageLockMode.WriteOnly,
                 bmp.PixelFormat);
-
-            try
-            {
+            
                 IntPtr ptr = bmpData.Scan0;
                 int bytes = width * height;
                 Marshal.Copy(buffer, 0, ptr, bytes);
-            }
-            finally
-            {
+            
                 bmp.UnlockBits(bmpData);
-            }
+            
         }
     }
 }
