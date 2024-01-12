@@ -133,11 +133,12 @@ namespace SoftRenderingApp3D.DataStructures.Shapes
             }
         }
 
-        public static IDrawable GetDrawable(int recursionLevel)
+        public static IDrawable GetDrawable(float radius, int recursionLevel)
         {
             var sphere = new Sphere(recursionLevel);
-            return new Mesh(sphere.points.ToArray(), sphere.faces.ToArray())
-                .ToDrawable();
+            var mesh = new Mesh(sphere.points.ToArray(), sphere.faces.ToArray());
+            mesh.Transform(Matrix4x4.CreateScale(radius));
+            return mesh.ToDrawable();
         }
     }
 }

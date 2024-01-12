@@ -11,7 +11,7 @@
             public const string CreateCubes = "CreateCubes";
             public const string CreateCube = "CreateCube";
             public const string CreateBigCube = "CreateBigCube";
-            public const string CreateSphere = "CreateSphere";
+            public const string CreateSphere = "CreateSpheres";
             public const string CreateLittleTown = "CreateLittleTown";
             public const string CreateBigTown = "CreateBigTown";
 

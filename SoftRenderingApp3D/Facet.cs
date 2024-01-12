@@ -112,7 +112,7 @@ namespace SoftRenderingApp3D
             var mesh = vertexBuffer.Drawable.Mesh;
             var worldNormVertices = vertexBuffer.WorldVertexNormals;
             var normVertices = mesh.VertexNormals;
-            var textureCoordinates = mesh.TexCoordinates;
+            var textureCoordinates = mesh.TextureCoordinates;
 
             if(worldNormVertices[I0] == Vector3.Zero)
             {
@@ -141,7 +141,7 @@ namespace SoftRenderingApp3D
             */
 
             // Check if mesh has texture data
-            if(!(vertexBuffer.Drawable.Material is ITextureMaterial) || mesh.TexCoordinates == null)
+            if(!(vertexBuffer.Drawable.Material is ITextureMaterial) || mesh.TextureCoordinates == null)
                 return;
 
             if(textureCoordinates[I0] == Vector2.Zero)

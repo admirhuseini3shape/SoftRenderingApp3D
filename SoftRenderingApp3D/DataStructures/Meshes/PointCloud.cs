@@ -1,4 +1,5 @@
 ﻿using SoftRenderingApp3D.Utils;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -8,20 +9,27 @@ namespace SoftRenderingApp3D.DataStructures.Meshes
     {
         protected Vector3[] _vertices;
         protected Vector3[] _vertexNormals;
-        protected Vector2[] _texCoordinates;
+        protected Vector2[] _textureCoordinates;
 
         public int VertexCount => _vertices?.Length ?? 0;
 
         public IReadOnlyList<Vector3> Vertices => _vertices;
 
         public IReadOnlyList<Vector3> VertexNormals => _vertexNormals;
-        public IReadOnlyList<Vector2> TexCoordinates => _texCoordinates;
+        public IReadOnlyList<Vector2> TextureCoordinates => _textureCoordinates;
+
+        public PointCloud(int vertexCapacity = -1)
+        {
+            _vertices =  Array.Empty<Vector3>();
+            _vertexNormals = Array.Empty<Vector3>();
+            _textureCoordinates = Array.Empty<Vector2>();
+        }
 
         public PointCloud(Vector3[] vertices, Vector3[] vertexNormals = null, Vector2[] textureCoordinates = null)
         {
             _vertices = vertices.Clone() as Vector3[];
-            _vertexNormals = vertexNormals == null ? vertexNormals : vertexNormals.Clone() as Vector3[];
-            _texCoordinates = textureCoordinates;
+            _vertexNormals = vertexNormals?.Clone() as Vector3[];
+            _textureCoordinates = textureCoordinates?.Clone() as Vector2[];
         }
 
         public void SetVertexPosition(int i, Vector3 position)
@@ -36,7 +44,7 @@ namespace SoftRenderingApp3D.DataStructures.Meshes
 
         public void SetVertexTextureCoordinate(int i, Vector2 uv)
         {
-            _texCoordinates[i] = uv;
+            _textureCoordinates[i] = uv;
         }
 
         public void Transform(Matrix4x4 matrix)
@@ -61,6 +69,11 @@ namespace SoftRenderingApp3D.DataStructures.Meshes
             //    throw new Exception($"Could not decompose into rotation, scale and translation the matrix {matrix}!");
             //for(var i = 0; i < _vertexNormals.Length; i++)
             //    _vertexNormals[i] = Vector3.Transform(_vertexNormals[i], rotation);
+        }
+
+        public object Clone()
+        {
+            return new PointCloud(_vertices, _vertexNormals, _textureCoordinates);
         }
     }
 }

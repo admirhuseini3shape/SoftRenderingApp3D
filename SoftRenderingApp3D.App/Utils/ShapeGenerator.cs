@@ -1,4 +1,6 @@
 ﻿using SoftRenderingApp3D.DataStructures.Drawables;
+using SoftRenderingApp3D.DataStructures.Materials;
+using SoftRenderingApp3D.DataStructures.Meshes;
 using SoftRenderingApp3D.DataStructures.Shapes;
 using System;
 using System.Collections.Generic;
@@ -31,7 +33,8 @@ namespace SoftRenderingApp3D.App.Utils
             var r = new Random();
 
             var capacity = (int)Math.Pow((2.0 * d) / s, loopCount);
-            var result = new List<IDrawable>(capacity);
+            var meshes = new List<IMesh>(capacity);
+            var materials = new List<IFacetColorMaterial>(capacity);
 
             for(var x = -d; x <= d; x += s)
                 for(var y = -d; y <= d; y += s)
@@ -49,10 +52,14 @@ namespace SoftRenderingApp3D.App.Utils
                             rotation.YYaw, rotation.XPitch, rotation.ZRoll);
                         var matrix = rotationMatrix * Matrix4x4.CreateTranslation(position);
                         cube.Mesh.Transform(matrix);
-                        result.Add(cube);
+                        meshes.Add(cube.Mesh);
+                        materials.Add((IFacetColorMaterial)cube.Material);
                     }
-
-            return result;
+            var resultMesh = new Mesh();
+            var resultMaterial = new FacetColorMaterial();
+            var (vertexMappings, facetMappings) = resultMesh.Append(meshes);
+            resultMaterial.Append(materials, vertexMappings, facetMappings);
+            return new List<IDrawable>() { new Drawable(resultMesh, resultMaterial) };
         }
         public static List<IDrawable> CreateTown()
         {
@@ -63,7 +70,8 @@ namespace SoftRenderingApp3D.App.Utils
             var random = new Random();
 
             var capacity = (int)Math.Pow((2.0 * d) / s, loopCount);
-            var result = new List<IDrawable>(capacity);
+            var meshes = new List<IMesh>(capacity);
+            var materials = new List<IFacetColorMaterial>(capacity);
 
             for(var x = -d; x <= d; x += s)
                 for(var z = -d; z <= d; z += s)
@@ -76,10 +84,14 @@ namespace SoftRenderingApp3D.App.Utils
                                  Matrix4x4.CreateScale(scaling) *
                                  Matrix4x4.CreateTranslation(position);
                     cube.Mesh.Transform(matrix);
-                    result.Add(cube);
+                    meshes.Add(cube.Mesh);
+                    materials.Add((IFacetColorMaterial)cube.Material);
                 }
-
-            return result;
+            var resultMesh = new Mesh();
+            var resultMaterial = new FacetColorMaterial();
+            var (vertexMappings, facetMappings) = resultMesh.Append(meshes);
+            resultMaterial.Append(materials, vertexMappings, facetMappings);
+            return new List<IDrawable>() { new Drawable(resultMesh, resultMaterial) };
         }
 
         public static List<IDrawable> CreateLittleTown()
@@ -92,7 +104,8 @@ namespace SoftRenderingApp3D.App.Utils
             var random = new Random();
 
             var capacity = (int)Math.Pow((2.0 * d) / s, loopCount);
-            var result = new List<IDrawable>(capacity);
+            var meshes = new List<IMesh>(capacity);
+            var materials = new List<IFacetColorMaterial>(capacity);
 
             for(var x = -d; x <= d; x += s)
                 for(var z = -d; z <= d; z += s)
@@ -105,10 +118,14 @@ namespace SoftRenderingApp3D.App.Utils
                                  Matrix4x4.CreateScale(scaling) *
                                  Matrix4x4.CreateTranslation(position);
                     cube.Mesh.Transform(matrix);
-                    result.Add(cube);
+                    meshes.Add(cube.Mesh);
+                    materials.Add((IFacetColorMaterial)cube.Material);
                 }
-
-            return result;
+            var resultMesh = new Mesh();
+            var resultMaterial = new FacetColorMaterial();
+            var (vertexMappings, facetMappings) = resultMesh.Append(meshes);
+            resultMaterial.Append(materials, vertexMappings, facetMappings);
+            return new List<IDrawable>() { new Drawable(resultMesh, resultMaterial) };
         }
 
         public static List<IDrawable> CreateBigTown()
@@ -121,7 +138,8 @@ namespace SoftRenderingApp3D.App.Utils
             var random = new Random();
 
             var capacity = (int)Math.Pow((2.0 * d) / s, loopCount);
-            var result = new List<IDrawable>(capacity);
+            var meshes = new List<IMesh>(capacity);
+            var materials = new List<IFacetColorMaterial>(capacity);
 
             for(var x = -d; x <= d; x += s)
                 for(var z = -d; z <= d; z += s)
@@ -133,13 +151,17 @@ namespace SoftRenderingApp3D.App.Utils
                                  Matrix4x4.CreateScale(scaling) *
                                  Matrix4x4.CreateTranslation(position);
                     cube.Mesh.Transform(matrix);
-                    result.Add(cube);
+                    meshes.Add(cube.Mesh);
+                    materials.Add((IFacetColorMaterial)cube.Material);
                 }
-
-            return result;
+            var resultMesh = new Mesh();
+            var resultMaterial = new FacetColorMaterial();
+            var (vertexMappings, facetMappings) = resultMesh.Append(meshes);
+            resultMaterial.Append(materials, vertexMappings, facetMappings);
+            return new List<IDrawable>() { new Drawable(resultMesh, resultMaterial) };
         }
 
-        public static List<IDrawable> CreateSphere()
+        public static List<IDrawable> CreateSpheres()
         {
             const int d = 5;
             const int s = 2;
@@ -147,13 +169,14 @@ namespace SoftRenderingApp3D.App.Utils
 
             var r = new Random();
             var capacity = (int)Math.Pow((2.0 * d) / s, loopCount);
-            var result = new List<IDrawable>(capacity);
+            var meshes = new List<IMesh>(capacity);
+            var materials = new List<IMaterial>(capacity);
 
             for(var x = -d; x <= d; x += s)
                 for(var y = -d; y <= d; y += s)
                     for(var z = -d; z <= d; z += s)
                     {
-                        var sphere = Sphere.GetDrawable(2);
+                        var sphere = Sphere.GetDrawable(0.7f, 2);
                         var rotation = new Rotation3D(
                                 r.Next(-90, 90),
                                 r.Next(-90, 90),
@@ -164,10 +187,14 @@ namespace SoftRenderingApp3D.App.Utils
                             rotation.YYaw, rotation.XPitch, rotation.ZRoll);
                         var matrix = rotationMatrix * Matrix4x4.CreateTranslation(position);
                         sphere.Mesh.Transform(matrix);
-                        result.Add(sphere);
+                        meshes.Add(sphere.Mesh);
+                        materials.Add(sphere.Material);
                     }
-
-            return result;
+            var resultMesh = new Mesh();
+            var resultMaterial = new MaterialBase();
+            var (vertexMappings, facetMappings) = resultMesh.Append(meshes);
+            resultMaterial.Append(materials, vertexMappings, facetMappings);
+            return new List<IDrawable>() { new Drawable(resultMesh, resultMaterial) };
         }
     }
 }

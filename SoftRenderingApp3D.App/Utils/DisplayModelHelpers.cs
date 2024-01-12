@@ -25,7 +25,7 @@ namespace SoftRenderingApp3D.App.Utils
             { Constants.GeneratingFunctions.CreateTown, ShapeGenerator.CreateTown},
             { Constants.GeneratingFunctions.CreateLittleTown, ShapeGenerator.CreateLittleTown},
             { Constants.GeneratingFunctions.CreateCubes, ShapeGenerator.CreateCubes},
-            { Constants.GeneratingFunctions.CreateSphere, ShapeGenerator.CreateSphere},
+            { Constants.GeneratingFunctions.CreateSphere, ShapeGenerator.CreateSpheres},
             { Constants.GeneratingFunctions.CreateCube, ShapeGenerator.CreateCube},
             { Constants.GeneratingFunctions.CreateBigCube, ShapeGenerator.CreateBigCube},
             { Constants.GeneratingFunctions.CreateBigTown, ShapeGenerator.CreateBigTown}

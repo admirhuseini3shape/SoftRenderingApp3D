@@ -104,11 +104,11 @@
   },
   {
     "Id": "sphere",
-    "DisplayName": "Sphere",
+    "DisplayName": "Spheres",
     "DisplayModelType": "GeneratingFunction",
     "ShowTexture": false,
     "HasTexture": false,
-    "GeneratingFunctionName": "CreateSphere",
+    "GeneratingFunctionName": "CreateSpheres",
     "InitialZoomLevel": -25
   },
     {

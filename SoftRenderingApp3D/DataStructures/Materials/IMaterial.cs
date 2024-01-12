@@ -3,7 +3,11 @@ using System.Collections.Generic;
 
 namespace SoftRenderingApp3D.DataStructures.Materials
 {
-    public interface IMaterial : IMaterialOptions { }
+    public interface IMaterial : IMaterialOptions
+    {
+        void Append(IMaterial material, int[] vertexMapping, int[] facetMapping);
+        void Append(IReadOnlyList<IMaterial> materials, IReadOnlyList<int[]> vertexMappings, IReadOnlyList<int[]> facetMappings);
+    }
 
     public interface IVertexColorMaterial : IMaterial
     {

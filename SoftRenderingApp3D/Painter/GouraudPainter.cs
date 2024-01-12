@@ -98,9 +98,9 @@ namespace SoftRenderingApp3D.Painter
                 return perPixelColors;
 
             // Get the texture coordinates of each point of the triangle
-            var uv0 = vertexBuffer.Drawable.Mesh.TexCoordinates[facet.I0];
-            var uv1 = vertexBuffer.Drawable.Mesh.TexCoordinates[facet.I1];
-            var uv2 = vertexBuffer.Drawable.Mesh.TexCoordinates[facet.I2];
+            var uv0 = vertexBuffer.Drawable.Mesh.TextureCoordinates[facet.I0];
+            var uv1 = vertexBuffer.Drawable.Mesh.TextureCoordinates[facet.I1];
+            var uv2 = vertexBuffer.Drawable.Mesh.TextureCoordinates[facet.I2];
 
             // This has to move elsewhere
             var lightPos = new Vector3(0, 10, 10);

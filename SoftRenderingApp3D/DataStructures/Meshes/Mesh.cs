@@ -1,11 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
 namespace SoftRenderingApp3D.DataStructures.Meshes
 {
     public class Mesh : PointCloud, IMesh
     {
-        private readonly Facet[] _facets;
+        private Facet[] _facets;
+
+        public Mesh()
+        {
+            _facets = Array.Empty<Facet>();
+        }
 
         public Mesh(Vector3[] vertices, Facet[] facets, Vector3[] vertexNormals = null, Vector2[] textureCoordinates = null) :
             base(vertices, vertexNormals, textureCoordinates)
@@ -18,5 +25,133 @@ namespace SoftRenderingApp3D.DataStructures.Meshes
 
         public int FacetCount => _facets?.Length ?? 0;
         public IReadOnlyList<Facet> Facets => _facets;
+        public (int[] vertexMapping, int[] facetMapping) Append(IMesh mesh)
+        {
+            var currentVertexCount = _vertices.Length;
+            var currentFacetCount = _facets.Length;
+            var veCount = mesh.VertexCount;
+            var faCount = mesh.FacetCount;
+
+            if(veCount == 0 || faCount == 0 || mesh.Vertices == null || mesh.Facets == null)
+                return (Array.Empty<int>(), Array.Empty<int>());
+
+            Array.Resize(ref _vertices, _vertices.Length + veCount);
+            var vertexMapping = new int[veCount];
+            for(var i = 0; i < veCount; i++)
+            {
+                var newVeId = currentVertexCount + i;
+                vertexMapping[i] = newVeId;
+                _vertices[newVeId] = mesh.Vertices[i];
+            }
+
+            Array.Resize(ref _vertexNormals, _vertices.Length + veCount);
+            if(mesh.VertexNormals != null)
+            {
+
+                for(var i = 0; i < veCount; i++)
+                    _vertexNormals[vertexMapping[i]] = mesh.VertexNormals[i];
+            }
+
+            Array.Resize(ref _textureCoordinates, _vertices.Length + veCount);
+            if(mesh.TextureCoordinates != null)
+            {
+                for(var i = 0; i < veCount; i++)
+                    _textureCoordinates[vertexMapping[i]] = mesh.TextureCoordinates[i];
+            }
+
+            Array.Resize(ref _facets, _facets.Length + faCount);
+            var facetMapping = new int[faCount];
+            for(var i = 0; i < faCount; i++)
+            {
+                var newFaId = currentFacetCount + i;
+                facetMapping[i] = newFaId;
+                var facet = mesh.Facets[i];
+                var newFacet = new Facet(
+                    vertexMapping[facet.I0],
+                    vertexMapping[facet.I1],
+                    vertexMapping[facet.I2]);
+                _facets[newFaId] = newFacet;
+            }
+
+            return (vertexMapping, facetMapping);
+        }
+
+        public (IReadOnlyList<int[]> vertexMappings, IReadOnlyList<int[]> facetMappings) Append(IReadOnlyList<IMesh> meshes)
+        {
+
+            var finalVerticesCount = meshes.Sum(x => x.VertexCount);
+            var finalFacetsCount = meshes.Sum(x => x.FacetCount);
+
+            Array.Resize(ref _vertices, finalVerticesCount);
+            Array.Resize(ref _vertexNormals, finalVerticesCount);
+            Array.Resize(ref _textureCoordinates, finalVerticesCount);
+
+            Array.Resize(ref _facets, finalFacetsCount);
+
+            var vertexMappings = new List<int[]>(meshes.Count);
+            var facetMappings = new List<int[]>(meshes.Count);
+
+            var currentVertexCount = 0;
+            var currentFacetCount = 0;
+            for(var k = 0; k < meshes.Count; k++)
+            {
+                var mesh = meshes[k];
+                var veCount = mesh.VertexCount;
+                var faCount = mesh.FacetCount;
+
+                if(veCount == 0 || faCount == 0 || mesh.Vertices == null || mesh.Facets == null)
+                {
+                    vertexMappings.Add(Array.Empty<int>());
+                    facetMappings.Add(Array.Empty<int>());
+                    continue;
+                }
+
+                var vertexMapping = new int[veCount];
+                for(var i = 0; i < veCount; i++)
+                {
+                    var newVeId = currentVertexCount + i;
+                    vertexMapping[i] = newVeId;
+                    _vertices[newVeId] = mesh.Vertices[i];
+                }
+                vertexMappings.Add(vertexMapping);
+
+                if(mesh.VertexNormals != null)
+                {
+                    for(var i = 0; i < veCount; i++)
+                        _vertexNormals[vertexMapping[i]] = mesh.VertexNormals[i];
+                }
+
+                if(mesh.TextureCoordinates != null)
+                {
+                    for(var i = 0; i < veCount; i++)
+                        _textureCoordinates[vertexMapping[i]] = mesh.TextureCoordinates[i];
+                }
+
+
+                var facetMapping = new int[faCount];
+                for(var i = 0; i < faCount; i++)
+                {
+                    var newFaId = currentFacetCount + i;
+                    facetMapping[i] = newFaId;
+                    var facet = mesh.Facets[i];
+                    var newFacet = new Facet(
+                        vertexMapping[facet.I0],
+                        vertexMapping[facet.I1],
+                        vertexMapping[facet.I2]);
+                    _facets[newFaId] = newFacet;
+                }
+                facetMappings.Add(facetMapping);
+
+                currentVertexCount += mesh.VertexCount;
+                currentFacetCount += mesh.FacetCount;
+            }
+
+            return (vertexMappings, facetMappings);
+        }
+
+        public new object Clone()
+        {
+            return new Mesh(_vertices, _facets, _vertexNormals, _textureCoordinates);
+        }
     }
 }
