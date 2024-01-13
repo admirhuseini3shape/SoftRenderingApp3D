@@ -1,4 +1,5 @@
-﻿using SoftRenderingApp3D.DataStructures.Meshes;
+﻿using SoftRenderingApp3D.DataStructures.Drawables;
+using SoftRenderingApp3D.DataStructures.Meshes;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -30,10 +31,10 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
             indices = new Dictionary<Vector3, int>();
         }
 
-        public override IEnumerable<Drawables.IDrawable> ReadFile(string fileName)
+        public override IDrawable ReadFile(string fileName)
         {
             path = fileName;
-            return NewSTLImport();
+            return NewSTLImport().ToDrawable();
         }
 
 
@@ -53,17 +54,17 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
         * @param  none
         * @retval SubsurfaceScatteringVolume
         */
-        private IEnumerable<Drawables.IDrawable> NewSTLImport()
+        private IMesh NewSTLImport()
         {
             var stlFileType = GetFileType(path);
 
             if(stlFileType == FileType.ASCII)
             {
-                yield return ReadASCIIFile(path).ToDrawable();
+                return ReadASCIIFile(path);
             }
             else if(stlFileType == FileType.BINARY)
             {
-                yield return ReadBinaryFile(path).ToDrawable();
+                return ReadBinaryFile(path);
             }
             else
             {
@@ -130,7 +131,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
         * @param  filePath
         * @retval meshList
         */
-        private Mesh ReadBinaryFile(string filePath)
+        private IMesh ReadBinaryFile(string filePath)
         {
             var vertices = new List<Vector3>();
             var normals = new List<Vector3>();
@@ -364,7 +365,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
             return newIndex;
         }
         
-        private Mesh ReadASCIIFile(string filePath)
+        private IMesh ReadASCIIFile(string filePath)
         {
             var vertices = new List<Vector3>();
             var normals = new List<Vector3>();

@@ -5,6 +5,9 @@ namespace SoftRenderingApp3D.DataStructures.Drawables
 {
     public class Drawable : IDrawable
     {
+        public Drawable():this(new Mesh(), new MaterialBase())
+        { }
+
         public Drawable(IMesh mesh, IMaterial material)
         {
             Mesh = mesh;

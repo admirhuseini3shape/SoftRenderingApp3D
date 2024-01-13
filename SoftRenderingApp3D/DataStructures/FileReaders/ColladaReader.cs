@@ -1,4 +1,5 @@
-﻿using SoftRenderingApp3D.DataStructures.Meshes;
+﻿using SoftRenderingApp3D.DataStructures.Drawables;
+using SoftRenderingApp3D.DataStructures.Meshes;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,7 +17,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
         
         private static XNamespace ns = "http://www.collada.org/2005/11/COLLADASchema";
 
-        public static IEnumerable<Drawables.IDrawable> NewImportCollada(string fileName)
+        public static IEnumerable<IMesh> NewImportCollada(string fileName)
         {
             XNamespace ns = "http://www.collada.org/2005/11/COLLADASchema";
 
@@ -48,8 +49,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
 
                     yield return new Mesh(
                         vertices_position.ToArray(),
-                        getTriangles(triangles_p, stride).ToArray())
-                        .ToDrawable();
+                        getTriangles(triangles_p, stride).ToArray());
                 }
             }
         }
@@ -109,9 +109,12 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
             }
         }
 
-        public override IEnumerable<Drawables.IDrawable> ReadFile(string fileName)
+        public override IDrawable ReadFile(string fileName)
         {
-            return NewImportCollada(fileName);
+            var meshes = NewImportCollada(fileName).ToList();
+            var result = new Mesh();
+            result.Append(meshes);
+            return result.ToDrawable();
         }
     }
 }

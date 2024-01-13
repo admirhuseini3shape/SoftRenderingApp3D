@@ -2,6 +2,7 @@
 using SoftRenderingApp3D.App.Utils;
 using SoftRenderingApp3D.Camera;
 using SoftRenderingApp3D.Controls;
+using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.Projection;
 using System;
 using System.Collections.Generic;
@@ -114,8 +115,8 @@ namespace SoftRenderingApp3D.App
             var currentModel = displayModels.FirstOrDefault(x => x.Id == id);
             if(currentModel == null)
                 return;
-
-            panel3D1.Drawables = DisplayModelHelpers.GetDrawables(currentModel);
+            var drawable = DisplayModelHelpers.GetDrawable(currentModel);
+            panel3D1.Drawables = new List<IDrawable> { drawable };
             if(currentModel.InitialZoomLevel != 0)
             {
                 var zoom = currentModel.InitialZoomLevel;
@@ -137,7 +138,7 @@ namespace SoftRenderingApp3D.App
                 // this.panel3D2.Invalidate();
             }
         }
-        
+
         private void btnChangeTexture_Click(object sender, EventArgs e)
         {
             panel3D1.RendererSettings.ChangeActiveTexture();

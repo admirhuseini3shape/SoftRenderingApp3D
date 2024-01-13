@@ -10,21 +10,21 @@ namespace SoftRenderingApp3D.App.Utils
 {
     public static class ShapeGenerator
     {
-        public static List<IDrawable> CreateCube()
+        public static IDrawable CreateCube()
         {
-            return new List<IDrawable> { Cube.GetDrawable() };
+            return Cube.GetDrawable();
         }
-        public static List<IDrawable> CreateBigCube()
+        public static IDrawable CreateBigCube()
         {
             var cube = Cube.GetDrawable();
             var scaling = new Vector3(100, 100, 100);
             var matrix = Matrix4x4.CreateScale(scaling);
             cube.Mesh.Transform(matrix);
 
-            return new List<IDrawable> { cube };
+            return cube;
         }
 
-        public static List<IDrawable> CreateCubes()
+        public static IDrawable CreateCubes()
         {
             const int d = 5;
             const int s = 2;
@@ -59,9 +59,9 @@ namespace SoftRenderingApp3D.App.Utils
             var resultMaterial = new FacetColorMaterial();
             var (vertexMappings, facetMappings) = resultMesh.Append(meshes);
             resultMaterial.Append(materials, vertexMappings, facetMappings);
-            return new List<IDrawable>() { new Drawable(resultMesh, resultMaterial) };
+            return new Drawable(resultMesh, resultMaterial);
         }
-        public static List<IDrawable> CreateTown()
+        public static IDrawable CreateTown()
         {
             const int d = 50;
             const int s = 2;
@@ -91,10 +91,10 @@ namespace SoftRenderingApp3D.App.Utils
             var resultMaterial = new FacetColorMaterial();
             var (vertexMappings, facetMappings) = resultMesh.Append(meshes);
             resultMaterial.Append(materials, vertexMappings, facetMappings);
-            return new List<IDrawable>() { new Drawable(resultMesh, resultMaterial) };
+            return new Drawable(resultMesh, resultMaterial);
         }
 
-        public static List<IDrawable> CreateLittleTown()
+        public static IDrawable CreateLittleTown()
         {
             const int d = 10;
             const int s = 2;
@@ -125,10 +125,10 @@ namespace SoftRenderingApp3D.App.Utils
             var resultMaterial = new FacetColorMaterial();
             var (vertexMappings, facetMappings) = resultMesh.Append(meshes);
             resultMaterial.Append(materials, vertexMappings, facetMappings);
-            return new List<IDrawable>() { new Drawable(resultMesh, resultMaterial) };
+            return new Drawable(resultMesh, resultMaterial);
         }
 
-        public static List<IDrawable> CreateBigTown()
+        public static IDrawable CreateBigTown()
         {
             const int d = 200;
             const int s = 2;
@@ -158,10 +158,10 @@ namespace SoftRenderingApp3D.App.Utils
             var resultMaterial = new FacetColorMaterial();
             var (vertexMappings, facetMappings) = resultMesh.Append(meshes);
             resultMaterial.Append(materials, vertexMappings, facetMappings);
-            return new List<IDrawable>() { new Drawable(resultMesh, resultMaterial) };
+            return new Drawable(resultMesh, resultMaterial);
         }
 
-        public static List<IDrawable> CreateSpheres()
+        public static IDrawable CreateSpheres()
         {
             const int d = 5;
             const int s = 2;
@@ -194,7 +194,7 @@ namespace SoftRenderingApp3D.App.Utils
             var resultMaterial = new MaterialBase();
             var (vertexMappings, facetMappings) = resultMesh.Append(meshes);
             resultMaterial.Append(materials, vertexMappings, facetMappings);
-            return new List<IDrawable>() { new Drawable(resultMesh, resultMaterial) };
+            return new Drawable(resultMesh, resultMaterial);
         }
     }
 }

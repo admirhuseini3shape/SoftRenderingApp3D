@@ -19,8 +19,8 @@ namespace SoftRenderingApp3D.App.Utils
             { Constants.Readers.StlReader, new STLReader() }
         };
 
-        private static readonly Dictionary<string, Func<List<IDrawable>>> GeneratingMethods =
-            new Dictionary<string, Func<List<IDrawable>>>
+        private static readonly Dictionary<string, Func<IDrawable>> GeneratingMethods =
+            new Dictionary<string, Func<IDrawable>>
         {
             { Constants.GeneratingFunctions.CreateTown, ShapeGenerator.CreateTown},
             { Constants.GeneratingFunctions.CreateLittleTown, ShapeGenerator.CreateLittleTown},
@@ -31,7 +31,7 @@ namespace SoftRenderingApp3D.App.Utils
             { Constants.GeneratingFunctions.CreateBigTown, ShapeGenerator.CreateBigTown}
         };
 
-        public static List<IDrawable> GetDrawables(DisplayModelData data)
+        public static IDrawable GetDrawable(DisplayModelData data)
         {
             var functionName = data.GeneratingFunctionName;
             if(data.InputFileName != null && data.ReaderType != null)
@@ -39,22 +39,21 @@ namespace SoftRenderingApp3D.App.Utils
                 if(!Readers.TryGetValue(data.ReaderType, out var reader))
                     throw new Exception($"Could not find reader for {data.ReaderType}!");
 
-                var drawables = reader.ReadFile(data.InputFileName).ToList();
+                var drawable = reader.ReadFile(data.InputFileName);
                 if(!data.HasTexture)
-                    return drawables;
+                    return drawable;
 
                 var textureReader = new TextureReaderBMP();
                 var texture = textureReader.ReadImage(@"textures\bone.bmp");
                 //var texture = textureReader.ReadImage(@"textures\glass_effect.bmp");
                 //var texture = textureReader.ReadImage(@"textures\bone_high.bmp");
-                for(var i = 0; i < drawables.Count; i++)
-                    drawables[i] = new Drawable(drawables[i].Mesh, new TextureMaterial(texture));
+                drawable = new Drawable(drawable.Mesh, new TextureMaterial(texture));
 
-                return drawables;
+                return drawable;
             }
 
             if(functionName == null)
-                return new List<IDrawable>();
+                return new Drawable() ;
 
             if(!GeneratingMethods.TryGetValue(functionName, out var method))
                 throw new Exception($"Could not find generating function for {functionName}!");
