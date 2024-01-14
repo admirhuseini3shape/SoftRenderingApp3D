@@ -24,6 +24,10 @@ namespace SoftRenderingApp3D
         {
             return (vertices[I0] + vertices[I1] + vertices[I2]) / 3;
         }
+        public Vector4 CalculateCentroid(IReadOnlyList<Vector4> vertices)
+        {
+            return (vertices[I0] + vertices[I1] + vertices[I2]) / 3;
+        }
 
         public float CalculateZAverages(IReadOnlyList<Vector4> vertices)
         {

@@ -10,8 +10,8 @@ namespace SoftRenderingApp3D
     }
     public class Stats
     {
-        private readonly Stopwatch calcSw = new Stopwatch();
-        private readonly Stopwatch paintSw = new Stopwatch();
+        public readonly Stopwatch calcSw = new Stopwatch();
+        public readonly Stopwatch paintSw = new Stopwatch();
         public int BehindViewTriangleCount;
         public int BehindZPixelCount;
 
