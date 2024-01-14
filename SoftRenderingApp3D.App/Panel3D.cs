@@ -31,7 +31,7 @@ namespace SoftRenderingApp3D.App
         private IRenderer renderer;
 
         private readonly StringBuilder sb = new StringBuilder();
-        private List<IDrawable> drawables;
+        private IDrawable drawable;
 
         public Panel3D()
         {
@@ -66,19 +66,19 @@ namespace SoftRenderingApp3D.App
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public List<IDrawable> Drawables
+        public IDrawable Drawable
         {
             get
             {
-                return drawables;
+                return drawable;
             }
             set
             {
-                if(!value.TryUpdateOther(ref drawables))
+                if(!value.TryUpdateOther(ref drawable))
                     return;
 
                 AllVertexBuffers?.Dispose();
-                AllVertexBuffers = new AllVertexBuffers(drawables);
+                AllVertexBuffers = new AllVertexBuffers(new List<IDrawable> { drawable });
                 HookPaintEvent();
             }
         }
@@ -182,7 +182,7 @@ namespace SoftRenderingApp3D.App
         private void HookPaintEvent()
         {
             Paint -= Panel3D_Paint;
-            if(camera != null && drawables != null && projection != null)
+            if(camera != null && drawable != null && projection != null)
             {
                 Paint += Panel3D_Paint;
             }
@@ -192,7 +192,8 @@ namespace SoftRenderingApp3D.App
         {
             var viewMatrix = Camera.ViewMatrix();
             var projectionMatrix = Projection.ProjectionMatrix(Width, Height);
-            return renderer.Render(AllVertexBuffers, FrameBuffer, Painter, Drawables, viewMatrix, projectionMatrix, RendererSettings);
+            var drawables = new List<IDrawable> { drawable };
+            return renderer.Render(AllVertexBuffers, FrameBuffer, Painter, drawables, viewMatrix, projectionMatrix, RendererSettings);
         }
 
         private void Panel3D_Paint(object sender, PaintEventArgs e)
@@ -204,7 +205,7 @@ namespace SoftRenderingApp3D.App
             var stats = StatsSingleton.Instance;
             sb.Clear();
             sb.AppendFormat(Format,
-                drawables.Count,
+                1,
                 stats.TotalTriangleCount,
                 stats.FacingBackTriangleCount,
                 stats.OutOfViewTriangleCount,

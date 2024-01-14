@@ -164,11 +164,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataStructures\DisplayModelName.cs" />
     <Compile Include="DataStructures\DisplayModelData.cs" />
     <Compile Include="DataStructures\Enums.cs" />
+    <Compile Include="DisplayModels\DisplayModelsManager.cs" />
     <Compile Include="Utils\JsonHelpers.cs" />
-    <Compile Include="Utils\DisplayModelHelpers.cs" />
-    <Compile Include="Utils\ShapeGenerator.cs" />
+    <Compile Include="DisplayModels\DisplayModelHelpers.cs" />
+    <Compile Include="DisplayModels\ShapeGenerator.cs" />
     <Compile Include="SoftRenderingForm.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 
-namespace SoftRenderingApp3D.App.Utils
+namespace SoftRenderingApp3D.App.DisplayModels
 {
     public static class ShapeGenerator
     {

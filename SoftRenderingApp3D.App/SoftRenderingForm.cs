@@ -1,4 +1,5 @@
 ﻿using SoftRenderingApp3D.App.DataStructures;
+using SoftRenderingApp3D.App.DisplayModels;
 using SoftRenderingApp3D.App.Utils;
 using SoftRenderingApp3D.Camera;
 using SoftRenderingApp3D.Controls;
@@ -13,13 +14,12 @@ using System.Windows.Forms;
 
 namespace SoftRenderingApp3D.App
 {
-
     public partial class SoftRenderingForm : Form
     {
         private Panel3D panel3D1;
         private readonly ArcBallCam arcBallCam;
         private FlyCam flyCam;
-        private readonly List<DisplayModelData> displayModels;
+        private readonly DisplayModelsManager displayModelsManager;
 
         public SoftRenderingForm()
         {
@@ -27,8 +27,9 @@ namespace SoftRenderingApp3D.App
             InitializeComponent();
             Initialize3DPanel();
 
-            displayModels = JsonHelpers.GetDisplayModelsFromJson();
-            PopulateLstDemos(displayModels);
+            var fileName = JsonHelpers.GetJsonFileName();
+            displayModelsManager = new DisplayModelsManager(fileName);
+            PopulateLstDemos(displayModelsManager.DisplayModelNames);
 
             lstDemos.DoubleClick += LstDemos_DoubleClick;
 
@@ -99,24 +100,21 @@ namespace SoftRenderingApp3D.App
             panel3D1.Invalidate();
         }
 
-        private void PopulateLstDemos(IEnumerable<DisplayModelData> data)
+        private void PopulateLstDemos(IReadOnlyList<DisplayModelName> displayModelNames)
         {
-            var dataSource = data
-                .Select(x => new { x.Id, x.DisplayName })
-                .ToList();
-            lstDemos.DataSource = dataSource;
-            lstDemos.ValueMember = nameof(DisplayModelData.Id);
-            lstDemos.DisplayMember = nameof(DisplayModelData.DisplayName);
+            lstDemos.DataSource = displayModelNames;
+            lstDemos.ValueMember = nameof(DisplayModelName.Id);
+            lstDemos.DisplayMember = nameof(DisplayModelName.DisplayName);
         }
 
         private void LstDemos_DoubleClick(object sender, EventArgs e)
         {
             var id = lstDemos.SelectedValue as string;
-            var currentModel = displayModels.FirstOrDefault(x => x.Id == id);
-            if(currentModel == null)
+            if(!displayModelsManager.TryGetDisplayModel(id, out var currentModel) ||
+               !displayModelsManager.TryGetDrawable(id, out var drawable))
                 return;
-            var drawable = DisplayModelHelpers.GetDrawable(currentModel);
-            panel3D1.Drawables = new List<IDrawable> { drawable };
+
+            panel3D1.Drawable = drawable;
             if(currentModel.InitialZoomLevel != 0)
             {
                 var zoom = currentModel.InitialZoomLevel;

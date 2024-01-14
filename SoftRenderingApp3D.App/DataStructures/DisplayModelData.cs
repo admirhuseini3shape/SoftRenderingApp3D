@@ -15,11 +15,12 @@
 
 
 
-        public DisplayModelData(string id, bool hasTexture, bool showTexture, string inputFileName,
+        public DisplayModelData(string id,string displayName, bool hasTexture, bool showTexture, string inputFileName,
                 float initialZoomLevel, Enums.TextureType texture, Enums.DisplayModelType displayModelType,
                 string generatingFunctionName, string readerType)
         {
             Id = id;
+            DisplayName = displayName;
             HasTexture = hasTexture;
             ShowTexture = showTexture;
             InputFileName = inputFileName;

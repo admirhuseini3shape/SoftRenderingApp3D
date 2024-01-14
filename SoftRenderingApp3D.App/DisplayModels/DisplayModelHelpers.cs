@@ -1,17 +1,16 @@
 ﻿using SoftRenderingApp3D.App.DataStructures;
+using SoftRenderingApp3D.App.Utils;
 using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.DataStructures.FileReaders;
 using SoftRenderingApp3D.DataStructures.Materials;
 using SoftRenderingApp3D.DataStructures.TextureReaders;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace SoftRenderingApp3D.App.Utils
+namespace SoftRenderingApp3D.App.DisplayModels
 {
     public static class DisplayModelHelpers
     {
-
         private static readonly Dictionary<string, FileReader> Readers =
             new Dictionary<string, FileReader>
         {
@@ -59,7 +58,6 @@ namespace SoftRenderingApp3D.App.Utils
                 throw new Exception($"Could not find generating function for {functionName}!");
 
             return method();
-
         }
     }
 }

@@ -238,6 +238,7 @@ namespace SoftRenderingApp3D.Renderer
             var drawablesCount = drawables.Count;
             for(var iDrawable = 0; iDrawable < drawablesCount; iDrawable++)
             {
+
                 var vertexBuffer = allVertexBuffers.VertexBuffer[iDrawable];
                 vertexBuffer.Clear();
 
@@ -246,6 +247,9 @@ namespace SoftRenderingApp3D.Renderer
                 vertexBuffer.TransformVertices(viewMatrix);
 
                 var triangleCount = drawable.Mesh.Facets.Count;
+                if(triangleCount == 0)
+                    continue;
+
                 stats.TotalTriangleCount += triangleCount;
 
                 var vertices = drawable.Mesh.Vertices;
@@ -283,6 +287,8 @@ namespace SoftRenderingApp3D.Renderer
                 //zSortedFacets.Sort((x, y) => (int)(1000 * x.zDepth - 1000 * y.zDepth));
 
                 var triangleCount = drawable.Mesh.Facets.Count;
+                if(triangleCount == 0)
+                    continue;
 
                 const int trianglesPerBatch = 15000;
                 var batches = Partitioner.Create(0, triangleCount, trianglesPerBatch);
