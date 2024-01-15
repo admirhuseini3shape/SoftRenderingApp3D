@@ -3,11 +3,8 @@ using SoftRenderingApp3D.DataStructures.Meshes;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Xml;
 using System.Xml.Linq;
 
 namespace SoftRenderingApp3D.DataStructures.FileReaders

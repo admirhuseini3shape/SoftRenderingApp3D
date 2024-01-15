@@ -1,5 +1,4 @@
-﻿using SoftRenderingApp3D.DataStructures.Meshes;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace SoftRenderingApp3D.DataStructures.Materials
 {

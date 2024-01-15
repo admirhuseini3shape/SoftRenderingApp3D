@@ -3,12 +3,10 @@ using SoftRenderingApp3D.App.DisplayModels;
 using SoftRenderingApp3D.App.Utils;
 using SoftRenderingApp3D.Camera;
 using SoftRenderingApp3D.Controls;
-using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.Projection;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Numerics;
 using System.Windows.Forms;
 

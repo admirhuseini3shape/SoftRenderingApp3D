@@ -1,5 +1,4 @@
-﻿using SoftRenderingApp3D.DataStructures.Meshes;
-using SoftRenderingApp3D.Utils;
+﻿using SoftRenderingApp3D.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
