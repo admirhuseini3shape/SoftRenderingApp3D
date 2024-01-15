@@ -77,8 +77,8 @@ namespace SoftRenderingApp3D.App
                 if(!value.TryUpdateOther(ref drawable))
                     return;
 
-                AllVertexBuffers?.Dispose();
-                AllVertexBuffers = new AllVertexBuffers(new List<IDrawable> { drawable });
+                VertexBuffer?.Dispose();
+                VertexBuffer = new VertexBuffer(drawable.Mesh.VertexCount);
                 HookPaintEvent();
             }
         }
@@ -139,7 +139,7 @@ namespace SoftRenderingApp3D.App
         }
 
         private FrameBuffer FrameBuffer { get; set; }
-        private AllVertexBuffers AllVertexBuffers { get; set; }
+        private VertexBuffer VertexBuffer { get; set; }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public IProjection Projection
@@ -192,8 +192,7 @@ namespace SoftRenderingApp3D.App
         {
             var viewMatrix = Camera.ViewMatrix();
             var projectionMatrix = Projection.ProjectionMatrix(Width, Height);
-            var drawables = new List<IDrawable> { drawable };
-            return renderer.Render(AllVertexBuffers, FrameBuffer, Painter, drawables, viewMatrix, projectionMatrix, RendererSettings);
+            return renderer.Render(VertexBuffer, FrameBuffer, Painter, drawable, viewMatrix, projectionMatrix, RendererSettings);
         }
 
         private void Panel3D_Paint(object sender, PaintEventArgs e)

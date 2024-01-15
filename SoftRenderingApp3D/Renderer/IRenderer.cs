@@ -1,15 +1,13 @@
 ﻿using SoftRenderingApp3D.Buffer;
 using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.Painter;
-using System.Collections.Generic;
 using System.Numerics;
 
 namespace SoftRenderingApp3D.Renderer
 {
     public interface IRenderer
     {
-        int[] Render(AllVertexBuffers allVertexBuffers, FrameBuffer frameBuffer, IPainter painter, 
-            IList<IDrawable> drawables, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, 
-            RendererSettings rendererSettings);
+        int[] Render(VertexBuffer allVertexBuffers, FrameBuffer frameBuffer, IPainter painter,
+            IDrawable drawables, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings);
     }
 }
