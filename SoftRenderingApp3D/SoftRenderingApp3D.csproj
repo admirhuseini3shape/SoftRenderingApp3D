@@ -106,6 +106,7 @@
     <Compile Include="DataStructures\World\ILightSource.cs" />
     <Compile Include="Factories\Factory.cs" />
     <Compile Include="Rasterizers\Rasterizer.cs" />
+    <Compile Include="Renderer\SimpleRendererAbstract.cs" />
     <Compile Include="Utils\Barycentric2d.cs" />
     <Compile Include="Painter\GouraudPainter.cs" />
     <Compile Include="Painter\IPainter.cs" />

@@ -7,7 +7,6 @@ using SoftRenderingApp3D.Projection;
 using SoftRenderingApp3D.Renderer;
 using SoftRenderingApp3D.Utils;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -21,7 +20,7 @@ namespace SoftRenderingApp3D.App
         private const string Format =
             "Meshes:{0}\nTriangles:{1} - Back:{2} - Out:{3} - Behind:{4}\nPixels:{9} drawn:{5} - Z behind:{6}\nCalc time:{7} - Paint time:{8}";
 
-        private RendererSettings _rendererSettings;
+        private RendererSettings rendererSettings;
 
         private Bitmap bmp;
 
@@ -32,6 +31,8 @@ namespace SoftRenderingApp3D.App
 
         private readonly StringBuilder sb = new StringBuilder();
         private IDrawable drawable;
+        private FrameBuffer FrameBuffer { get; set; }
+        private VertexBuffer VertexBuffer { get; set; }
 
         public Panel3D()
         {
@@ -41,7 +42,7 @@ namespace SoftRenderingApp3D.App
 
             FrameBuffer = new FrameBuffer(Width, Height);
             Painter = new GouraudPainter();
-            Renderer = new SimpleRenderer();
+            Renderer = new SimpleRenderer(VertexBuffer, FrameBuffer);
             ResizeRedraw = true;
 
             Layout += Panel3D_Layout;
@@ -52,16 +53,16 @@ namespace SoftRenderingApp3D.App
         {
             get
             {
-                return _rendererSettings;
+                return rendererSettings;
             }
             private set
             {
-                if(!value.TryUpdateOther(ref _rendererSettings))
+                if(!value.TryUpdateOther(ref rendererSettings))
                     return;
 
 
-                _rendererSettings.ShowTriangleNormals = true;
-                _rendererSettings = value;
+                rendererSettings.ShowTriangleNormals = true;
+                rendererSettings = value;
             }
         }
 
@@ -79,6 +80,7 @@ namespace SoftRenderingApp3D.App
 
                 VertexBuffer?.Dispose();
                 VertexBuffer = new VertexBuffer(drawable.Mesh.VertexCount);
+                Renderer = new SimpleRenderer(VertexBuffer, FrameBuffer);
                 HookPaintEvent();
             }
         }
@@ -138,9 +140,6 @@ namespace SoftRenderingApp3D.App
             }
         }
 
-        private FrameBuffer FrameBuffer { get; set; }
-        private VertexBuffer VertexBuffer { get; set; }
-
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public IProjection Projection
         {
@@ -192,7 +191,7 @@ namespace SoftRenderingApp3D.App
         {
             var viewMatrix = Camera.ViewMatrix();
             var projectionMatrix = Projection.ProjectionMatrix(Width, Height);
-            return renderer.Render(VertexBuffer, FrameBuffer, Painter, drawable, viewMatrix, projectionMatrix, RendererSettings);
+            return renderer.Render(Painter, drawable, viewMatrix, projectionMatrix, RendererSettings);
         }
 
         private void Panel3D_Paint(object sender, PaintEventArgs e)
@@ -228,6 +227,7 @@ namespace SoftRenderingApp3D.App
             }
 
             FrameBuffer = new FrameBuffer(Width, Height);
+            Renderer = new SimpleRenderer(VertexBuffer, FrameBuffer);
             bmp = new Bitmap(Width, Height, PixelFormat.Format32bppPArgb);
         }
 
