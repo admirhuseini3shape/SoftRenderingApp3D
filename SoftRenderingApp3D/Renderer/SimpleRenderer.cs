@@ -54,6 +54,16 @@ namespace SoftRenderingApp3D.Renderer
             //zSortedFacets.Sort((x, y) => (int)(1000 * x.zDepth - 1000 * y.zDepth));
 
 
+            DrawFacetsParallel(vertexBuffer, frameBuffer, painter, drawable, rendererSettings, stats);
+            stats.paintSw.Stop();
+
+            return frameBuffer.Screen;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void DrawFacetsParallel(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, IPainter painter,
+            IDrawable drawable, RendererSettings rendererSettings, Stats stats)
+        {
             Parallel.ForEach(Partitioner.Create(0, drawable.Mesh.FacetCount), range =>
             {
                 for(var faId = range.Item1; faId < range.Item2; faId++)
@@ -65,9 +75,6 @@ namespace SoftRenderingApp3D.Renderer
                     DrawFacet(vertexBuffer, frameBuffer, painter, drawable, rendererSettings, faId, stats);
                 }
             });
-            stats.paintSw.Stop();
-
-            return frameBuffer.Screen;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -75,41 +82,43 @@ namespace SoftRenderingApp3D.Renderer
             Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, Stats stats)
         {
             stats.calcSw.Restart();
+            vertexBuffer.Clear();
 
             // model => worldMatrix => world => viewMatrix => view => projectionMatrix => projection => toNdc => ndc => toScreen => screen
 
-            vertexBuffer.Clear();
-
+            // Transform and store vertices to View
             vertexBuffer.Drawable = drawable;
-            vertexBuffer.TransformVertices(viewMatrix);
 
+            UpdateVertexBuffersParallel(vertexBuffer, frameBuffer, viewMatrix, projectionMatrix);
             var facetsCount = drawable.Mesh.Facets.Count;
             stats.TotalTriangleCount += facetsCount;
+            
+            stats.calcSw.Stop();
+        }
 
-            var vertices = drawable.Mesh.Vertices;
-            var viewVertices = vertexBuffer.ViewVertices;
-
-            // Transform and store vertices to View
-            var vertexCount = vertices.Count;
-            for(var veId = 0; veId < vertexCount; veId++)
-                viewVertices[veId] = viewMatrix.Transform(vertices[veId]);
-
-            Parallel.ForEach(Partitioner.Create(0, facetsCount), range =>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void UpdateVertexBuffersParallel(VertexBuffer vertexBuffer, FrameBuffer frameBuffer,
+            Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
+        {
+            Parallel.ForEach(Partitioner.Create(0, vertexBuffer.Drawable.Mesh.VertexCount), range =>
             {
-                for(var faId = range.Item1; faId < range.Item2; faId++)
+                for (var veId = range.Item1; veId < range.Item2; veId++)
                 {
-                    var facet = drawable.Mesh.Facets[faId];
-                    facet.TransformProjection(vertexBuffer, projectionMatrix);
-
-                    vertexBuffer.ScreenPointVertices[facet.I0] =
-                        frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I0]);
-                    vertexBuffer.ScreenPointVertices[facet.I1] =
-                        frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I1]);
-                    vertexBuffer.ScreenPointVertices[facet.I2] =
-                        frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I2]);
+                    UpdateVertexBuffer(vertexBuffer, frameBuffer, viewMatrix, projectionMatrix, veId);
                 }
             });
-            stats.calcSw.Stop();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void UpdateVertexBuffer(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, Matrix4x4 viewMatrix,
+            Matrix4x4 projectionMatrix, int veId)
+        {
+            vertexBuffer.WorldVertices[veId] = viewMatrix.Transform(vertexBuffer.Drawable.Mesh.Vertices[veId]);
+            vertexBuffer.WorldVertexNormals[veId] =
+                viewMatrix.TransformWithoutTranslation(vertexBuffer.Drawable.Mesh.VertexNormals[veId]);
+            vertexBuffer.ViewVertices[veId] = viewMatrix.Transform(vertexBuffer.Drawable.Mesh.Vertices[veId]);
+            vertexBuffer.ProjectionVertices[veId] = Vector4.Transform(vertexBuffer.ViewVertices[veId], projectionMatrix);
+            vertexBuffer.ScreenPointVertices[veId] = frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[veId]);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -129,7 +138,7 @@ namespace SoftRenderingApp3D.Renderer
 
             frameBuffer.Clear();
 
-            UpdateVertexBuffer(vertexBuffer, frameBuffer, drawable, viewMatrix, projectionMatrix, stats);
+            UpdateVertexBufferSequential(vertexBuffer, frameBuffer, drawable, viewMatrix, projectionMatrix, stats);
             stats.paintSw.Restart();
 
             //var zSortedFacets = drawable.Mesh.Facets
@@ -137,6 +146,17 @@ namespace SoftRenderingApp3D.Renderer
             //.ToList();
             //zSortedFacets.Sort((x, y) => (int)(1000 * x.zDepth - 1000 * y.zDepth));
 
+            DrawFacetsSequential(vertexBuffer, frameBuffer, painter, drawable, rendererSettings, stats);
+            stats.paintSw.Stop();
+
+
+            return frameBuffer.Screen;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void DrawFacetsSequential(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, IPainter painter,
+            IDrawable drawable, RendererSettings rendererSettings, Stats stats)
+        {
             for(var faId = 0; faId < drawable.Mesh.FacetCount; faId++)
             {
                 //var facetData = zSortedFacets[faId];
@@ -145,17 +165,14 @@ namespace SoftRenderingApp3D.Renderer
 
                 DrawFacet(vertexBuffer, frameBuffer, painter, drawable, rendererSettings, faId, stats);
             }
-            stats.paintSw.Stop();
-
-
-            return frameBuffer.Screen;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void DrawFacet(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, IPainter painter, IDrawable drawable,
             RendererSettings rendererSettings, int faId, Stats stats)
         {
             var pixels = Rasterizer.RasterizeFacet(vertexBuffer, frameBuffer, drawable, rendererSettings, faId, stats);
-            if (pixels == null)
+            if(pixels == null)
                 return;
             var perPixelColors = CalculateShadingColors(painter, rendererSettings, drawable, vertexBuffer, pixels, faId);
 
@@ -164,7 +181,7 @@ namespace SoftRenderingApp3D.Renderer
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void UpdateVertexBuffer(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, IDrawable drawable,
+        private static void UpdateVertexBufferSequential(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, IDrawable drawable,
             Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, Stats stats)
         {
             stats.calcSw.Restart();
@@ -173,35 +190,22 @@ namespace SoftRenderingApp3D.Renderer
 
             vertexBuffer.Clear();
 
-            vertexBuffer.Drawable = drawable;
-            vertexBuffer.TransformVertices(viewMatrix);
-
-            var triangleCount = drawable.Mesh.FacetCount;
-
-            stats.TotalTriangleCount += triangleCount;
-
-            var vertices = drawable.Mesh.Vertices;
-            var viewVertices = vertexBuffer.ViewVertices;
-
             // Transform and store vertices to View
-            var vertexCount = vertices.Count;
-            for (var veId = 0; veId < vertexCount; veId++)
-                viewVertices[veId] = viewMatrix.Transform(vertices[veId]);
+            vertexBuffer.Drawable = drawable;
 
-            for (var faId = 0; faId < triangleCount; faId++)
-            {
-                var facet = drawable.Mesh.Facets[faId];
-                facet.TransformProjection(vertexBuffer, projectionMatrix);
-
-                vertexBuffer.ScreenPointVertices[facet.I0] =
-                    frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I0]);
-                vertexBuffer.ScreenPointVertices[facet.I1] =
-                    frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I1]);
-                vertexBuffer.ScreenPointVertices[facet.I2] =
-                    frameBuffer.ToScreen3(vertexBuffer.ProjectionVertices[facet.I2]);
-            }
+            UpdateVertexBuffersSequential(vertexBuffer, frameBuffer, viewMatrix, projectionMatrix);
 
             stats.calcSw.Stop();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void UpdateVertexBuffersSequential(VertexBuffer vertexBuffer, FrameBuffer frameBuffer,
+            Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
+        {
+            for (var veId = 0; veId < vertexBuffer.Drawable.Mesh.Vertices.Count; veId++)
+            {
+                UpdateVertexBuffer(vertexBuffer, frameBuffer, viewMatrix, projectionMatrix, veId);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
