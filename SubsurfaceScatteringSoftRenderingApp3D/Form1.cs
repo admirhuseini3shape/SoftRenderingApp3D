@@ -50,10 +50,10 @@ namespace SubsurfaceScatteringSoftRenderingApp3D
             switch(id)
             {
                 case "jaw":
-                    drawables.AddRange(stlReader.ReadFile(@"models\original.stl"));
+                    drawables.Add(stlReader.ReadFile(@"models\original.stl"));
                     // Add a cube that represents the light
-                    drawables.AddRange(stlReader.ReadFile(@"models\offset_3.stl"));
-                    drawables.AddRange(stlReader.ReadFile(@"models\caries.stl"));
+                    drawables.Add(stlReader.ReadFile(@"models\offset_3.stl"));
+                    drawables.Add(stlReader.ReadFile(@"models\caries.stl"));
                     var material1 = new FacetColorMaterial(drawables[1].Mesh.FacetCount, ColorRGB.Gray);
                     drawables[1] = new Drawable(drawables[1].Mesh, material1);
 
