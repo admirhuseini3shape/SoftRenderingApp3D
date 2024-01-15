@@ -7,6 +7,7 @@ using SoftRenderingApp3D.Utils;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace SoftRenderingApp3D.Renderer
@@ -44,6 +45,35 @@ namespace SoftRenderingApp3D.Renderer
 
             frameBuffer.Clear();
 
+            UpdateVertexBufferParallel(vertexBuffer, frameBuffer, drawable, viewMatrix, projectionMatrix, stats);
+            stats.paintSw.Restart();
+
+            //var zSortedFacets = drawable.Mesh.Facets
+            //.Select((fa, i) => new { FaId = i, zDepth = fa.CalculateZAverages(vertexBuffer.ProjectionVertices) })
+            //.ToList();
+            //zSortedFacets.Sort((x, y) => (int)(1000 * x.zDepth - 1000 * y.zDepth));
+
+
+            Parallel.ForEach(Partitioner.Create(0, drawable.Mesh.FacetCount), range =>
+            {
+                for(var faId = range.Item1; faId < range.Item2; faId++)
+                {
+                    //var facetData = zSortedFacets[faId];
+                    //if(facetData.zDepth < 0)
+                    //    continue;
+
+                    DrawFacet(vertexBuffer, frameBuffer, painter, drawable, rendererSettings, faId, stats);
+                }
+            });
+            stats.paintSw.Stop();
+
+            return frameBuffer.Screen;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void UpdateVertexBufferParallel(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, IDrawable drawable,
+            Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, Stats stats)
+        {
             stats.calcSw.Restart();
 
             // model => worldMatrix => world => viewMatrix => view => projectionMatrix => projection => toNdc => ndc => toScreen => screen
@@ -53,8 +83,8 @@ namespace SoftRenderingApp3D.Renderer
             vertexBuffer.Drawable = drawable;
             vertexBuffer.TransformVertices(viewMatrix);
 
-            var triangleCount = drawable.Mesh.Facets.Count;
-            stats.TotalTriangleCount += triangleCount;
+            var facetsCount = drawable.Mesh.Facets.Count;
+            stats.TotalTriangleCount += facetsCount;
 
             var vertices = drawable.Mesh.Vertices;
             var viewVertices = vertexBuffer.ViewVertices;
@@ -64,11 +94,9 @@ namespace SoftRenderingApp3D.Renderer
             for(var veId = 0; veId < vertexCount; veId++)
                 viewVertices[veId] = viewMatrix.Transform(vertices[veId]);
 
-            var batches = Partitioner.Create(0, triangleCount);
-            Parallel.ForEach(batches, range =>
+            Parallel.ForEach(Partitioner.Create(0, facetsCount), range =>
             {
                 for(var faId = range.Item1; faId < range.Item2; faId++)
-                //for(var faId = 0; faId < triangleCount; faId++)
                 {
                     var facet = drawable.Mesh.Facets[faId];
                     facet.TransformProjection(vertexBuffer, projectionMatrix);
@@ -82,67 +110,9 @@ namespace SoftRenderingApp3D.Renderer
                 }
             });
             stats.calcSw.Stop();
-            stats.paintSw.Restart();
-
-            //var zSortedFacets = drawable.Mesh.Facets
-            //.Select((fa, i) => new { FaId = i, zDepth = fa.CalculateZAverages(vertexBuffer.ProjectionVertices) })
-            //.ToList();
-            //zSortedFacets.Sort((x, y) => (int)(1000 * x.zDepth - 1000 * y.zDepth));
-
-
-            Parallel.ForEach(batches, range =>
-            {
-                for(var faId = range.Item1; faId < range.Item2; faId++)
-                //for(var faId = 0; faId < triangleCount; faId++)
-                {
-                    //var facetData = zSortedFacets[faId];
-                    //if(facetData.zDepth < 0)
-                    //    continue;
-
-                    var facet = drawable.Mesh.Facets[faId];
-
-                    // Discard if behind far plane
-                    if(facet.IsBehindFarPlane(vertexBuffer))
-                    {
-                        stats.BehindViewTriangleCount++;
-                        continue;
-                    }
-
-                    // Discard if back facing 
-                    if(facet.IsFacingBack(vertexBuffer))
-                    {
-                        stats.FacingBackTriangleCount++;
-                        if(rendererSettings.BackFaceCulling)
-                        {
-                            continue;
-                        }
-                    }
-
-                    // Project in frustum
-                    //facet.TransformProjection(vertexBuffer, projectionMatrix);
-
-                    // Discard if outside view frustum
-                    if(facet.IsOutsideFrustum(vertexBuffer))
-                    {
-                        stats.OutOfViewTriangleCount++;
-                        continue;
-                    }
-
-                    var pixels = Rasterizer.GetPixels(vertexBuffer, frameBuffer, facet);
-                    var perPixelColors = CalculateShadingColors(frameBuffer, painter,
-                    rendererSettings, drawable, vertexBuffer, pixels, faId);
-
-                    frameBuffer.PutPixels(perPixelColors);
-                    stats.DrawnTriangleCount++;
-                }
-            });
-            stats.paintSw.Stop();
-
-
-            return frameBuffer.Screen;
-
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int[] RenderSequential(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, IPainter painter,
             IDrawable drawable, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix,
             RendererSettings rendererSettings)
@@ -159,6 +129,44 @@ namespace SoftRenderingApp3D.Renderer
 
             frameBuffer.Clear();
 
+            UpdateVertexBuffer(vertexBuffer, frameBuffer, drawable, viewMatrix, projectionMatrix, stats);
+            stats.paintSw.Restart();
+
+            //var zSortedFacets = drawable.Mesh.Facets
+            //.Select((fa, i) => new { FaId = i, zDepth = fa.CalculateZAverages(vertexBuffer.ProjectionVertices) })
+            //.ToList();
+            //zSortedFacets.Sort((x, y) => (int)(1000 * x.zDepth - 1000 * y.zDepth));
+
+            for(var faId = 0; faId < drawable.Mesh.FacetCount; faId++)
+            {
+                //var facetData = zSortedFacets[faId];
+                //if(facetData.zDepth < 0)
+                //    continue;
+
+                DrawFacet(vertexBuffer, frameBuffer, painter, drawable, rendererSettings, faId, stats);
+            }
+            stats.paintSw.Stop();
+
+
+            return frameBuffer.Screen;
+        }
+
+        private static void DrawFacet(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, IPainter painter, IDrawable drawable,
+            RendererSettings rendererSettings, int faId, Stats stats)
+        {
+            var pixels = Rasterizer.RasterizeFacet(vertexBuffer, frameBuffer, drawable, rendererSettings, faId, stats);
+            if (pixels == null)
+                return;
+            var perPixelColors = CalculateShadingColors(painter, rendererSettings, drawable, vertexBuffer, pixels, faId);
+
+            frameBuffer.PutPixels(perPixelColors);
+            stats.DrawnTriangleCount++;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void UpdateVertexBuffer(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, IDrawable drawable,
+            Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, Stats stats)
+        {
             stats.calcSw.Restart();
 
             // model => worldMatrix => world => viewMatrix => view => projectionMatrix => projection => toNdc => ndc => toScreen => screen
@@ -177,10 +185,10 @@ namespace SoftRenderingApp3D.Renderer
 
             // Transform and store vertices to View
             var vertexCount = vertices.Count;
-            for(var veId = 0; veId < vertexCount; veId++)
+            for (var veId = 0; veId < vertexCount; veId++)
                 viewVertices[veId] = viewMatrix.Transform(vertices[veId]);
 
-            for(var faId = 0; faId < triangleCount; faId++)
+            for (var faId = 0; faId < triangleCount; faId++)
             {
                 var facet = drawable.Mesh.Facets[faId];
                 facet.TransformProjection(vertexBuffer, projectionMatrix);
@@ -194,73 +202,21 @@ namespace SoftRenderingApp3D.Renderer
             }
 
             stats.calcSw.Stop();
-            stats.paintSw.Restart();
-
-            //var zSortedFacets = drawable.Mesh.Facets
-            //.Select((fa, i) => new { FaId = i, zDepth = fa.CalculateZAverages(vertexBuffer.ProjectionVertices) })
-            //.ToList();
-            //zSortedFacets.Sort((x, y) => (int)(1000 * x.zDepth - 1000 * y.zDepth));
-
-            for(var faId = 0; faId < triangleCount; faId++)
-            {
-                //var facetData = zSortedFacets[faId];
-                //if(facetData.zDepth < 0)
-                //    continue;
-
-                var facet = drawable.Mesh.Facets[faId];
-
-                // Discard if behind far plane
-                if(facet.IsBehindFarPlane(vertexBuffer))
-                {
-                    stats.BehindViewTriangleCount++;
-                    continue;
-                }
-
-                // Discard if back facing 
-                if(facet.IsFacingBack(vertexBuffer))
-                {
-                    stats.FacingBackTriangleCount++;
-                    if(rendererSettings.BackFaceCulling)
-                    {
-                        continue;
-                    }
-                }
-
-                // Project in frustum
-                //facet.TransformProjection(vertexBuffer, projectionMatrix);
-
-                // Discard if outside view frustum
-                if(facet.IsOutsideFrustum(vertexBuffer))
-                {
-                    stats.OutOfViewTriangleCount++;
-                    continue;
-                }
-
-                var pixels = Rasterizer.GetPixels(vertexBuffer, frameBuffer, facet);
-                var perPixelColors = CalculateShadingColors(frameBuffer, painter,
-                rendererSettings, drawable, vertexBuffer, pixels, faId);
-
-                frameBuffer.PutPixels(perPixelColors);
-                stats.DrawnTriangleCount++;
-            }
-            stats.paintSw.Stop();
-
-
-            return frameBuffer.Screen;
         }
 
-        private static List<(int x, int y, float z, ColorRGB color)> CalculateShadingColors(FrameBuffer frameBuffer, IPainter painter, RendererSettings rendererSettings,
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static List<(int x, int y, float z, ColorRGB color)> CalculateShadingColors(IPainter painter, RendererSettings rendererSettings,
             IDrawable drawable, VertexBuffer vertexBuffer, List<Vector3> pixels, int faId)
         {
             var perPixelColors = new List<(int x, int y, float z, ColorRGB color)>();
             var textureMaterial = drawable.Material as ITextureMaterial;
             var hasTexture = textureMaterial != null && textureMaterial.Texture != null;
             if(!hasTexture || !rendererSettings.ShowTextures)
-                perPixelColors = painter.DrawTriangle(vertexBuffer, frameBuffer, pixels, faId);
+                perPixelColors = painter.DrawTriangle(vertexBuffer, pixels, faId);
             else if(painter is GouraudPainter gouraudPainter)
             {
                 perPixelColors = gouraudPainter.DrawTriangleTextured(textureMaterial.Texture,
-                    vertexBuffer, frameBuffer, pixels, faId, rendererSettings.LinearTextureFiltering);
+                    vertexBuffer, pixels, faId, rendererSettings.LinearTextureFiltering);
             }
 
             return perPixelColors;

@@ -11,7 +11,7 @@ namespace SoftRenderingApp3D.Painter
     public class GouraudPainter : IPainter
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public List<(int x, int y, float z, ColorRGB color)> DrawTriangle(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, List<Vector3> pixels, int faId)
+        public List<(int x, int y, float z, ColorRGB color)> DrawTriangle(VertexBuffer vertexBuffer, List<Vector3> pixels, int faId)
         {
             var perPixelColors = new List<(int x, int y, float z, ColorRGB color)>(pixels.Count);
 
@@ -59,7 +59,7 @@ namespace SoftRenderingApp3D.Painter
                 vertexBuffer.WorldVertexNormals[facet.I2],
                 lightPos);
 
-            
+
             for(var i = 0; i < pixels.Count; i++)
             {
                 var alpha = barycentricPoints[i].X;
@@ -83,7 +83,7 @@ namespace SoftRenderingApp3D.Painter
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public List<(int x, int y, float z, ColorRGB color)> DrawTriangleTextured(Texture texture, VertexBuffer vertexBuffer, FrameBuffer frameBuffer,List<Vector3> pixels, int faId, bool linearFiltering)
+        public List<(int x, int y, float z, ColorRGB color)> DrawTriangleTextured(Texture texture, VertexBuffer vertexBuffer, List<Vector3> pixels, int faId, bool linearFiltering)
         {
             var perPixelColors = new List<(int x, int y, float z, ColorRGB color)>(pixels.Count);
 
@@ -119,7 +119,7 @@ namespace SoftRenderingApp3D.Painter
                 vertexBuffer.WorldVertices[facet.I2],
                 vertexBuffer.WorldVertexNormals[facet.I2],
                 lightPos);
-            
+
             for(var i = 0; i < pixels.Count; i++)
             {
                 var alpha = barycentricPoints[i].X;
@@ -138,6 +138,6 @@ namespace SoftRenderingApp3D.Painter
 
             return perPixelColors;
         }
-        
+
     }
 }
