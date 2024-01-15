@@ -4,7 +4,6 @@ using SoftRenderingApp3D.DataStructures.Materials;
 using SoftRenderingApp3D.Painter;
 using SoftRenderingApp3D.Rasterizers;
 using SoftRenderingApp3D.Utils;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Numerics;
@@ -17,13 +16,28 @@ namespace SoftRenderingApp3D.Renderer
         public int[] Render(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, IPainter painter,
             IDrawable drawable, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings)
         {
-            if(drawable == null || painter == null || rendererSettings == null)
-                return Array.Empty<int>();
+            if(drawable == null || painter == null || rendererSettings == null || drawable.Mesh.FacetCount == 0)
+            {
+                frameBuffer.Clear();
+                return frameBuffer.Screen;
+            }
 
             const int minFacetsForParallelization = 10000;
-            if(drawable.Mesh.FacetCount < minFacetsForParallelization)
-                return RenderSequential(vertexBuffer, frameBuffer, painter,
-                    drawable, viewMatrix, projectionMatrix, rendererSettings);
+            return drawable.Mesh.FacetCount < minFacetsForParallelization
+                ? RenderSequential(vertexBuffer, frameBuffer, painter, drawable, viewMatrix, projectionMatrix,
+                    rendererSettings)
+                : RenderParallel(vertexBuffer, frameBuffer, painter, drawable, viewMatrix, projectionMatrix,
+                    rendererSettings);
+        }
+
+        public int[] RenderParallel(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, IPainter painter,
+            IDrawable drawable, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings)
+        {
+            if(drawable == null || painter == null || rendererSettings == null || drawable.Mesh.FacetCount == 0)
+            {
+                frameBuffer.Clear();
+                return frameBuffer.Screen;
+            }
 
             var stats = StatsSingleton.Instance;
             stats.Clear();
@@ -50,10 +64,7 @@ namespace SoftRenderingApp3D.Renderer
             for(var veId = 0; veId < vertexCount; veId++)
                 viewVertices[veId] = viewMatrix.Transform(vertices[veId]);
 
-            const int minFacetsPerBatch = 15000;
-            const int parallelizationThreads = 8;
-            var trianglesPerBatch = Math.Min(triangleCount / parallelizationThreads, minFacetsForParallelization);
-            var batches = Partitioner.Create(0, triangleCount, trianglesPerBatch);
+            var batches = Partitioner.Create(0, triangleCount);
             Parallel.ForEach(batches, range =>
             {
                 for(var faId = range.Item1; faId < range.Item2; faId++)
@@ -79,9 +90,6 @@ namespace SoftRenderingApp3D.Renderer
             //zSortedFacets.Sort((x, y) => (int)(1000 * x.zDepth - 1000 * y.zDepth));
 
 
-            //const int trianglesPerBatch = 15000;
-            //var batches = Partitioner.Create(0, triangleCount, trianglesPerBatch);
-
             Parallel.ForEach(batches, range =>
             {
                 for(var faId = range.Item1; faId < range.Item2; faId++)
@@ -98,7 +106,6 @@ namespace SoftRenderingApp3D.Renderer
                     {
                         stats.BehindViewTriangleCount++;
                         continue;
-                        //return;
                     }
 
                     // Discard if back facing 
@@ -108,7 +115,6 @@ namespace SoftRenderingApp3D.Renderer
                         if(rendererSettings.BackFaceCulling)
                         {
                             continue;
-                            //return;
                         }
                     }
 
@@ -120,11 +126,10 @@ namespace SoftRenderingApp3D.Renderer
                     {
                         stats.OutOfViewTriangleCount++;
                         continue;
-                        //return;
                     }
 
                     var pixels = Rasterizer.GetPixels(vertexBuffer, frameBuffer, facet);
-                    var perPixelColors = GetColors(frameBuffer, painter,
+                    var perPixelColors = CalculateShadingColors(frameBuffer, painter,
                     rendererSettings, drawable, vertexBuffer, pixels, faId);
 
                     frameBuffer.PutPixels(perPixelColors);
@@ -142,8 +147,11 @@ namespace SoftRenderingApp3D.Renderer
             IDrawable drawable, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix,
             RendererSettings rendererSettings)
         {
-            if(drawable == null || painter == null || rendererSettings == null)
-                return Array.Empty<int>();
+            if(drawable == null || painter == null || rendererSettings == null || drawable.Mesh.FacetCount == 0)
+            {
+                frameBuffer.Clear();
+                return frameBuffer.Screen;
+            }
 
             var stats = StatsSingleton.Instance;
             stats.Clear();
@@ -161,8 +169,6 @@ namespace SoftRenderingApp3D.Renderer
             vertexBuffer.TransformVertices(viewMatrix);
 
             var triangleCount = drawable.Mesh.FacetCount;
-            if(triangleCount == 0)
-                return Array.Empty<int>(); ;
 
             stats.TotalTriangleCount += triangleCount;
 
@@ -208,7 +214,6 @@ namespace SoftRenderingApp3D.Renderer
                 {
                     stats.BehindViewTriangleCount++;
                     continue;
-                    //return;
                 }
 
                 // Discard if back facing 
@@ -218,7 +223,6 @@ namespace SoftRenderingApp3D.Renderer
                     if(rendererSettings.BackFaceCulling)
                     {
                         continue;
-                        //return;
                     }
                 }
 
@@ -230,11 +234,10 @@ namespace SoftRenderingApp3D.Renderer
                 {
                     stats.OutOfViewTriangleCount++;
                     continue;
-                    //return;
                 }
 
                 var pixels = Rasterizer.GetPixels(vertexBuffer, frameBuffer, facet);
-                var perPixelColors = GetColors(frameBuffer, painter,
+                var perPixelColors = CalculateShadingColors(frameBuffer, painter,
                 rendererSettings, drawable, vertexBuffer, pixels, faId);
 
                 frameBuffer.PutPixels(perPixelColors);
@@ -246,7 +249,7 @@ namespace SoftRenderingApp3D.Renderer
             return frameBuffer.Screen;
         }
 
-        private static List<(int x, int y, float z, ColorRGB color)> GetColors(FrameBuffer frameBuffer, IPainter painter, RendererSettings rendererSettings,
+        private static List<(int x, int y, float z, ColorRGB color)> CalculateShadingColors(FrameBuffer frameBuffer, IPainter painter, RendererSettings rendererSettings,
             IDrawable drawable, VertexBuffer vertexBuffer, List<Vector3> pixels, int faId)
         {
             var perPixelColors = new List<(int x, int y, float z, ColorRGB color)>();
