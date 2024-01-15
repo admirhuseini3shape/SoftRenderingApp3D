@@ -1,5 +1,4 @@
 ﻿using SoftRenderingApp3D.Buffer;
-using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.Painter;
 using System.Numerics;
 
@@ -10,6 +9,6 @@ namespace SoftRenderingApp3D.Renderer
         VertexBuffer VertexBuffer { get; }
         FrameBuffer FrameBuffer { get; }
 
-        int[] Render(IPainter painter, IDrawable drawables, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings);
+        int[] Render(IPainter painter, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings);
     }
 }

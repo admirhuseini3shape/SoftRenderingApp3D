@@ -31,8 +31,6 @@ namespace SoftRenderingApp3D.App
 
         private readonly StringBuilder sb = new StringBuilder();
         private IDrawable drawable;
-        private FrameBuffer FrameBuffer { get; set; }
-        private VertexBuffer VertexBuffer { get; set; }
 
         public Panel3D()
         {
@@ -40,9 +38,8 @@ namespace SoftRenderingApp3D.App
 
             RendererSettings = new RendererSettings { BackFaceCulling = false };
 
-            FrameBuffer = new FrameBuffer(Width, Height);
             Painter = new GouraudPainter();
-            Renderer = new SimpleRenderer(VertexBuffer, FrameBuffer);
+            Renderer = new SimpleRenderer(new VertexBuffer(drawable), new FrameBuffer(Width, Height));
             ResizeRedraw = true;
 
             Layout += Panel3D_Layout;
@@ -78,9 +75,9 @@ namespace SoftRenderingApp3D.App
                 if(!value.TryUpdateOther(ref drawable))
                     return;
 
-                VertexBuffer?.Dispose();
-                VertexBuffer = new VertexBuffer(drawable.Mesh.VertexCount);
-                Renderer = new SimpleRenderer(VertexBuffer, FrameBuffer);
+                Renderer?.VertexBuffer?.Dispose();
+                var frameBuffer = Renderer?.FrameBuffer;
+                Renderer = new SimpleRenderer(new VertexBuffer(drawable), frameBuffer);
                 HookPaintEvent();
             }
         }
@@ -191,7 +188,7 @@ namespace SoftRenderingApp3D.App
         {
             var viewMatrix = Camera.ViewMatrix();
             var projectionMatrix = Projection.ProjectionMatrix(Width, Height);
-            return renderer.Render(Painter, drawable, viewMatrix, projectionMatrix, RendererSettings);
+            return renderer.Render(Painter, viewMatrix, projectionMatrix, RendererSettings);
         }
 
         private void Panel3D_Paint(object sender, PaintEventArgs e)
@@ -226,8 +223,8 @@ namespace SoftRenderingApp3D.App
                 return;
             }
 
-            FrameBuffer = new FrameBuffer(Width, Height);
-            Renderer = new SimpleRenderer(VertexBuffer, FrameBuffer);
+            var vertexBuffer = Renderer.VertexBuffer;
+            Renderer = new SimpleRenderer(vertexBuffer, new FrameBuffer(Width, Height));
             bmp = new Bitmap(Width, Height, PixelFormat.Format32bppPArgb);
         }
 

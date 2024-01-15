@@ -18,7 +18,7 @@ namespace SoftRenderingApp3D.Buffer
             VertexBuffer = VertexBuffer3Bag.Rent(Size);
 
             for(var i = 0; i < Size; i++)
-                VertexBuffer[i] = new VertexBuffer(drawables[i].Mesh.Vertices.Count);
+                VertexBuffer[i] = new VertexBuffer(drawables[i]);
         }
 
         public VertexBuffer[] VertexBuffer { get; }
@@ -43,8 +43,9 @@ namespace SoftRenderingApp3D.Buffer
         private static readonly ArrayPool<Vector4> Vector4Bag = ArrayPool<Vector4>.Shared;
         private static readonly ArrayPool<ColorRGB> ColorRgbBag = ArrayPool<ColorRGB>.Shared;
 
-        public VertexBuffer(int vertexCount)
+        public VertexBuffer(IDrawable drawable)
         {
+            var vertexCount = drawable?.Mesh?.VertexCount ?? 0;
             Size = vertexCount;
             ViewVertices = Vector3Bag.Rent(vertexCount);
             WorldVertices = Vector3Bag.Rent(vertexCount);
@@ -52,6 +53,7 @@ namespace SoftRenderingApp3D.Buffer
             ScreenPointVertices = Vector3Bag.Rent(vertexCount);
             ProjectionVertices = Vector4Bag.Rent(vertexCount);
             VertexColors = ColorRgbBag.Rent(vertexCount);
+            Drawable = drawable;
         }
 
         public IDrawable Drawable { get; set; } // Drawables

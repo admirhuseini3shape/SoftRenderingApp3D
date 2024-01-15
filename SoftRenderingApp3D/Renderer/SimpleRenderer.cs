@@ -24,8 +24,9 @@ namespace SoftRenderingApp3D.Renderer
             parallelRenderer = new SimpleRendererParallel(vertexBuffer, frameBuffer);
         }
 
-        public int[] Render(IPainter painter, IDrawable drawable, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings)
+        public int[] Render(IPainter painter, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings)
         {
+            var drawable = VertexBuffer.Drawable;
             if(drawable == null || painter == null || rendererSettings == null || drawable.Mesh.FacetCount == 0)
             {
                 FrameBuffer.Clear();
@@ -33,8 +34,7 @@ namespace SoftRenderingApp3D.Renderer
             }
 
 
-            return GetRenderer(drawable.Mesh.FacetCount)
-                .Render(painter, drawable, viewMatrix, projectionMatrix, rendererSettings);
+            return GetRenderer(drawable.Mesh.FacetCount).Render(painter, viewMatrix, projectionMatrix, rendererSettings);
         }
 
         private SimpleRendererAbstract GetRenderer(int facetCount)
@@ -50,7 +50,7 @@ namespace SoftRenderingApp3D.Renderer
             : base(vertexBuffer, frameBuffer) { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override void DrawFacets(IPainter painter, IDrawable drawable, RendererSettings rendererSettings, Stats stats)
+        protected override void DrawFacets(IPainter painter, IDrawable drawable, RendererSettings rendererSettings)
         {
             Parallel.ForEach(Partitioner.Create(0, drawable.Mesh.FacetCount), range =>
             {
@@ -60,19 +60,19 @@ namespace SoftRenderingApp3D.Renderer
                     //if(facetData.zDepth < 0)
                     //    continue;
 
-                    DrawFacet(painter, drawable, rendererSettings, faId, stats);
+                    DrawFacet(painter, drawable, rendererSettings, faId);
                 }
             });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override void UpdateVertexBuffers(Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
+        protected override void TransformVertexBuffers(Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
         {
             Parallel.ForEach(Partitioner.Create(0, VertexBuffer.Drawable.Mesh.VertexCount), range =>
             {
                 for(var veId = range.Item1; veId < range.Item2; veId++)
                 {
-                    UpdateSingleVertexBuffer(viewMatrix, projectionMatrix, veId);
+                    TransformVertex(viewMatrix, projectionMatrix, veId);
                 }
             });
         }
@@ -84,7 +84,7 @@ namespace SoftRenderingApp3D.Renderer
             : base(vertexBuffer, frameBuffer) { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override void DrawFacets(IPainter painter, IDrawable drawable, RendererSettings rendererSettings, Stats stats)
+        protected override void DrawFacets(IPainter painter, IDrawable drawable, RendererSettings rendererSettings)
         {
             for(var faId = 0; faId < drawable.Mesh.FacetCount; faId++)
             {
@@ -92,16 +92,16 @@ namespace SoftRenderingApp3D.Renderer
                 //if(facetData.zDepth < 0)
                 //    continue;
 
-                DrawFacet(painter, drawable, rendererSettings, faId, stats);
+                DrawFacet(painter, drawable, rendererSettings, faId);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override void UpdateVertexBuffers(Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
+        protected override void TransformVertexBuffers(Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
         {
             for(var veId = 0; veId < VertexBuffer.Drawable.Mesh.Vertices.Count; veId++)
             {
-                UpdateSingleVertexBuffer(viewMatrix, projectionMatrix, veId);
+                TransformVertex(viewMatrix, projectionMatrix, veId);
             }
         }
     }

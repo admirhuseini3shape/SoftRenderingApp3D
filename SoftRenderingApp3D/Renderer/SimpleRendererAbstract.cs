@@ -14,25 +14,27 @@ namespace SoftRenderingApp3D.Renderer
     {
         public VertexBuffer VertexBuffer { get; }
         public FrameBuffer FrameBuffer { get; }
+        private readonly Stats stats;
 
         protected SimpleRendererAbstract(VertexBuffer vertexBuffer, FrameBuffer frameBuffer)
         {
             VertexBuffer = vertexBuffer;
             FrameBuffer = frameBuffer;
+            stats = StatsSingleton.Instance;
         }
 
-        public int[] Render(IPainter painter, IDrawable drawable, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings)
+        public int[] Render(IPainter painter, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings)
         {
             FrameBuffer.Clear();
+            var drawable = VertexBuffer.Drawable;
             if(drawable == null || painter == null || rendererSettings == null || drawable.Mesh.FacetCount == 0)
             {
                 return FrameBuffer.Screen;
             }
 
-            var stats = StatsSingleton.Instance;
             stats.Clear();
 
-            UpdateVertexBuffer(drawable, viewMatrix, projectionMatrix, stats);
+            UpdateVertexBuffer(viewMatrix, projectionMatrix);
             stats.paintSw.Restart();
 
             //var zSortedFacets = drawable.Mesh.Facets
@@ -41,17 +43,17 @@ namespace SoftRenderingApp3D.Renderer
             //zSortedFacets.Sort((x, y) => (int)(1000 * x.zDepth - 1000 * y.zDepth));
 
 
-            DrawFacets(painter, drawable, rendererSettings, stats);
+            DrawFacets(painter, drawable, rendererSettings);
             stats.paintSw.Stop();
 
             return FrameBuffer.Screen;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected abstract void DrawFacets(IPainter painter, IDrawable drawable, RendererSettings rendererSettings, Stats stats);
+        protected abstract void DrawFacets(IPainter painter, IDrawable drawable, RendererSettings rendererSettings);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void UpdateVertexBuffer(IDrawable drawable, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, Stats stats)
+        public void UpdateVertexBuffer(Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
         {
             stats.calcSw.Restart();
             VertexBuffer.Clear();
@@ -59,20 +61,18 @@ namespace SoftRenderingApp3D.Renderer
             // model => worldMatrix => world => viewMatrix => view => projectionMatrix => projection => toNdc => ndc => toScreen => screen
 
             // Transform and store vertices to View
-            VertexBuffer.Drawable = drawable;
-
-            UpdateVertexBuffers(viewMatrix, projectionMatrix);
-            var facetsCount = drawable.Mesh.Facets.Count;
+            TransformVertexBuffers(viewMatrix, projectionMatrix);
+            var facetsCount = VertexBuffer.Drawable.Mesh.FacetCount;
             stats.TotalTriangleCount += facetsCount;
             
             stats.calcSw.Stop();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected abstract void UpdateVertexBuffers(Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix);
+        protected abstract void TransformVertexBuffers(Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void UpdateSingleVertexBuffer(Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, int veId)
+        public void TransformVertex(Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, int veId)
         {
             VertexBuffer.WorldVertices[veId] = viewMatrix.Transform(VertexBuffer.Drawable.Mesh.Vertices[veId]);
             VertexBuffer.WorldVertexNormals[veId] =
@@ -83,30 +83,31 @@ namespace SoftRenderingApp3D.Renderer
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void DrawFacet(IPainter painter, IDrawable drawable, RendererSettings rendererSettings, int faId, Stats stats)
+        protected void DrawFacet(IPainter painter, IDrawable drawable, RendererSettings rendererSettings, int faId)
         {
             var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, drawable, rendererSettings, faId, stats);
             if(pixels == null)
                 return;
-            var perPixelColors = CalculateShadingColors(painter, rendererSettings, drawable, VertexBuffer, pixels, faId);
+            var perPixelColors = CalculateShadingColors(drawable, painter, pixels, rendererSettings, faId);
 
             FrameBuffer.PutPixels(perPixelColors);
             stats.DrawnTriangleCount++;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected  List<(int x, int y, float z, ColorRGB color)> CalculateShadingColors(IPainter painter, RendererSettings rendererSettings,
-            IDrawable drawable, VertexBuffer vertexBuffer, List<Vector3> pixels, int faId)
+        protected List<(int x, int y, float z, ColorRGB color)> CalculateShadingColors(IDrawable drawable,
+            IPainter painter, List<Vector3> pixels, RendererSettings rendererSettings,
+            int faId)
         {
             var perPixelColors = new List<(int x, int y, float z, ColorRGB color)>();
             var textureMaterial = drawable.Material as ITextureMaterial;
             var hasTexture = textureMaterial != null && textureMaterial.Texture != null;
             if(!hasTexture || !rendererSettings.ShowTextures)
-                perPixelColors = painter.DrawTriangle(vertexBuffer, pixels, faId);
+                perPixelColors = painter.DrawTriangle(VertexBuffer, pixels, faId);
             else if(painter is GouraudPainter gouraudPainter)
             {
                 perPixelColors = gouraudPainter.DrawTriangleTextured(textureMaterial.Texture,
-                    vertexBuffer, pixels, faId, rendererSettings.LinearTextureFiltering);
+                    VertexBuffer, pixels, faId, rendererSettings.LinearTextureFiltering);
             }
 
             return perPixelColors;
