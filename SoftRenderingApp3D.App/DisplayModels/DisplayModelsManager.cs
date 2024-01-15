@@ -11,12 +11,11 @@ namespace SoftRenderingApp3D.App.DisplayModels
         private readonly List<DisplayModelData> displayModelsData;
         private readonly Dictionary<string, IDrawable> loadedDrawables;
         private readonly List<DisplayModelName> displayModelNames;
-        public IReadOnlyDictionary<string, IDrawable> Drawables => loadedDrawables;
         public IReadOnlyList<DisplayModelName> DisplayModelNames => displayModelNames;
 
-        public DisplayModelsManager(string jsonFilePath)
+        public DisplayModelsManager(string jSonFileName)
         {
-            displayModelsData = JsonHelpers.DisplayModelsFromJsonFile(jsonFilePath);
+            displayModelsData = JsonHelpers.DisplayModelsFromJsonFile(jSonFileName);
             displayModelNames = displayModelsData
                 .Select(x => new DisplayModelName(x.Id, x.DisplayName))
                 .ToList();

@@ -25,8 +25,8 @@ namespace SoftRenderingApp3D.App
             InitializeComponent();
             Initialize3DPanel();
 
-            var fileName = JsonHelpers.GetJsonFileName();
-            displayModelsManager = new DisplayModelsManager(fileName);
+            var jSonFileName = JsonHelpers.GetJsonFileName();
+            displayModelsManager = new DisplayModelsManager(jSonFileName);
             PopulateLstDemos(displayModelsManager.DisplayModelNames);
 
             lstDemos.DoubleClick += LstDemos_DoubleClick;

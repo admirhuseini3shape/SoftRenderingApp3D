@@ -9,7 +9,6 @@
         {
             Id = id;
             DisplayName = displayName;
-           
         }
     }
 }
