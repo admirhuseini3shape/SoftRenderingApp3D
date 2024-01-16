@@ -2,6 +2,7 @@
 using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.Painter;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -52,7 +53,11 @@ namespace SoftRenderingApp3D.Renderer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void DrawFacets(IPainter painter, IDrawable drawable, RendererSettings rendererSettings)
         {
-            Parallel.ForEach(Partitioner.Create(0, drawable.Mesh.FacetCount), range =>
+            var initialPixelCount = FrameBuffer.Screen.Length / 64;
+            Parallel.ForEach(Partitioner.Create(0, drawable.Mesh.FacetCount),
+                new ParallelOptions { TaskScheduler = TaskScheduler.Current },
+                () => new List<(int x, int y, float z, ColorRGB color)>(initialPixelCount),
+                (range, state, local) =>
             {
                 for(var faId = range.Item1; faId < range.Item2; faId++)
                 {
@@ -60,15 +65,28 @@ namespace SoftRenderingApp3D.Renderer
                     //if(facetData.zDepth < 0)
                     //    continue;
 
-                    DrawFacet(painter, drawable, rendererSettings, faId);
+                    var perPixelColors = DrawFacet(painter, drawable, rendererSettings, faId);
+                    if(perPixelColors == null)
+                        continue;
+                    local.AddRange(perPixelColors);
+                    stats.DrawnTriangleCount++;
                 }
-            });
+
+                return local;
+            },
+                local =>
+                {
+                    lock(FrameBuffer)
+                        FrameBuffer.PutPixels(local);
+                });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void TransformVertexBuffers(Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
         {
-            Parallel.ForEach(Partitioner.Create(0, VertexBuffer.Drawable.Mesh.VertexCount), range =>
+            Parallel.ForEach(Partitioner.Create(0, VertexBuffer.Drawable.Mesh.VertexCount),
+                new ParallelOptions { TaskScheduler = TaskScheduler.Current },
+                (range) =>
             {
                 for(var veId = range.Item1; veId < range.Item2; veId++)
                 {
@@ -92,7 +110,12 @@ namespace SoftRenderingApp3D.Renderer
                 //if(facetData.zDepth < 0)
                 //    continue;
 
-                DrawFacet(painter, drawable, rendererSettings, faId);
+                var perPixelColors = DrawFacet(painter, drawable, rendererSettings, faId);
+                if(perPixelColors == null)
+                    continue;
+
+                FrameBuffer.PutPixels(perPixelColors);
+                stats.DrawnTriangleCount++;
             }
         }
 

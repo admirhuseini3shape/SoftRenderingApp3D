@@ -14,7 +14,7 @@ namespace SoftRenderingApp3D.Renderer
     {
         public VertexBuffer VertexBuffer { get; }
         public FrameBuffer FrameBuffer { get; }
-        private readonly Stats stats;
+        protected readonly Stats stats;
 
         protected SimpleRendererAbstract(VertexBuffer vertexBuffer, FrameBuffer frameBuffer)
         {
@@ -64,7 +64,7 @@ namespace SoftRenderingApp3D.Renderer
             TransformVertexBuffers(viewMatrix, projectionMatrix);
             var facetsCount = VertexBuffer.Drawable.Mesh.FacetCount;
             stats.TotalTriangleCount += facetsCount;
-            
+
             stats.calcSw.Stop();
         }
 
@@ -81,19 +81,16 @@ namespace SoftRenderingApp3D.Renderer
             VertexBuffer.ProjectionVertices[veId] = Vector4.Transform(VertexBuffer.ViewVertices[veId], projectionMatrix);
             VertexBuffer.ScreenPointVertices[veId] = FrameBuffer.ToScreen3(VertexBuffer.ProjectionVertices[veId]);
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void DrawFacet(IPainter painter, IDrawable drawable, RendererSettings rendererSettings, int faId)
+        protected List<(int x, int y, float z, ColorRGB color)> DrawFacet(IPainter painter, IDrawable drawable, RendererSettings rendererSettings, int faId)
         {
             var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, drawable, rendererSettings, faId, stats);
             if(pixels == null)
-                return;
-            var perPixelColors = CalculateShadingColors(drawable, painter, pixels, rendererSettings, faId);
-
-            FrameBuffer.PutPixels(perPixelColors);
-            stats.DrawnTriangleCount++;
+                return null;
+            return CalculateShadingColors(drawable, painter, pixels, rendererSettings, faId);
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected List<(int x, int y, float z, ColorRGB color)> CalculateShadingColors(IDrawable drawable,
             IPainter painter, List<Vector3> pixels, RendererSettings rendererSettings,
