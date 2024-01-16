@@ -88,6 +88,19 @@ namespace SoftRenderingApp3D.Buffer
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetFacetIdForPixel(int x, int y)
+        {
+#if DEBUG
+            if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0)
+            {
+                throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}");
+            }
+#endif
+            var index = x + y * Width;
+            return facetIdForPixel[index];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PutPixels(IReadOnlyList<FacetPixelData> perPixelColors)
         {
             lock(syncRoot)
