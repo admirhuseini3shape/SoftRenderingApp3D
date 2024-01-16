@@ -1,6 +1,8 @@
 ﻿using SoftRenderingApp3D.Buffer;
+using SoftRenderingApp3D.DataStructures;
 using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.Painter;
+using SoftRenderingApp3D.Rasterizers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Numerics;
@@ -56,7 +58,7 @@ namespace SoftRenderingApp3D.Renderer
             var initialPixelCount = FrameBuffer.Screen.Length / 64;
             Parallel.ForEach(Partitioner.Create(0, drawable.Mesh.FacetCount),
                 new ParallelOptions { TaskScheduler = TaskScheduler.Current },
-                () => new List<(int x, int y, float z, ColorRGB color)>(initialPixelCount),
+                () => new List<FacetPixelData>(initialPixelCount),
                 (range, state, local) =>
             {
                 for(var faId = range.Item1; faId < range.Item2; faId++)
@@ -65,9 +67,10 @@ namespace SoftRenderingApp3D.Renderer
                     //if(facetData.zDepth < 0)
                     //    continue;
 
-                    var perPixelColors = DrawFacet(painter, drawable, rendererSettings, faId);
-                    if(perPixelColors == null)
+                    var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, drawable, rendererSettings, faId, stats);
+                    if(pixels == null)
                         continue;
+                    var perPixelColors = CalculateShadingColors(drawable, painter, pixels, rendererSettings, faId);
                     local.AddRange(perPixelColors);
                     stats.DrawnTriangleCount++;
                 }
@@ -110,9 +113,10 @@ namespace SoftRenderingApp3D.Renderer
                 //if(facetData.zDepth < 0)
                 //    continue;
 
-                var perPixelColors = DrawFacet(painter, drawable, rendererSettings, faId);
-                if(perPixelColors == null)
+                var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, drawable, rendererSettings, faId, stats);
+                if(pixels == null)
                     continue;
+                var perPixelColors = CalculateShadingColors(drawable, painter, pixels, rendererSettings, faId);
 
                 FrameBuffer.PutPixels(perPixelColors);
                 stats.DrawnTriangleCount++;

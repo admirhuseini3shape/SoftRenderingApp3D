@@ -1,4 +1,5 @@
 ﻿using SoftRenderingApp3D.Buffer;
+using SoftRenderingApp3D.DataStructures;
 using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.DataStructures.Materials;
 using SoftRenderingApp3D.Painter;
@@ -82,21 +83,12 @@ namespace SoftRenderingApp3D.Renderer
             VertexBuffer.ScreenPointVertices[veId] = FrameBuffer.ToScreen3(VertexBuffer.ProjectionVertices[veId]);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected List<(int x, int y, float z, ColorRGB color)> DrawFacet(IPainter painter, IDrawable drawable, RendererSettings rendererSettings, int faId)
-        {
-            var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, drawable, rendererSettings, faId, stats);
-            if(pixels == null)
-                return null;
-            return CalculateShadingColors(drawable, painter, pixels, rendererSettings, faId);
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected List<(int x, int y, float z, ColorRGB color)> CalculateShadingColors(IDrawable drawable,
-            IPainter painter, List<Vector3> pixels, RendererSettings rendererSettings,
-            int faId)
+        protected List<FacetPixelData> CalculateShadingColors(IDrawable drawable, IPainter painter, 
+            List<Vector3> pixels, RendererSettings rendererSettings, int faId)
         {
-            var perPixelColors = new List<(int x, int y, float z, ColorRGB color)>();
+            var perPixelColors = new List<FacetPixelData>();
             var textureMaterial = drawable.Material as ITextureMaterial;
             var hasTexture = textureMaterial != null && textureMaterial.Texture != null;
             if(!hasTexture || !rendererSettings.ShowTextures)

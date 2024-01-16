@@ -1,4 +1,5 @@
 ﻿using SoftRenderingApp3D.Buffer;
+using SoftRenderingApp3D.DataStructures;
 using SoftRenderingApp3D.DataStructures.Materials;
 using SoftRenderingApp3D.DataStructures.Textures;
 using SoftRenderingApp3D.Utils;
@@ -11,9 +12,9 @@ namespace SoftRenderingApp3D.Painter
     public class GouraudPainter : IPainter
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public List<(int x, int y, float z, ColorRGB color)> DrawTriangle(VertexBuffer vertexBuffer, List<Vector3> pixels, int faId)
+        public List<FacetPixelData> DrawTriangle(VertexBuffer vertexBuffer, List<Vector3> pixels, int faId)
         {
-            var perPixelColors = new List<(int x, int y, float z, ColorRGB color)>(pixels.Count);
+            var perPixelColors = new List<FacetPixelData>(pixels.Count);
 
             var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
 
@@ -67,25 +68,23 @@ namespace SoftRenderingApp3D.Painter
                 var gamma = barycentricPoints[i].Z;
                 var lightContribution = (alpha * nl0 + beta * nl1 + gamma * nl2).Clamp();
 
-                //var maxR = Math.Max(color0.R, Math.Max(color1.R, color2.R));
-                //var maxG = Math.Max(color0.G, Math.Max(color1.G, color2.G));
-                //var maxB = Math.Max(color0.B, Math.Max(color1.B, color2.B));
                 // interpolate
                 var r = (byte)(alpha * color0.R + beta * color1.R + gamma * color2.R);//.Clamp(0, maxR);
                 var g = (byte)(alpha * color0.G + beta * color1.G + gamma * color2.G);//.Clamp(0, maxG);
                 var b = (byte)(alpha * color0.B + beta * color1.B + gamma * color2.B);//.Clamp(0, maxB);
-                var color = new ColorRGB(r, g, b, 255);
+                var color = (lightContribution * new ColorRGB(r, g, b, 255)).Color;
 
-                perPixelColors.Add(((int)pixels[i].X, (int)pixels[i].Y, pixels[i].Z, lightContribution * color));
+                var pixelData = new FacetPixelData((int)pixels[i].X, (int)pixels[i].Y, pixels[i].Z, color, faId);
+                perPixelColors.Add(pixelData);
             }
 
             return perPixelColors;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public List<(int x, int y, float z, ColorRGB color)> DrawTriangleTextured(Texture texture, VertexBuffer vertexBuffer, List<Vector3> pixels, int faId, bool linearFiltering)
+        public List<FacetPixelData> DrawTriangleTextured(Texture texture, VertexBuffer vertexBuffer, List<Vector3> pixels, int faId, bool linearFiltering)
         {
-            var perPixelColors = new List<(int x, int y, float z, ColorRGB color)>(pixels.Count);
+            var perPixelColors = new List<FacetPixelData>(pixels.Count);
 
             var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
 
@@ -130,10 +129,14 @@ namespace SoftRenderingApp3D.Painter
                 var texX = uv0.X * alpha + uv1.X * beta + uv2.X * gamma;
                 var texY = uv0.Y * alpha + uv1.Y * beta + uv2.Y * gamma;
 
-                var color = linearFiltering ?
+                var initialColor = linearFiltering ?
                     texture.GetPixelColorLinearFiltering(texX, texY) :
                     texture.GetPixelColorNearestFiltering(texX, texY);
-                perPixelColors.Add(((int)pixels[i].X, (int)pixels[i].Y, (int)pixels[i].Z, lightContribution * color));
+
+                var color = (lightContribution * initialColor).Color;
+
+                var pixelData = new FacetPixelData((int)pixels[i].X, (int)pixels[i].Y, pixels[i].Z, color, faId);
+                perPixelColors.Add(pixelData);
             }
 
             return perPixelColors;

@@ -1,4 +1,4 @@
-﻿using SoftRenderingApp3D.Utils;
+﻿using SoftRenderingApp3D.DataStructures;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -9,25 +9,21 @@ namespace SoftRenderingApp3D.Buffer
 {
     public class FrameBuffer : IDisposable
     {
-        
-        private ArrayPool<int> intPool = ArrayPool<int>.Shared;
-        private ArrayPool<float> floatPool = ArrayPool<float>.Shared;
-        
-        private readonly object syncRoot = new object();
-        private readonly int[] emptyBuffer;
-        private readonly int[] emptyZBuffer;
 
+        private readonly ArrayPool<int> intPool = ArrayPool<int>.Shared;
+        private readonly ArrayPool<float> floatPool = ArrayPool<float>.Shared;
+
+        private readonly object syncRoot = new object();
         private readonly float[] zBuffer;
+        private readonly int[] FacetIdForPixel;
         private readonly Stats stats;
+        private const int NoFacet = -1;
 
         public FrameBuffer(int width, int height)
         {
             Screen = intPool.Rent(width * height);
+            FacetIdForPixel = intPool.Rent(width * height);
             zBuffer = floatPool.Rent(width * height);
-
-            emptyBuffer = new int[width * height];
-            emptyZBuffer = new int[width * height];
-            emptyZBuffer.Fill(Depth);
 
             stats = StatsSingleton.Instance;
 
@@ -38,7 +34,7 @@ namespace SoftRenderingApp3D.Buffer
         public int[] Screen { get; }
         public int Width { get; }
         public int Height { get; }
-        private int Depth { get; set; } = 65535;//65535; // Build a true Z buffer based on Zfar/Znear planes
+        private int Depth { get; set; } = 65535; // Build a true Z buffer based on Zfar/Znear planes
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector3 ToScreen3(Vector4 p)
@@ -51,11 +47,13 @@ namespace SoftRenderingApp3D.Buffer
 
         public void Clear()
         {
-            
+
             Span<int> screenSpan = Screen;
+            Span<int> facetIdForPixelSpan = FacetIdForPixel;
             Span<float> zBufferSpan = zBuffer.AsSpan();
-            
-            screenSpan.Fill(0); 
+
+            screenSpan.Fill(0);
+            facetIdForPixelSpan.Fill(NoFacet);
             zBufferSpan.Fill(Depth);
         }
 
@@ -67,14 +65,14 @@ namespace SoftRenderingApp3D.Buffer
 
         // Called to put a pixel on screen at a specific X,Y coordinates
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PutPixel(int x, int y, float z, ColorRGB color)
+        private void PutPixel(int x, int y, float z, int color, int faId = NoFacet)
         {
-        #if DEBUG
+#if DEBUG
             if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0)
             {
                 throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}, Depth={z}");
             }
-        #endif
+#endif
             var index = x + y * Width;
             if(z > zBuffer[index])
             {
@@ -85,18 +83,19 @@ namespace SoftRenderingApp3D.Buffer
             stats.DrawnPixelCount++;
 
             zBuffer[index] = z;
-            Screen[index] = color.Color;
+            Screen[index] = color;
+            FacetIdForPixel[index] = faId;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void PutPixels(IReadOnlyList<(int x, int y, float z, ColorRGB color)> perPixelColors)
+        public void PutPixels(IReadOnlyList<FacetPixelData> perPixelColors)
         {
             lock(syncRoot)
             {
                 for(var i = 0; i < perPixelColors.Count; i++)
                 {
-                    var pixel = perPixelColors[i];
-                    PutPixel(pixel.x, pixel.y, pixel.z, pixel.color);
+                    var p = perPixelColors[i];
+                    PutPixel(p.xScreen, p.yScreen, p.zDepth, p.ColorAsInt, p.FacetId);
                 }
             }
         }
@@ -119,7 +118,7 @@ namespace SoftRenderingApp3D.Buffer
             }
 
             zBuffer[index] = z;
-            
+
             return true;
 
         }
@@ -154,13 +153,16 @@ namespace SoftRenderingApp3D.Buffer
             // Set up the decision variables.
             x1 = y1 = z1 = dm / 2;
 
+            var colorAsInt = color.Color;
             // Start the infinite drawing loop.
-            while(true) {
+            while(true)
+            {
                 // Draw Current Pixel
-                PutPixel(x2, y2, z2, color);
+                PutPixel(x2, y2, z2, colorAsInt);
 
                 // Break the loop if the end point is reached.
-                if(i-- == 0) {
+                if(i-- == 0)
+                {
                     break;
                 }
 
