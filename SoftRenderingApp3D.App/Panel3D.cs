@@ -25,7 +25,7 @@ namespace SoftRenderingApp3D.App
         private Bitmap bmp;
 
         private ICamera camera;
-        private IPainter painter;
+        private IPainterProvider painterProvider;
         private IProjection projection;
         private IRenderer renderer;
 
@@ -38,7 +38,7 @@ namespace SoftRenderingApp3D.App
 
             RendererSettings = new RendererSettings { BackFaceCulling = false };
 
-            Painter = new GouraudPainter();
+            PainterProvider = new GouraudPainterProvider();
             Renderer = new SimpleRenderer(new VertexBuffer(drawable), new FrameBuffer(Width, Height));
             ResizeRedraw = true;
 
@@ -83,15 +83,15 @@ namespace SoftRenderingApp3D.App
         }
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public IPainter Painter
+        public IPainterProvider PainterProvider
         {
             get
             {
-                return painter;
+                return painterProvider;
             }
             set
             {
-                value.TryUpdateOther(ref painter);
+                value.TryUpdateOther(ref painterProvider);
             }
         }
 
@@ -188,7 +188,7 @@ namespace SoftRenderingApp3D.App
         {
             var viewMatrix = Camera.ViewMatrix();
             var projectionMatrix = Projection.ProjectionMatrix(Width, Height);
-            return renderer.Render(Painter, viewMatrix, projectionMatrix, RendererSettings);
+            return renderer.Render(PainterProvider, viewMatrix, projectionMatrix, RendererSettings);
         }
 
         private void Panel3D_Paint(object sender, PaintEventArgs e)

@@ -27,17 +27,17 @@ namespace SoftRenderingApp3D.Renderer
             parallelRenderer = new SimpleRendererParallel(vertexBuffer, frameBuffer);
         }
 
-        public int[] Render(IPainter painter, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings)
+        public int[] Render(IPainterProvider painterProvider, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings)
         {
             var drawable = VertexBuffer.Drawable;
-            if(drawable == null || painter == null || rendererSettings == null || drawable.Mesh.FacetCount == 0)
+            if(drawable == null || painterProvider == null || rendererSettings == null || drawable.Mesh.FacetCount == 0)
             {
                 FrameBuffer.Clear();
                 return FrameBuffer.Screen;
             }
 
 
-            return GetRenderer(drawable.Mesh.FacetCount).Render(painter, viewMatrix, projectionMatrix, rendererSettings);
+            return GetRenderer(drawable.Mesh.FacetCount).Render(painterProvider, viewMatrix, projectionMatrix, rendererSettings);
         }
 
         private SimpleRendererAbstract GetRenderer(int facetCount)
@@ -53,30 +53,32 @@ namespace SoftRenderingApp3D.Renderer
             : base(vertexBuffer, frameBuffer) { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override void DrawFacets(IPainter painter, IDrawable drawable, RendererSettings rendererSettings)
+        protected override void DrawFacets(IPainterProvider painterProvider, IDrawable drawable, RendererSettings rendererSettings)
         {
             var initialPixelCount = FrameBuffer.Screen.Length / 64;
+            var painter = painterProvider.GetPainter(drawable.Material, rendererSettings);
             Parallel.ForEach(Partitioner.Create(0, drawable.Mesh.FacetCount),
                 new ParallelOptions { TaskScheduler = TaskScheduler.Current },
                 () => new List<FacetPixelData>(initialPixelCount),
                 (range, state, local) =>
-            {
-                for(var faId = range.Item1; faId < range.Item2; faId++)
                 {
-                    //var facetData = zSortedFacets[faId];
-                    //if(facetData.zDepth < 0)
-                    //    continue;
+                    
+                    for(var faId = range.Item1; faId < range.Item2; faId++)
+                    {
+                        //var facetData = zSortedFacets[faId];
+                        //if(facetData.zDepth < 0)
+                        //    continue;
 
-                    var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, drawable, rendererSettings, faId, stats);
-                    if(pixels == null)
-                        continue;
-                    var perPixelColors = painter.DrawTriangle(drawable.Material, VertexBuffer, rendererSettings, pixels, faId);
-                    local.AddRange(perPixelColors);
-                    stats.DrawnTriangleCount++;
-                }
+                        var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, drawable, rendererSettings, faId, stats);
+                        if(pixels == null)
+                            continue;
+                        var perPixelColors = painter.DrawTriangle(VertexBuffer, rendererSettings, pixels, faId);
+                        local.AddRange(perPixelColors);
+                        stats.DrawnTriangleCount++;
+                    }
 
-                return local;
-            },
+                    return local;
+                },
                 local =>
                 {
                     lock(FrameBuffer)
@@ -105,8 +107,9 @@ namespace SoftRenderingApp3D.Renderer
             : base(vertexBuffer, frameBuffer) { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override void DrawFacets(IPainter painter, IDrawable drawable, RendererSettings rendererSettings)
+        protected override void DrawFacets(IPainterProvider painterProvider, IDrawable drawable, RendererSettings rendererSettings)
         {
+            var painter = painterProvider.GetPainter(drawable.Material, rendererSettings);
             for(var faId = 0; faId < drawable.Mesh.FacetCount; faId++)
             {
                 //var facetData = zSortedFacets[faId];
@@ -116,7 +119,7 @@ namespace SoftRenderingApp3D.Renderer
                 var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, drawable, rendererSettings, faId, stats);
                 if(pixels == null)
                     continue;
-                var perPixelColors = painter.DrawTriangle(drawable.Material, VertexBuffer, rendererSettings, pixels, faId);
+                var perPixelColors = painter.DrawTriangle(VertexBuffer, rendererSettings, pixels, faId);
 
                 FrameBuffer.PutPixels(perPixelColors);
                 stats.DrawnTriangleCount++;

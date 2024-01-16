@@ -1,11 +1,7 @@
 ﻿using SoftRenderingApp3D.Buffer;
-using SoftRenderingApp3D.DataStructures;
 using SoftRenderingApp3D.DataStructures.Drawables;
-using SoftRenderingApp3D.DataStructures.Materials;
 using SoftRenderingApp3D.Painter;
-using SoftRenderingApp3D.Rasterizers;
 using SoftRenderingApp3D.Utils;
-using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -24,7 +20,7 @@ namespace SoftRenderingApp3D.Renderer
             stats = StatsSingleton.Instance;
         }
 
-        public int[] Render(IPainter painter, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings)
+        public int[] Render(IPainterProvider painter, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings)
         {
             FrameBuffer.Clear();
             var drawable = VertexBuffer.Drawable;
@@ -51,7 +47,7 @@ namespace SoftRenderingApp3D.Renderer
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected abstract void DrawFacets(IPainter painter, IDrawable drawable, RendererSettings rendererSettings);
+        protected abstract void DrawFacets(IPainterProvider painterProvider, IDrawable drawable, RendererSettings rendererSettings);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UpdateVertexBuffer(Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
