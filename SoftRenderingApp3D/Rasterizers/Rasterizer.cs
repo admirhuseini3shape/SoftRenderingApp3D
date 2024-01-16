@@ -1,6 +1,4 @@
 ﻿using SoftRenderingApp3D.Buffer;
-using SoftRenderingApp3D.DataStructures.Drawables;
-using SoftRenderingApp3D.Renderer;
 using SoftRenderingApp3D.Utils;
 using System.Collections.Generic;
 using System.Numerics;
@@ -11,11 +9,9 @@ namespace SoftRenderingApp3D.Rasterizers
     public static class Rasterizer
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static List<Vector3> RasterizeFacet(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, IDrawable drawable,
-            RendererSettings rendererSettings, int faId, Stats stats)
+        public static List<Vector3> RasterizeFacet(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, Facet facet,
+            bool backFaceCulling, Stats stats)
         {
-            var facet = drawable.Mesh.Facets[faId];
-
             // Discard if behind far plane
             if(facet.IsBehindFarPlane(vertexBuffer))
             {
@@ -27,7 +23,7 @@ namespace SoftRenderingApp3D.Rasterizers
             if(facet.IsFacingBack(vertexBuffer))
             {
                 stats.FacingBackTriangleCount++;
-                if(rendererSettings.BackFaceCulling)
+                if(backFaceCulling)
                 {
                     return null;
                 }

@@ -36,7 +36,6 @@ namespace SoftRenderingApp3D.Renderer
                 return FrameBuffer.Screen;
             }
 
-
             return GetRenderer(drawable.Mesh.FacetCount).Render(painterProvider, viewMatrix, projectionMatrix, rendererSettings);
         }
 
@@ -57,6 +56,7 @@ namespace SoftRenderingApp3D.Renderer
         {
             var initialPixelCount = FrameBuffer.Screen.Length / 64;
             var painter = painterProvider.GetPainter(drawable.Material, rendererSettings);
+            var backFaceCulling = rendererSettings.BackFaceCulling;
             Parallel.ForEach(Partitioner.Create(0, drawable.Mesh.FacetCount),
                 new ParallelOptions { TaskScheduler = TaskScheduler.Current },
                 () => new List<FacetPixelData>(initialPixelCount),
@@ -68,8 +68,8 @@ namespace SoftRenderingApp3D.Renderer
                         //var facetData = zSortedFacets[faId];
                         //if(facetData.zDepth < 0)
                         //    continue;
-
-                        var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, drawable, rendererSettings, faId, stats);
+                        var facet = drawable.Mesh.Facets[faId];
+                        var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, facet, backFaceCulling, stats);
                         if(pixels == null)
                             continue;
                         var perPixelColors = painter.DrawTriangle(VertexBuffer, rendererSettings, pixels, faId);
@@ -115,8 +115,8 @@ namespace SoftRenderingApp3D.Renderer
                 //var facetData = zSortedFacets[faId];
                 //if(facetData.zDepth < 0)
                 //    continue;
-
-                var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, drawable, rendererSettings, faId, stats);
+                var facet = drawable.Mesh.Facets[faId];
+                var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, facet, rendererSettings, faId, stats);
                 if(pixels == null)
                     continue;
                 var perPixelColors = painter.DrawTriangle(VertexBuffer, rendererSettings, pixels, faId);
