@@ -70,7 +70,7 @@ namespace SoftRenderingApp3D.Renderer
                     var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, drawable, rendererSettings, faId, stats);
                     if(pixels == null)
                         continue;
-                    var perPixelColors = CalculateShadingColors(drawable, painter, pixels, rendererSettings, faId);
+                    var perPixelColors = painter.DrawTriangle(drawable.Material, VertexBuffer, rendererSettings, pixels, faId);
                     local.AddRange(perPixelColors);
                     stats.DrawnTriangleCount++;
                 }
@@ -116,7 +116,7 @@ namespace SoftRenderingApp3D.Renderer
                 var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, drawable, rendererSettings, faId, stats);
                 if(pixels == null)
                     continue;
-                var perPixelColors = CalculateShadingColors(drawable, painter, pixels, rendererSettings, faId);
+                var perPixelColors = painter.DrawTriangle(drawable.Material, VertexBuffer, rendererSettings, pixels, faId);
 
                 FrameBuffer.PutPixels(perPixelColors);
                 stats.DrawnTriangleCount++;

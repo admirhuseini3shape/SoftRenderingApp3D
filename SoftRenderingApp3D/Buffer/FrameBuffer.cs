@@ -9,20 +9,19 @@ namespace SoftRenderingApp3D.Buffer
 {
     public class FrameBuffer : IDisposable
     {
-
         private readonly ArrayPool<int> intPool = ArrayPool<int>.Shared;
         private readonly ArrayPool<float> floatPool = ArrayPool<float>.Shared;
 
         private readonly object syncRoot = new object();
         private readonly float[] zBuffer;
-        private readonly int[] FacetIdForPixel;
+        private readonly int[] facetIdForPixel;
         private readonly Stats stats;
         private const int NoFacet = -1;
 
         public FrameBuffer(int width, int height)
         {
             Screen = intPool.Rent(width * height);
-            FacetIdForPixel = intPool.Rent(width * height);
+            facetIdForPixel = intPool.Rent(width * height);
             zBuffer = floatPool.Rent(width * height);
 
             stats = StatsSingleton.Instance;
@@ -32,6 +31,7 @@ namespace SoftRenderingApp3D.Buffer
         }
 
         public int[] Screen { get; }
+        public IReadOnlyList<int> FacetIdForPixel => facetIdForPixel;
         public int Width { get; }
         public int Height { get; }
         private int Depth { get; set; } = 65535; // Build a true Z buffer based on Zfar/Znear planes
@@ -49,7 +49,7 @@ namespace SoftRenderingApp3D.Buffer
         {
 
             Span<int> screenSpan = Screen;
-            Span<int> facetIdForPixelSpan = FacetIdForPixel;
+            Span<int> facetIdForPixelSpan = facetIdForPixel;
             Span<float> zBufferSpan = zBuffer.AsSpan();
 
             screenSpan.Fill(0);
@@ -84,7 +84,7 @@ namespace SoftRenderingApp3D.Buffer
 
             zBuffer[index] = z;
             Screen[index] = color;
-            FacetIdForPixel[index] = faId;
+            facetIdForPixel[index] = faId;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

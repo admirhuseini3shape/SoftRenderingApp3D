@@ -1,7 +1,7 @@
 ﻿using SoftRenderingApp3D.Buffer;
 using SoftRenderingApp3D.DataStructures;
 using SoftRenderingApp3D.DataStructures.Materials;
-using SoftRenderingApp3D.DataStructures.Textures;
+using SoftRenderingApp3D.Renderer;
 using SoftRenderingApp3D.Utils;
 using System.Collections.Generic;
 using System.Numerics;
@@ -12,7 +12,56 @@ namespace SoftRenderingApp3D.Painter
     public class GouraudPainter : IPainter
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public List<FacetPixelData> DrawTriangle(VertexBuffer vertexBuffer, List<Vector3> pixels, int faId)
+        public List<FacetPixelData> DrawTriangle(IMaterial material, VertexBuffer vertexBuffer,
+            RendererSettings rendererSettings, IReadOnlyList<Vector3> pixels, int faId)
+        {
+            switch(material)
+            {
+                case IVertexColorMaterial vertexColorMaterial:
+                    return DrawTriangle(vertexColorMaterial, vertexBuffer, rendererSettings, pixels, faId);
+                case IFacetColorMaterial facetColorMaterial:
+                    return DrawTriangle(facetColorMaterial, vertexBuffer, rendererSettings, pixels, faId);
+                case ITextureMaterial textureMaterial:
+                    {
+                        return rendererSettings.ShowTextures ?
+                            DrawTriangle(textureMaterial, vertexBuffer, rendererSettings, pixels, faId) :
+                            PerPixelColors(vertexBuffer, pixels, faId, Constants.StandardColor);
+                    }
+                default:
+                    return PerPixelColors(vertexBuffer, pixels, faId, Constants.StandardColor);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private List<FacetPixelData> DrawTriangle(IVertexColorMaterial material, VertexBuffer vertexBuffer,
+            RendererSettings rendererSettings, IReadOnlyList<Vector3> pixels, int faId)
+        {
+            var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
+
+            var color0 = material.VertexColors[facet.I0];
+            var color1 = material.VertexColors[facet.I1];
+            var color2 = material.VertexColors[facet.I2];
+
+            return PerPixelColors(vertexBuffer, pixels, faId, color0, color1, color2); ;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private List<FacetPixelData> DrawTriangle(IFacetColorMaterial material, VertexBuffer vertexBuffer,
+            RendererSettings rendererSettings, IReadOnlyList<Vector3> pixels, int faId)
+        {
+            return PerPixelColors(vertexBuffer, pixels, faId, material.FacetColors[faId]);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static List<FacetPixelData> PerPixelColors(VertexBuffer vertexBuffer, IReadOnlyList<Vector3> pixels,
+            int faId, ColorRGB color)
+        {
+            return PerPixelColors(vertexBuffer, pixels, faId, color, color, color);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static List<FacetPixelData> PerPixelColors(VertexBuffer vertexBuffer, IReadOnlyList<Vector3> pixels,
+            int faId, ColorRGB color0, ColorRGB color1, ColorRGB color2)
         {
             var perPixelColors = new List<FacetPixelData>(pixels.Count);
 
@@ -25,22 +74,6 @@ namespace SoftRenderingApp3D.Painter
 
             if(barycentricPoints == null)
                 return perPixelColors;
-
-            var hasVertexColors = vertexBuffer.Drawable.Material is IVertexColorMaterial;
-            if(!hasVertexColors)
-            {
-                var triangleColor = Constants.StandardColor;
-                if(vertexBuffer.Drawable.Material is IFacetColorMaterial facetColorMaterial)
-                    triangleColor = facetColorMaterial.FacetColors[faId];
-
-                vertexBuffer.VertexColors[facet.I0] = triangleColor;
-                vertexBuffer.VertexColors[facet.I1] = triangleColor;
-                vertexBuffer.VertexColors[facet.I2] = triangleColor;
-            }
-
-            var color0 = vertexBuffer.VertexColors[facet.I0];
-            var color1 = vertexBuffer.VertexColors[facet.I1];
-            var color2 = vertexBuffer.VertexColors[facet.I2];
 
             // This has to move elsewhere
             var lightPos = new Vector3(0, 10, 10);
@@ -60,7 +93,6 @@ namespace SoftRenderingApp3D.Painter
                 vertexBuffer.WorldVertexNormals[facet.I2],
                 lightPos);
 
-
             for(var i = 0; i < pixels.Count; i++)
             {
                 var alpha = barycentricPoints[i].X;
@@ -69,9 +101,9 @@ namespace SoftRenderingApp3D.Painter
                 var lightContribution = (alpha * nl0 + beta * nl1 + gamma * nl2).Clamp();
 
                 // interpolate
-                var r = (byte)(alpha * color0.R + beta * color1.R + gamma * color2.R);//.Clamp(0, maxR);
-                var g = (byte)(alpha * color0.G + beta * color1.G + gamma * color2.G);//.Clamp(0, maxG);
-                var b = (byte)(alpha * color0.B + beta * color1.B + gamma * color2.B);//.Clamp(0, maxB);
+                var r = (byte)(alpha * color0.R + beta * color1.R + gamma * color2.R); //.Clamp(0, maxR);
+                var g = (byte)(alpha * color0.G + beta * color1.G + gamma * color2.G); //.Clamp(0, maxG);
+                var b = (byte)(alpha * color0.B + beta * color1.B + gamma * color2.B); //.Clamp(0, maxB);
                 var color = (lightContribution * new ColorRGB(r, g, b, 255)).Color;
 
                 var pixelData = new FacetPixelData((int)pixels[i].X, (int)pixels[i].Y, pixels[i].Z, color, faId);
@@ -82,7 +114,8 @@ namespace SoftRenderingApp3D.Painter
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public List<FacetPixelData> DrawTriangleTextured(Texture texture, VertexBuffer vertexBuffer, List<Vector3> pixels, int faId, bool linearFiltering)
+        public List<FacetPixelData> DrawTriangle(ITextureMaterial material, VertexBuffer vertexBuffer,
+            RendererSettings rendererSettings, IReadOnlyList<Vector3> pixels, int faId)
         {
             var perPixelColors = new List<FacetPixelData>(pixels.Count);
 
@@ -129,9 +162,9 @@ namespace SoftRenderingApp3D.Painter
                 var texX = uv0.X * alpha + uv1.X * beta + uv2.X * gamma;
                 var texY = uv0.Y * alpha + uv1.Y * beta + uv2.Y * gamma;
 
-                var initialColor = linearFiltering ?
-                    texture.GetPixelColorLinearFiltering(texX, texY) :
-                    texture.GetPixelColorNearestFiltering(texX, texY);
+                var initialColor = rendererSettings.LinearTextureFiltering ?
+                    material.Texture.GetPixelColorLinearFiltering(texX, texY) :
+                    material.Texture.GetPixelColorNearestFiltering(texX, texY);
 
                 var color = (lightContribution * initialColor).Color;
 

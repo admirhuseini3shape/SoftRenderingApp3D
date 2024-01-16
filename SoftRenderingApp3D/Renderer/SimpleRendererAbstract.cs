@@ -82,24 +82,5 @@ namespace SoftRenderingApp3D.Renderer
             VertexBuffer.ProjectionVertices[veId] = Vector4.Transform(VertexBuffer.ViewVertices[veId], projectionMatrix);
             VertexBuffer.ScreenPointVertices[veId] = FrameBuffer.ToScreen3(VertexBuffer.ProjectionVertices[veId]);
         }
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected List<FacetPixelData> CalculateShadingColors(IDrawable drawable, IPainter painter, 
-            List<Vector3> pixels, RendererSettings rendererSettings, int faId)
-        {
-            var perPixelColors = new List<FacetPixelData>();
-            var textureMaterial = drawable.Material as ITextureMaterial;
-            var hasTexture = textureMaterial != null && textureMaterial.Texture != null;
-            if(!hasTexture || !rendererSettings.ShowTextures)
-                perPixelColors = painter.DrawTriangle(VertexBuffer, pixels, faId);
-            else if(painter is GouraudPainter gouraudPainter)
-            {
-                perPixelColors = gouraudPainter.DrawTriangleTextured(textureMaterial.Texture,
-                    VertexBuffer, pixels, faId, rendererSettings.LinearTextureFiltering);
-            }
-
-            return perPixelColors;
-        }
     }
 }
