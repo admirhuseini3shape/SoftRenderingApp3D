@@ -12,15 +12,16 @@ namespace SoftRenderingApp3D.Renderer
     {
         public VertexBuffer VertexBuffer { get; }
         public FrameBuffer FrameBuffer { get; }
-        protected readonly Stats stats;
-        protected readonly Rasterizer rasterizer;
+        protected readonly Stats Stats;
+        protected readonly Rasterizer Rasterizer;
 
         protected SimpleRendererAbstract(VertexBuffer vertexBuffer, FrameBuffer frameBuffer)
         {
             VertexBuffer = vertexBuffer;
             FrameBuffer = frameBuffer;
-            rasterizer = new Rasterizer(vertexBuffer, frameBuffer);
-            stats = StatsSingleton.Instance;
+            Rasterizer = new Rasterizer(vertexBuffer, frameBuffer);
+            var count = vertexBuffer?.Drawable?.Mesh?.FacetCount ?? 0;
+            Stats = StatsSingleton.Instance;
         }
 
         public int[] Render(IPainterProvider painter, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings)
@@ -32,10 +33,10 @@ namespace SoftRenderingApp3D.Renderer
                 return FrameBuffer.Screen;
             }
 
-            stats.Clear();
+            Stats.Clear();
 
             UpdateVertexBuffer(viewMatrix, projectionMatrix);
-            stats.paintSw.Restart();
+            Stats.paintSw.Restart();
 
             //var zSortedFacets = drawable.Mesh.Facets
             //.Select((fa, i) => new { FaId = i, zDepth = fa.CalculateZAverages(vertexBuffer.ProjectionVertices) })
@@ -44,7 +45,7 @@ namespace SoftRenderingApp3D.Renderer
 
 
             DrawFacets(painter, drawable, rendererSettings);
-            stats.paintSw.Stop();
+            Stats.paintSw.Stop();
 
             return FrameBuffer.Screen;
         }
@@ -55,7 +56,7 @@ namespace SoftRenderingApp3D.Renderer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UpdateVertexBuffer(Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
         {
-            stats.calcSw.Restart();
+            Stats.calcSw.Restart();
             VertexBuffer.Clear();
 
             // model => worldMatrix => world => viewMatrix => view => projectionMatrix => projection => toNdc => ndc => toScreen => screen
@@ -63,9 +64,9 @@ namespace SoftRenderingApp3D.Renderer
             // Transform and store vertices to View
             TransformVertexBuffers(viewMatrix, projectionMatrix);
             var facetsCount = VertexBuffer.Drawable.Mesh.FacetCount;
-            stats.TotalTriangleCount += facetsCount;
+            Stats.TotalTriangleCount += facetsCount;
 
-            stats.calcSw.Stop();
+            Stats.calcSw.Stop();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

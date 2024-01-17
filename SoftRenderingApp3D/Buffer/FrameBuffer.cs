@@ -14,14 +14,14 @@ namespace SoftRenderingApp3D.Buffer
 
         private readonly object syncRoot = new object();
         private readonly float[] zBuffer;
-        private readonly int[] facetIdForPixel;
+        private readonly int[] facetIdsForPixels;
         private readonly Stats stats;
-        private const int NoFacet = -1;
+        public const int NoFacet = -1;
 
         public FrameBuffer(int width, int height)
         {
             Screen = intPool.Rent(width * height);
-            facetIdForPixel = intPool.Rent(width * height);
+            facetIdsForPixels = intPool.Rent(width * height);
             zBuffer = floatPool.Rent(width * height);
 
             stats = StatsSingleton.Instance;
@@ -31,7 +31,7 @@ namespace SoftRenderingApp3D.Buffer
         }
 
         public int[] Screen { get; }
-        public IReadOnlyList<int> FacetIdForPixel => facetIdForPixel;
+        public IReadOnlyList<int> FacetIdsForPixels => facetIdsForPixels;
         public int Width { get; }
         public int Height { get; }
         private int Depth { get; set; } = 65535; // Build a true Z buffer based on Zfar/Znear planes
@@ -49,7 +49,7 @@ namespace SoftRenderingApp3D.Buffer
         {
 
             Span<int> screenSpan = Screen;
-            Span<int> facetIdForPixelSpan = facetIdForPixel;
+            Span<int> facetIdForPixelSpan = facetIdsForPixels;
             Span<float> zBufferSpan = zBuffer.AsSpan();
 
             screenSpan.Fill(0);
@@ -84,7 +84,37 @@ namespace SoftRenderingApp3D.Buffer
 
             zBuffer[index] = z;
             Screen[index] = color;
-            facetIdForPixel[index] = faId;
+            facetIdsForPixels[index] = faId;
+        }
+
+        // Called to put a pixel on screen at a specific X,Y coordinates
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PutPixel(int x, int y, int color)
+        {
+#if DEBUG
+            if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0)
+            {
+                throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}");
+            }
+#endif
+            var index = x + y * Width;
+            
+            stats.DrawnPixelCount++;
+
+            Screen[index] = color;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetFacetIdForPixel(int x, int y, int faId)
+        {
+#if DEBUG
+            if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0)
+            {
+                throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}");
+            }
+#endif
+            var index = x + y * Width;
+            facetIdsForPixels[index] = faId;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -97,7 +127,7 @@ namespace SoftRenderingApp3D.Buffer
             }
 #endif
             var index = x + y * Width;
-            return facetIdForPixel[index];
+            return facetIdsForPixels[index];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

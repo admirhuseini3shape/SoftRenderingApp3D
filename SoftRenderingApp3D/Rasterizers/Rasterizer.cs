@@ -1,7 +1,4 @@
 ﻿using SoftRenderingApp3D.Buffer;
-using SoftRenderingApp3D.Utils;
-using System.Collections.Generic;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace SoftRenderingApp3D.Rasterizers
@@ -20,13 +17,13 @@ namespace SoftRenderingApp3D.Rasterizers
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public List<Vector3> RasterizeFacet(Facet facet, bool backFaceCulling)
+        public void RasterizeFacet(Facet facet, int faId, bool backFaceCulling)
         {
             // Discard if behind far plane
             if(facet.IsBehindFarPlane(vertexBuffer))
             {
                 stats.BehindViewTriangleCount++;
-                return null;
+                return;
             }
 
             // Discard if back facing 
@@ -35,7 +32,7 @@ namespace SoftRenderingApp3D.Rasterizers
                 stats.FacingBackTriangleCount++;
                 if(backFaceCulling)
                 {
-                    return null;
+                    return;
                 }
             }
 
@@ -46,10 +43,10 @@ namespace SoftRenderingApp3D.Rasterizers
             if(facet.IsOutsideFrustum(vertexBuffer))
             {
                 stats.OutOfViewTriangleCount++;
-                return null;
+                return;
             }
 
-            return scanLine.ScanLineTriangle(facet);
+            scanLine.ScanLineTriangle(facet, faId);
         }
     }
 }

@@ -1,10 +1,8 @@
 ﻿using SoftRenderingApp3D.Buffer;
-using SoftRenderingApp3D.DataStructures;
 using SoftRenderingApp3D.DataStructures.Materials;
 using SoftRenderingApp3D.Renderer;
 using SoftRenderingApp3D.Utils;
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
@@ -14,18 +12,19 @@ namespace SoftRenderingApp3D.Painter
 
     public class GouraudPainterProvider : IPainterProvider
     {
-       public IPainter GetPainter<T>(T material, RendererSettings rendererSettings)
-            where T : IMaterial
+        public IPainter GetPainter<T>(T material, VertexBuffer vertexBuffer,
+            FrameBuffer frameBuffer, RendererSettings rendererSettings)
+             where T : IMaterial
         {
-            IPainter painter = null;
+            IPainter painter;
             if(material is IVertexColorMaterial colorMaterial)
-                painter = new GouraudVertexColorPainter().Create(colorMaterial);
+                painter = new GouraudVertexColorPainter().Create(colorMaterial, vertexBuffer, frameBuffer);
             else if(material is IFacetColorMaterial facetColorMaterial)
-                painter = new GouraudFacetColorPainter().Create(facetColorMaterial);
+                painter = new GouraudFacetColorPainter().Create(facetColorMaterial, vertexBuffer, frameBuffer);
             else if(material is ITextureMaterial textureMaterial && rendererSettings.ShowTextures)
-                painter = new GouraudTexturePainter().Create(textureMaterial);
+                painter = new GouraudTexturePainter().Create(textureMaterial, vertexBuffer, frameBuffer);
             else
-                painter = new GouraudStandardColorPainter().Create(material);
+                painter = new GouraudStandardColorPainter().Create(material, vertexBuffer, frameBuffer);
 
             if(painter == null)
                 throw new Exception($"Could not provide a painter for {nameof(T)}!");
@@ -36,28 +35,38 @@ namespace SoftRenderingApp3D.Painter
 
     public class GouraudColorPainterBase
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static List<FacetPixelData> PerPixelColors(VertexBuffer vertexBuffer, IReadOnlyList<Vector3> pixels,
-            int faId, ColorRGB color)
+        public VertexBuffer VertexBuffer { get; }
+        public FrameBuffer FrameBuffer { get; }
+        public Barycentric2d BarycentricMapper { get; }
+
+        protected GouraudColorPainterBase() { }
+
+        protected GouraudColorPainterBase(VertexBuffer vertexBuffer, FrameBuffer frameBuffer)
         {
-            return PerPixelColors(vertexBuffer, pixels, faId, color, color, color);
+            VertexBuffer = vertexBuffer;
+            FrameBuffer = frameBuffer;
+            var count = vertexBuffer?.Drawable?.Mesh?.FacetCount ?? 0;
+            BarycentricMapper = new Barycentric2d(count);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected static List<FacetPixelData> PerPixelColors(VertexBuffer vertexBuffer, IReadOnlyList<Vector3> pixels,
-            int faId, ColorRGB color0, ColorRGB color1, ColorRGB color2)
+        protected int DrawPixel(int x, int y, RendererSettings rendererSettings, ColorRGB color)
         {
-            var perPixelColors = new List<FacetPixelData>(pixels.Count);
+            return DrawPixel(x, y, rendererSettings, color, color, color);
+        }
 
-            var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected int DrawPixel(int x, int y,
+            RendererSettings rendererSettings, ColorRGB color0, ColorRGB color1, ColorRGB color2)
+        {
+            var faId = FrameBuffer.GetFacetIdForPixel(x, y);
+            var facet = VertexBuffer.Drawable.Mesh.Facets[faId];
 
-            var barycentricPoints = Barycentric2d.ConvertToBarycentricPoints(pixels,
-                vertexBuffer.ScreenPointVertices[facet.I0],
-                vertexBuffer.ScreenPointVertices[facet.I1],
-                vertexBuffer.ScreenPointVertices[facet.I2]);
-
-            if(barycentricPoints == null)
-                return perPixelColors;
+            if(!BarycentricMapper.HasDataForFacet(faId))
+                BarycentricMapper.AddFacet(faId,
+                    VertexBuffer.ScreenPointVertices[facet.I0],
+                    VertexBuffer.ScreenPointVertices[facet.I1],
+                    VertexBuffer.ScreenPointVertices[facet.I2]);
 
             // This has to move elsewhere
             var lightPos = new Vector3(0, 10, 10);
@@ -65,36 +74,31 @@ namespace SoftRenderingApp3D.Painter
             // computing the cos of the angle between the light vector and the normal vector
             // it will return a value between 0 and 1 that will be used as the intensity of the color
             var nl0 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[facet.I0],
-                vertexBuffer.WorldVertexNormals[facet.I0],
+                VertexBuffer.WorldVertices[facet.I0],
+                VertexBuffer.WorldVertexNormals[facet.I0],
                 lightPos);
             var nl1 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[facet.I1],
-                vertexBuffer.WorldVertexNormals[facet.I1],
+                VertexBuffer.WorldVertices[facet.I1],
+                VertexBuffer.WorldVertexNormals[facet.I1],
                 lightPos);
             var nl2 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[facet.I2],
-                vertexBuffer.WorldVertexNormals[facet.I2],
+                VertexBuffer.WorldVertices[facet.I2],
+                VertexBuffer.WorldVertexNormals[facet.I2],
                 lightPos);
 
-            for(var i = 0; i < pixels.Count; i++)
-            {
-                var alpha = barycentricPoints[i].X;
-                var beta = barycentricPoints[i].Y;
-                var gamma = barycentricPoints[i].Z;
-                var lightContribution = (alpha * nl0 + beta * nl1 + gamma * nl2).Clamp();
+            var barycentric = BarycentricMapper.GetBarycentric(x, y, faId);
+            var alpha = barycentric.X;
+            var beta = barycentric.Y;
+            var gamma = barycentric.Z;
+            var lightContribution = (alpha * nl0 + beta * nl1 + gamma * nl2).Clamp();
 
-                // interpolate
-                var r = (byte)(alpha * color0.R + beta * color1.R + gamma * color2.R); //.Clamp(0, maxR);
-                var g = (byte)(alpha * color0.G + beta * color1.G + gamma * color2.G); //.Clamp(0, maxG);
-                var b = (byte)(alpha * color0.B + beta * color1.B + gamma * color2.B); //.Clamp(0, maxB);
-                var color = (lightContribution * new ColorRGB(r, g, b, 255)).Color;
+            // interpolate
+            var r = (byte)(alpha * color0.R + beta * color1.R + gamma * color2.R); //.Clamp(0, maxR);
+            var g = (byte)(alpha * color0.G + beta * color1.G + gamma * color2.G); //.Clamp(0, maxG);
+            var b = (byte)(alpha * color0.B + beta * color1.B + gamma * color2.B); //.Clamp(0, maxB);
+            var color = (lightContribution * new ColorRGB(r, g, b, 255)).Color;
 
-                var pixelData = new FacetPixelData((int)pixels[i].X, (int)pixels[i].Y, pixels[i].Z, color, faId);
-                perPixelColors.Add(pixelData);
-            }
-
-            return perPixelColors;
+            return color;
         }
     }
 
@@ -102,17 +106,23 @@ namespace SoftRenderingApp3D.Painter
     {
         public IMaterial Material { get; private set; }
 
-        public IPainter<IMaterial> Create(IMaterial material)
+        public IPainter<IMaterial> Create(IMaterial material,
+            VertexBuffer vertexBuffer, FrameBuffer frameBuffer)
         {
-            Material = material;
-            return this;
+            return new GouraudStandardColorPainter(material, vertexBuffer, frameBuffer);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IReadOnlyList<FacetPixelData> DrawTriangle(VertexBuffer vertexBuffer,
-            RendererSettings rendererSettings, IReadOnlyList<Vector3> pixels, int faId)
+        public GouraudStandardColorPainter() { }
+
+        private GouraudStandardColorPainter(IMaterial material,
+            VertexBuffer vertexBuffer, FrameBuffer frameBuffer) : base(vertexBuffer, frameBuffer)
         {
-            return PerPixelColors(vertexBuffer, pixels, faId, Constants.StandardColor);
+            Material = material;
+        }
+
+        public int DrawPixel(int x, int y, RendererSettings rendererSettings)
+        {
+            return DrawPixel(x, y, rendererSettings, Constants.StandardColor);
         }
     }
 
@@ -120,23 +130,30 @@ namespace SoftRenderingApp3D.Painter
     {
         public IVertexColorMaterial Material { get; private set; }
 
-        public IPainter<IVertexColorMaterial> Create(IVertexColorMaterial material)
+        public IPainter<IVertexColorMaterial> Create(IVertexColorMaterial material,
+            VertexBuffer vertexBuffer, FrameBuffer frameBuffer)
         {
-            Material = material;
-            return this;
+            return new GouraudVertexColorPainter(material, vertexBuffer, frameBuffer);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IReadOnlyList<FacetPixelData> DrawTriangle(VertexBuffer vertexBuffer,
-            RendererSettings rendererSettings, IReadOnlyList<Vector3> pixels, int faId)
+        public GouraudVertexColorPainter() { }
+
+        public GouraudVertexColorPainter(IVertexColorMaterial material,
+            VertexBuffer vertexBuffer, FrameBuffer frameBuffer) : base(vertexBuffer, frameBuffer)
         {
-            var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
+            Material = material;
+        }
+
+        public int DrawPixel(int x, int y, RendererSettings rendererSettings)
+        {
+            var faId = FrameBuffer.GetFacetIdForPixel(x, y);
+            var facet = VertexBuffer.Drawable.Mesh.Facets[faId];
 
             var color0 = Material.VertexColors[facet.I0];
             var color1 = Material.VertexColors[facet.I1];
             var color2 = Material.VertexColors[facet.I2];
 
-            return PerPixelColors(vertexBuffer, pixels, faId, color0, color1, color2); ;
+            return DrawPixel(x, y, rendererSettings, color0, color1, color2);
         }
     }
 
@@ -144,50 +161,70 @@ namespace SoftRenderingApp3D.Painter
     {
         public IFacetColorMaterial Material { get; private set; }
 
-        public IPainter<IFacetColorMaterial> Create(IFacetColorMaterial material)
+        public IPainter<IFacetColorMaterial> Create(IFacetColorMaterial material,
+            VertexBuffer vertexBuffer, FrameBuffer frameBuffer)
+        {
+            return new GouraudFacetColorPainter(material, vertexBuffer, frameBuffer);
+        }
+
+        public GouraudFacetColorPainter() { }
+
+        public GouraudFacetColorPainter(IFacetColorMaterial material,
+            VertexBuffer vertexBuffer, FrameBuffer frameBuffer) : base(vertexBuffer, frameBuffer)
         {
             Material = material;
-            return this;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IReadOnlyList<FacetPixelData> DrawTriangle(VertexBuffer vertexBuffer,
-            RendererSettings rendererSettings, IReadOnlyList<Vector3> pixels, int faId)
+        public int DrawPixel(int x, int y, RendererSettings rendererSettings)
         {
-            return PerPixelColors(vertexBuffer, pixels, faId, Material.FacetColors[faId]);
+            var faId = FrameBuffer.GetFacetIdForPixel(x, y);
+            return DrawPixel(x, y, rendererSettings, Material.FacetColors[faId]);
         }
     }
 
     public class GouraudTexturePainter : IPainter<ITextureMaterial>, IGouraudPainter
     {
-        public ITextureMaterial Material { get; private set; }
+        public VertexBuffer VertexBuffer { get; }
+        public FrameBuffer FrameBuffer { get; }
+        public Barycentric2d BarycentricMapper { get; set; }
 
-        public IPainter<ITextureMaterial> Create(ITextureMaterial material)
+        public ITextureMaterial Material { get; }
+
+        public IPainter<ITextureMaterial> Create(ITextureMaterial material,
+            VertexBuffer vertexBuffer, FrameBuffer frameBuffer)
+        {
+            return new GouraudTexturePainter(material, vertexBuffer, frameBuffer);
+        }
+
+        public GouraudTexturePainter() { }
+
+        public GouraudTexturePainter(ITextureMaterial material, VertexBuffer vertexBuffer, FrameBuffer frameBuffer)
         {
             Material = material;
-            return this;
+            VertexBuffer = vertexBuffer;
+            FrameBuffer = frameBuffer;
+            var count = vertexBuffer?.Drawable?.Mesh?.FacetCount ?? 0;
+            BarycentricMapper = new Barycentric2d(count);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IReadOnlyList<FacetPixelData> DrawTriangle(VertexBuffer vertexBuffer,
-             RendererSettings rendererSettings, IReadOnlyList<Vector3> pixels, int faId)
+        public int DrawPixel(int x, int y, RendererSettings rendererSettings)
+
         {
-            var perPixelColors = new List<FacetPixelData>(pixels.Count);
+            var faId = FrameBuffer.GetFacetIdForPixel(x, y);
+            var facet = VertexBuffer.Drawable.Mesh.Facets[faId];
 
-            var facet = vertexBuffer.Drawable.Mesh.Facets[faId];
-
-            var barycentricPoints = Barycentric2d.ConvertToBarycentricPoints(pixels,
-                vertexBuffer.ScreenPointVertices[facet.I0],
-                vertexBuffer.ScreenPointVertices[facet.I1],
-                vertexBuffer.ScreenPointVertices[facet.I2]);
-
-            if(barycentricPoints == null)
-                return perPixelColors;
+            if(!BarycentricMapper.HasDataForFacet(faId))
+                BarycentricMapper.AddFacet(faId,
+                    VertexBuffer.ScreenPointVertices[facet.I0],
+                    VertexBuffer.ScreenPointVertices[facet.I1],
+                    VertexBuffer.ScreenPointVertices[facet.I2]);
 
             // Get the texture coordinates of each point of the triangle
-            var uv0 = vertexBuffer.Drawable.Mesh.TextureCoordinates[facet.I0];
-            var uv1 = vertexBuffer.Drawable.Mesh.TextureCoordinates[facet.I1];
-            var uv2 = vertexBuffer.Drawable.Mesh.TextureCoordinates[facet.I2];
+            var uv0 = VertexBuffer.Drawable.Mesh.TextureCoordinates[facet.I0];
+            var uv1 = VertexBuffer.Drawable.Mesh.TextureCoordinates[facet.I1];
+            var uv2 = VertexBuffer.Drawable.Mesh.TextureCoordinates[facet.I2];
 
             // This has to move elsewhere
             var lightPos = new Vector3(0, 10, 10);
@@ -195,39 +232,33 @@ namespace SoftRenderingApp3D.Painter
             // computing the cos of the angle between the light vector and the normal vector
             // it will return a value between 0 and 1 that will be used as the intensity of the color
             var nl0 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[facet.I0],
-                vertexBuffer.WorldVertexNormals[facet.I0],
+                VertexBuffer.WorldVertices[facet.I0],
+                VertexBuffer.WorldVertexNormals[facet.I0],
                 lightPos);
             var nl1 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[facet.I1],
-                vertexBuffer.WorldVertexNormals[facet.I1],
+                VertexBuffer.WorldVertices[facet.I1],
+                VertexBuffer.WorldVertexNormals[facet.I1],
                 lightPos);
             var nl2 = MathUtils.ComputeNDotL(
-                vertexBuffer.WorldVertices[facet.I2],
-                vertexBuffer.WorldVertexNormals[facet.I2],
+                VertexBuffer.WorldVertices[facet.I2],
+                VertexBuffer.WorldVertexNormals[facet.I2],
                 lightPos);
 
-            for(var i = 0; i < pixels.Count; i++)
-            {
-                var alpha = barycentricPoints[i].X;
-                var beta = barycentricPoints[i].Y;
-                var gamma = barycentricPoints[i].Z;
-                var lightContribution = alpha * nl0 + beta * nl1 + gamma * nl2;
+            var barycentric = BarycentricMapper.GetBarycentric(x, y, faId);
+            var alpha = barycentric.X;
+            var beta = barycentric.Y;
+            var gamma = barycentric.Z;
+            var lightContribution = (alpha * nl0 + beta * nl1 + gamma * nl2).Clamp();
 
-                var texX = uv0.X * alpha + uv1.X * beta + uv2.X * gamma;
-                var texY = uv0.Y * alpha + uv1.Y * beta + uv2.Y * gamma;
+            var texX = uv0.X * alpha + uv1.X * beta + uv2.X * gamma;
+            var texY = uv0.Y * alpha + uv1.Y * beta + uv2.Y * gamma;
 
-                var initialColor = rendererSettings.LinearTextureFiltering ?
-                    Material.Texture.GetPixelColorLinearFiltering(texX, texY) :
-                    Material.Texture.GetPixelColorNearestFiltering(texX, texY);
+            var initialColor = rendererSettings.LinearTextureFiltering ?
+                Material.Texture.GetPixelColorLinearFiltering(texX, texY) :
+                Material.Texture.GetPixelColorNearestFiltering(texX, texY);
 
-                var color = (lightContribution * initialColor).Color;
-
-                var pixelData = new FacetPixelData((int)pixels[i].X, (int)pixels[i].Y, pixels[i].Z, color, faId);
-                perPixelColors.Add(pixelData);
-            }
-
-            return perPixelColors;
+            var color = (lightContribution * initialColor).Color;
+            return color;
         }
     }
 }

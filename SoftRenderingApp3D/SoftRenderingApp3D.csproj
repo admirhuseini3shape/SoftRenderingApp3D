@@ -81,6 +81,7 @@
     <Compile Include="Clipping\CohenSutherlandClippingHomogeneous.cs" />
     <Compile Include="DataStructures\Drawables\Drawable.cs" />
     <Compile Include="DataStructures\Drawables\IDrawable.cs" />
+    <Compile Include="DataStructures\FacetBarycentricData.cs" />
     <Compile Include="DataStructures\FacetPixelData.cs" />
     <Compile Include="DataStructures\FileReaders\ColladaReaderOld.cs" />
     <Compile Include="DataStructures\FileReaders\ColladaReader.cs" />
