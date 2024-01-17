@@ -109,6 +109,7 @@ namespace SoftRenderingApp3D.Renderer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void DrawFacets(IPainterProvider painterProvider, IDrawable drawable, RendererSettings rendererSettings)
         {
+            var backFaceCulling = rendererSettings.BackFaceCulling;
             var painter = painterProvider.GetPainter(drawable.Material, rendererSettings);
             for(var faId = 0; faId < drawable.Mesh.FacetCount; faId++)
             {
@@ -116,7 +117,8 @@ namespace SoftRenderingApp3D.Renderer
                 //if(facetData.zDepth < 0)
                 //    continue;
                 var facet = drawable.Mesh.Facets[faId];
-                var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, facet, rendererSettings, faId, stats);
+                
+                var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, facet, backFaceCulling, stats);
                 if(pixels == null)
                     continue;
                 var perPixelColors = painter.DrawTriangle(VertexBuffer, rendererSettings, pixels, faId);
