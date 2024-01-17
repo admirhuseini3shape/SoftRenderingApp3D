@@ -33,7 +33,7 @@ namespace SoftRenderingApp3D.Utils
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddFacet(int faId, Vector3 p0, Vector3 p1, Vector3 p2)
+        public void UpdateFacet(int faId, Vector3 p0, Vector3 p1, Vector3 p2)
         {
             if(faId > barycentricData.Length)
                 return;

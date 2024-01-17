@@ -133,7 +133,6 @@ namespace SoftRenderingApp3D.Rasterizers
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ScanSingleLine(Vector3 start, Vector3 end, int faId)
         {
-            var result = new List<Vector3>();
             var minX = Math.Max(start.X, 0);
             var maxX = Math.Min(end.X, width);
 

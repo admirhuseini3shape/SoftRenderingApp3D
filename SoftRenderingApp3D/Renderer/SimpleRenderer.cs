@@ -2,6 +2,8 @@
 using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.Painter;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -78,8 +80,11 @@ namespace SoftRenderingApp3D.Renderer
                 {
                     for(var iPixel = range.Item1; iPixel < range.Item2; iPixel++)
                     {
-                        if(FrameBuffer.FacetIdsForPixels[iPixel] == FrameBuffer.NoFacet)
+                        var faId = FrameBuffer.FacetIdsForPixels[iPixel];
+                        if(faId == FrameBuffer.NoFacet)
                             continue;
+
+                        painter.UpdateBuffers(faId);
 
                         //var index = x + y * Width;
                         var x = iPixel % FrameBuffer.Width;
@@ -118,7 +123,6 @@ namespace SoftRenderingApp3D.Renderer
         {
             var backFaceCulling = rendererSettings.BackFaceCulling;
             var painter = painterProvider.GetPainter(drawable.Material, VertexBuffer, FrameBuffer, rendererSettings);
-            painter.BarycentricMapper.Clear();
 
             for(var faId = 0; faId < drawable.Mesh.FacetCount; faId++)
             {
@@ -131,19 +135,29 @@ namespace SoftRenderingApp3D.Renderer
 
             }
 
-            for(var iPixel = 0; iPixel < FrameBuffer.Screen.Length; iPixel++)
-            {
-                if(FrameBuffer.FacetIdsForPixels[iPixel] == FrameBuffer.NoFacet)
-                    continue;
+            painter.ClearBuffers();
+            Parallel.ForEach(Partitioner.Create(0, FrameBuffer.Screen.Length),
+                new ParallelOptions { TaskScheduler = TaskScheduler.Current },
+                range =>
+                {
+                    for(var iPixel = range.Item1; iPixel < range.Item2; iPixel++)
+                    {
+                        var faId = FrameBuffer.FacetIdsForPixels[iPixel];
+                        if(faId == FrameBuffer.NoFacet)
+                            continue;
 
-                //var index = x + y * Width;
-                var x = iPixel % FrameBuffer.Width;
-                var y = iPixel / FrameBuffer.Width;
+                        painter.UpdateBuffers(faId);
 
-                var color = painter.DrawPixel(x, y, rendererSettings);
+                        //var index = x + y * Width;
+                        var x = iPixel % FrameBuffer.Width;
+                        var y = iPixel / FrameBuffer.Width;
 
-                FrameBuffer.PutPixel(x, y, color);
-            }
+                        var color = painter.DrawPixel(x, y, rendererSettings);
+
+                        FrameBuffer.PutPixel(x, y, color);
+                    }
+
+                });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

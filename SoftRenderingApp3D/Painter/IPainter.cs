@@ -11,6 +11,9 @@ namespace SoftRenderingApp3D.Painter
         FrameBuffer FrameBuffer { get; }
         Barycentric2d BarycentricMapper { get; }
 
+        void UpdateBuffers(int faId);
+        void ClearBuffers();
+
         int DrawPixel(int x, int y, RendererSettings rendererSettings);
     }
 
