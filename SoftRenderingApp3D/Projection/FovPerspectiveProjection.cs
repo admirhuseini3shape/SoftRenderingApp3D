@@ -2,57 +2,73 @@
 using System;
 using System.Numerics;
 
-namespace SoftRenderingApp3D.Projection {
-    public class FovPerspectiveProjection : IProjection {
+namespace SoftRenderingApp3D.Projection
+{
+    public class FovPerspectiveProjection : IProjection
+    {
         private float fOV;
         private float zFar;
         private float zNear;
 
-        public FovPerspectiveProjection(float fOV, float zNear, float zFar) {
+        public FovPerspectiveProjection(float fOV, float zNear, float zFar)
+        {
             this.zNear = zNear;
             this.zFar = zFar;
             this.fOV = fOV;
         }
 
-        public float FOV {
-            get {
+        public float FOV
+        {
+            get
+            {
                 return fOV;
             }
 
-            set {
-                if(PropertyChangedHelper.ChangeValue(ref fOV, value)) {
-                    ProjectionChanged?.Invoke(this, EventArgs.Empty);
-                }
+            set
+            {
+                if(!value.TryUpdateOther(ref fOV))
+                    return;
+
+                ProjectionChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        public float ZNear {
-            get {
+        public float ZNear
+        {
+            get
+            {
                 return zNear;
             }
 
-            set {
-                if(PropertyChangedHelper.ChangeValue(ref zNear, value)) {
-                    ProjectionChanged?.Invoke(this, EventArgs.Empty);
-                }
+            set
+            {
+                if(!value.TryUpdateOther(ref zNear))
+                    return;
+
+                ProjectionChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
-        public float ZFar {
-            get {
+        public float ZFar
+        {
+            get
+            {
                 return zFar;
             }
 
-            set {
-                if(PropertyChangedHelper.ChangeValue(ref zFar, value)) {
-                    ProjectionChanged?.Invoke(this, EventArgs.Empty);
-                }
+            set
+            {
+                if(!value.TryUpdateOther(ref zFar))
+                    return;
+
+                ProjectionChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
         public event EventHandler ProjectionChanged;
 
-        public Matrix4x4 ProjectionMatrix(float width, float height) {
+        public Matrix4x4 ProjectionMatrix(float width, float height)
+        {
             return Matrix4x4.CreatePerspectiveFieldOfView(fOV, width / height, zNear, zFar);
         }
     }

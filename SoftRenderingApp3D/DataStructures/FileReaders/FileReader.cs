@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using SoftRenderingApp3D.DataStructures.Drawables;
 
-namespace SoftRenderingApp3D.DataStructures.FileReaders {
-    public abstract class FileReader {
-        public abstract IEnumerable<Volume.Volume> ReadFile(string fileName);
+namespace SoftRenderingApp3D.DataStructures.FileReaders
+{
+    public abstract class FileReader
+    {
+        public abstract IDrawable ReadFile(string fileName);
     }
 }

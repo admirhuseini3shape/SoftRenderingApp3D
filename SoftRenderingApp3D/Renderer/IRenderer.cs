@@ -1,9 +1,14 @@
-﻿using SoftRenderingApp3D.Painter;
+﻿using SoftRenderingApp3D.Buffer;
+using SoftRenderingApp3D.Painter;
+using System.Numerics;
 
-namespace SoftRenderingApp3D.Renderer {
-    public interface IRenderer {
-        RenderContext RenderContext { get; set; }
-        IPainter Painter { get; set; }
-        int[] Render();
+namespace SoftRenderingApp3D.Renderer
+{
+    public interface IRenderer
+    {
+        VertexBuffer VertexBuffer { get; }
+        FrameBuffer FrameBuffer { get; }
+
+        int[] Render(IPainterProvider painterProvider, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings);
     }
 }

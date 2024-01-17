@@ -1,114 +1,109 @@
 ﻿using SoftRenderingApp3D.Buffer;
 using SoftRenderingApp3D.Painter;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
-namespace SoftRenderingApp3D.Renderer {
-    public class SimpleRenderer : IRenderer {
-        public RenderContext RenderContext { get; set; }
+namespace SoftRenderingApp3D.Renderer
+{
+    public class SimpleRenderer : IRenderer
+    {
+        public VertexBuffer VertexBuffer { get; }
+        public FrameBuffer FrameBuffer { get; }
 
-        public IPainter Painter { get; set; }
+        private readonly SimpleRendererAbstract sequentialRenderer;
+        private readonly SimpleRendererAbstract parallelRenderer;
 
-        public int[] Render() {
-            var stats = RenderContext.Stats;
-            var surface = RenderContext.Surface;
-            var camera = RenderContext.Camera;
-            var projection = RenderContext.Projection;
-            var world = RenderContext.World;
-            var rendererSettings = RenderContext.RendererSettings;
+        public SimpleRenderer(VertexBuffer vertexBuffer, FrameBuffer frameBuffer)
+        {
+            VertexBuffer = vertexBuffer;
+            FrameBuffer = frameBuffer;
+            sequentialRenderer = new SimpleRendererSequential(vertexBuffer, frameBuffer);
+            parallelRenderer = new SimpleRendererParallel(vertexBuffer, frameBuffer);
+        }
 
-            stats.Clear();
-
-            stats.PaintTime();
-            surface.Clear();
-
-            stats.CalcTime();
-
-            // model => worldMatrix => world => viewMatrix => view => projectionMatrix => projection => toNdc => ndc => toScreen => screen
-
-            var viewMatrix = camera.ViewMatrix();
-            var projectionMatrix = projection.ProjectionMatrix(surface.Width, surface.Height);
-            var world2Projection = viewMatrix * projectionMatrix;
-
-            // Allocate arrays to store transformed vertices
-            using var worldBuffer = new WorldBuffer(world);
-            RenderContext.WorldBuffer = worldBuffer;
-
-            // This needs work, this is only for testing
-            var textureIndex = rendererSettings.activeTexture % world.Textures.Count;
-            var texture = world.Textures[textureIndex];
-
-            var volumes = world.Volumes;
-            var volumeCount = volumes.Count;
-            for(var idxVolume = 0; idxVolume < volumeCount; idxVolume++) {
-                var vbx = worldBuffer.VertexBuffer[idxVolume];
-                var volume = volumes[idxVolume];
-
-                var worldMatrix = volume.WorldMatrix();
-                var modelViewMatrix = worldMatrix * viewMatrix;
-
-
-                vbx.Volume = volume;
-                vbx.WorldMatrix = worldMatrix;
-
-                stats.TotalTriangleCount += volume.Triangles.Length;
-
-                var vertices = volume.Vertices;
-                var viewVertices = vbx.ViewVertices;
-
-                // Transform and store vertices to View
-                var vertexCount = vertices.Length;
-                for(var idxVertex = 0; idxVertex < vertexCount; idxVertex++) {
-                    viewVertices[idxVertex] = Vector3.Transform(vertices[idxVertex].position, viewMatrix);
-                }
-
-                var triangleCount = volume.Triangles.Length;
-                for(var idxTriangle = 0; idxTriangle < triangleCount; idxTriangle++) {
-                    var t = volume.Triangles[idxTriangle];
-
-                    // Discard if behind far plane
-                    if(t.IsBehindFarPlane(vbx)) {
-                        stats.BehindViewTriangleCount++;
-                        continue;
-                    }
-
-                    // Discard if back facing 
-                    if(rendererSettings.BackFaceCulling && t.IsFacingBack(vbx)) {
-                        stats.FacingBackTriangleCount++;
-                        continue;
-                    }
-
-                    // Project in frustum
-                    t.TransformProjection(vbx, projectionMatrix);
-
-                    // Discard if outside view frustum
-                    if(t.isOutsideFrustum(vbx)) {
-                        stats.OutOfViewTriangleCount++;
-                        continue;
-                    }
-
-                    stats.PaintTime();
-
-                    if(!rendererSettings.ShowTextures) {
-                        Painter?.DrawTriangle(vbx, idxTriangle);
-                    }
-                    else {
-                        if(Painter.GetType() == typeof(GouraudPainter)) {
-                            var painter = (GouraudPainter)Painter;
-                            painter.DrawTriangleTextured(texture, vbx, idxTriangle,
-                                rendererSettings.LiearTextureFiltering);
-                        }
-                    }
-
-                    stats.DrawnTriangleCount++;
-
-                    stats.CalcTime();
-                }
-
-                // Only draw one volume, will remove later
-                break;
+        public int[] Render(IPainterProvider painterProvider, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings)
+        {
+            var drawable = VertexBuffer.Drawable;
+            if(drawable == null || painterProvider == null || rendererSettings == null || drawable.Mesh.FacetCount == 0)
+            {
+                FrameBuffer.Clear();
+                return FrameBuffer.Screen;
             }
 
-            return surface.Screen;
+            return GetRenderer(drawable.Mesh.FacetCount).Render(painterProvider, viewMatrix, projectionMatrix, rendererSettings);
+        }
+
+        private SimpleRendererAbstract GetRenderer(int facetCount)
+        {
+            const int minFacetsForParallelization = 10000;
+            return facetCount < minFacetsForParallelization ? sequentialRenderer : parallelRenderer;
+        }
+    }
+
+    public class SimpleRendererParallel : SimpleRendererAbstract
+    {
+        public SimpleRendererParallel(VertexBuffer vertexBuffer, FrameBuffer frameBuffer)
+            : base(vertexBuffer, frameBuffer) { }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override void RasterizeFacets(IReadOnlyList<Facet> facets, RendererSettings rendererSettings)
+        {
+            var backFaceCulling = rendererSettings.BackFaceCulling;
+            Parallel.ForEach(Partitioner.Create(0, facets.Count),
+                new ParallelOptions { TaskScheduler = TaskScheduler.Current },
+                range =>
+                {
+
+                    for(var faId = range.Item1; faId < range.Item2; faId++)
+                    {
+                        Rasterizer.RasterizeFacet(facets[faId], faId, backFaceCulling);
+                        Stats.DrawnTriangleCount++;
+                    }
+
+                });
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override void TransformVertexBuffers(Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
+        {
+            Parallel.ForEach(Partitioner.Create(0, VertexBuffer.Drawable.Mesh.VertexCount),
+                new ParallelOptions { TaskScheduler = TaskScheduler.Current },
+                (range) =>
+            {
+                for(var veId = range.Item1; veId < range.Item2; veId++)
+                {
+                    TransformVertex(viewMatrix, projectionMatrix, veId);
+                }
+            });
+        }
+    }
+
+    public class SimpleRendererSequential : SimpleRendererAbstract
+    {
+        public SimpleRendererSequential(VertexBuffer vertexBuffer, FrameBuffer frameBuffer)
+            : base(vertexBuffer, frameBuffer) { }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override void RasterizeFacets(IReadOnlyList<Facet> facets, RendererSettings rendererSettings)
+        {
+            var backFaceCulling = rendererSettings.BackFaceCulling;
+
+            for(var faId = 0; faId < facets.Count; faId++)
+            {
+                Rasterizer.RasterizeFacet(facets[faId], faId, backFaceCulling);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override void TransformVertexBuffers(Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
+        {
+            for(var veId = 0; veId < VertexBuffer.Drawable.Mesh.Vertices.Count; veId++)
+            {
+                TransformVertex(viewMatrix, projectionMatrix, veId);
+            }
         }
     }
 }

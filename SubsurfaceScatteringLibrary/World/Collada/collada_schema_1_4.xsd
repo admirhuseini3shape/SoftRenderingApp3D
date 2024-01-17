@@ -4888,7 +4888,7 @@
 		</xs:annotation>
 		<xs:choice>
 			<xs:annotation>
-				<xs:documentation>This choice exists for consistancy with other init types (subsurfaceScatteringVolume and cube).  When other initialization methods are needed.</xs:documentation>
+				<xs:documentation>This choice exists for consistancy with other init types (subsurfaceScatteringMesh and cube).  When other initialization methods are needed.</xs:documentation>
 			</xs:annotation>
 			<xs:element name="all">
 				<xs:annotation>

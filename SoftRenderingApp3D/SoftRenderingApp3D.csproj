@@ -35,6 +35,9 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Memory">
+      <HintPath>..\..\..\.nuget\packages\system.memory\4.5.5\lib\net461\System.Memory.dll</HintPath>
+    </Reference>
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
@@ -76,24 +79,43 @@
     </Compile>
     <Compile Include="Clipping\CohenSutherlandClipping2D.cs" />
     <Compile Include="Clipping\CohenSutherlandClippingHomogeneous.cs" />
+    <Compile Include="DataStructures\Drawables\Drawable.cs" />
+    <Compile Include="DataStructures\Drawables\IDrawable.cs" />
+    <Compile Include="DataStructures\FacetBarycentricData.cs" />
+    <Compile Include="DataStructures\FacetPixelData.cs" />
+    <Compile Include="DataStructures\FileReaders\ColladaReaderOld.cs" />
     <Compile Include="DataStructures\FileReaders\ColladaReader.cs" />
     <Compile Include="DataStructures\FileReaders\FileReader.cs" />
+    <Compile Include="DataStructures\FileReaders\NewColladaParser.cs" />
     <Compile Include="DataStructures\FileReaders\STLReader.cs" />
-    <Compile Include="DataStructures\Shapes\IcoSphere.cs" />
+    <Compile Include="DataStructures\Materials\FacetColorMaterial.cs" />
+    <Compile Include="DataStructures\Materials\IMaterial.cs" />
+    <Compile Include="DataStructures\Materials\IMaterialOptions.cs" />
+    <Compile Include="DataStructures\Materials\MaterialBase.cs" />
+    <Compile Include="DataStructures\Materials\TextureMaterial.cs" />
+    <Compile Include="DataStructures\Materials\VertexColorMaterial.cs" />
+    <Compile Include="DataStructures\Meshes\IPointCloud.cs" />
+    <Compile Include="DataStructures\Meshes\PointCloud.cs" />
+    <Compile Include="DataStructures\Shapes\Sphere.cs" />
     <Compile Include="DataStructures\TextureReaders\ITextureReader.cs" />
     <Compile Include="DataStructures\Shapes\Cube.cs" />
-    <Compile Include="DataStructures\Shapes\Face.cs" />
+    <Compile Include="DataStructures\Shapes\TriangleFace.cs" />
     <Compile Include="DataStructures\TextureReaders\TextureReaderBMP.cs" />
-    <Compile Include="DataStructures\Texture\Texture.cs" />
-    <Compile Include="DataStructures\Volume\IVolume.cs" />
-    <Compile Include="DataStructures\Volume\Volume.cs" />
-    <Compile Include="DataStructures\Volume\VolumeEx.cs" />
+    <Compile Include="DataStructures\Textures\Texture.cs" />
+    <Compile Include="DataStructures\Meshes\IMesh.cs" />
+    <Compile Include="DataStructures\Meshes\Mesh.cs" />
+    <Compile Include="DataStructures\Meshes\MeshExtensions.cs" />
     <Compile Include="DataStructures\World\ILightSource.cs" />
-    <Compile Include="DataStructures\World\IWorld.cs" />
+    <Compile Include="Factories\Factory.cs" />
+    <Compile Include="Rasterizers\Rasterizer.cs" />
+    <Compile Include="Renderer\SimpleRendererAbstract.cs" />
+    <Compile Include="Utils\Barycentric2d.cs" />
     <Compile Include="Painter\GouraudPainter.cs" />
     <Compile Include="Painter\IPainter.cs" />
-    <Compile Include="RenderContext.cs" />
+    <Compile Include="Rasterizers\ScanLine.cs" />
     <Compile Include="Renderer\IRenderer.cs" />
+    <Compile Include="Renderer\IRenderingJob.cs" />
+    <Compile Include="Renderer\IRenderingWorkflow.cs" />
     <Compile Include="Renderer\RendererSettings.cs" />
     <Compile Include="Painter\PaintedVertex.cs" />
     <Compile Include="Projection\FovPerspectiveProjection.cs" />
@@ -103,17 +125,20 @@
     <Compile Include="Camera\FlyCam.cs" />
     <Compile Include="ColorRGB.cs" />
     <Compile Include="Renderer\SimpleRenderer.cs" />
+    <Compile Include="Shaders\IShader.cs" />
+    <Compile Include="Shaders\IShaderProvider.cs" />
+    <Compile Include="Shaders\ShaderAbstract.cs" />
+    <Compile Include="Shaders\ShaderProvider.cs" />
     <Compile Include="Stats.cs" />
-    <Compile Include="Triangle.cs" />
+    <Compile Include="Facet.cs" />
+    <Compile Include="Utils\Constants.cs" />
     <Compile Include="Utils\GaussianBlur.cs" />
     <Compile Include="Utils\GeomUtils.cs" />
     <Compile Include="Utils\ImageUtils.cs" />
     <Compile Include="Utils\MathUtils.cs" />
-    <Compile Include="Utils\MiscUtils.cs" />
+    <Compile Include="Utils\Extensions.cs" />
     <Compile Include="Utils\PainterUtils.cs" />
     <Compile Include="Utils\RenderUtils.cs" />
-    <Compile Include="World.cs" />
-    <Compile Include="DataStructures\ColoredVertex.cs" />
     <Compile Include="Camera\ICamera.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Rotation3D.cs" />
@@ -140,9 +165,12 @@
     <PackageReference Include="System.Buffers">
       <Version>4.5.0</Version>
     </PackageReference>
+    <PackageReference Include="System.Memory">
+      <Version>4.5.5</Version>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="DataStructures\Collada\collada_schema_1_4.xsd">
+    <None Include="DataStructures\ColladaSchema\collada_schema_1_4.xsd">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>

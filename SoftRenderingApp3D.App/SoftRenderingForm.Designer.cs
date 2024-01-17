@@ -1,5 +1,4 @@
-﻿using SoftRenderingApp3D.App;
-using SoftRenderingApp3D.Controls;
+﻿using SoftRenderingApp3D.Controls;
 
 namespace SoftRenderingApp3D.App {
     partial class SoftRenderingForm {
@@ -36,7 +35,6 @@ namespace SoftRenderingApp3D.App {
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.arcBallCamControl1 = new SoftRenderingApp3D.Controls.ArcBallCamControl();
-            this.panel3D1 = new SoftRenderingApp3D.App.Panel3D();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.btnBench = new System.Windows.Forms.Button();
             this.lblSw = new System.Windows.Forms.Label();
@@ -110,7 +108,6 @@ namespace SoftRenderingApp3D.App {
             // 
             this.groupBox6.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox6.Controls.Add(this.arcBallCamControl1);
-            this.groupBox6.Controls.Add(this.panel3D1);
             this.groupBox6.Location = new System.Drawing.Point(0, 0);
             this.groupBox6.Margin = new System.Windows.Forms.Padding(0);
             this.groupBox6.Name = "groupBox6";
@@ -130,17 +127,6 @@ namespace SoftRenderingApp3D.App {
             this.arcBallCamControl1.Name = "arcBallCamControl1";
             this.arcBallCamControl1.Size = new System.Drawing.Size(139, 117);
             this.arcBallCamControl1.TabIndex = 1;
-            // 
-            // panel3D1
-            // 
-            this.panel3D1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) | System.Windows.Forms.AnchorStyles.Left) | System.Windows.Forms.AnchorStyles.Right)));
-            this.panel3D1.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.panel3D1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
-            this.panel3D1.Location = new System.Drawing.Point(11, 16);
-            this.panel3D1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.panel3D1.Name = "panel3D1";
-            this.panel3D1.Size = new System.Drawing.Size(716, 566);
-            this.panel3D1.TabIndex = 0;
             // 
             // tableLayoutPanel1
             // 
@@ -212,7 +198,6 @@ namespace SoftRenderingApp3D.App {
 
         #endregion
 
-        private Panel3D panel3D1;
         private ArcBallCamControl arcBallCamControl1;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.ListBox lstDemos;

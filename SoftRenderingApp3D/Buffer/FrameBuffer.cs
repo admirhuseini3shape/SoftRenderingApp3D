@@ -1,78 +1,147 @@
-﻿using SoftRenderingApp3D.Utils;
-using System;
+﻿using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 
-namespace SoftRenderingApp3D.Buffer {
-    public class FrameBuffer {
-        private readonly int[] emptyBuffer;
-        private readonly int[] emptyZBuffer;
+namespace SoftRenderingApp3D.Buffer
+{
+    public class FrameBuffer : IDisposable
+    {
+        private readonly ArrayPool<int> intPool = ArrayPool<int>.Shared;
+        private readonly ArrayPool<float> floatPool = ArrayPool<float>.Shared;
 
-        private readonly RenderContext RenderContext;
-        private readonly int[] zBuffer;
+        private readonly object syncRoot = new object();
+        private readonly float[] zBuffer;
+        private readonly int[] facetIdsForPixels;
+        private readonly Stats stats;
+        public const int NoFacet = -1;
 
-        public FrameBuffer(int width, int height, RenderContext renderContext) {
-            Screen = new int[width * height];
-            zBuffer = new int[width * height];
+        public FrameBuffer(int width, int height)
+        {
+            Screen = intPool.Rent(width * height);
+            facetIdsForPixels = intPool.Rent(width * height);
+            zBuffer = floatPool.Rent(width * height);
 
-            emptyBuffer = new int[width * height];
-            emptyZBuffer = new int[width * height];
-            emptyZBuffer.Fill(Depth);
+            stats = StatsSingleton.Instance;
 
             Width = width;
             Height = height;
-            RenderContext = renderContext;
-            widthMinus1By2 = (width - 1) / 2f;
-            heightMinus1By2 = (height - 1) / 2f;
         }
 
         public int[] Screen { get; }
+        public IReadOnlyList<int> FacetIdsForPixels => facetIdsForPixels;
+        public ISet<int> VisibleFacets
+        {
+            get
+            {
+                var result = facetIdsForPixels.ToHashSet();
+                result.Remove(NoFacet);
+                return result;
+            }
+        }
 
         public int Width { get; }
         public int Height { get; }
-        internal int Depth { get; set; } = 65535; // Build a true Z buffer based on Zfar/Znear planes
-
-        private float widthMinus1By2 { get; }
-        private float heightMinus1By2 { get; }
+        private int Depth { get; set; } = 65535; // Build a true Z buffer based on Zfar/Znear planes
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector3 ToScreen3(Vector4 p) {
+        public Vector3 ToScreen3(Vector4 p)
+        {
             return new Vector3(
-                widthMinus1By2 * (p.X / p.W + 1), // Using width - 1 to prevent overflow by -1 and 1 NDC coordinates
-                -heightMinus1By2 * (p.Y / p.W - 1), // Using height - 1 to prevent overflow by -1 and 1 NDC coordinates
+                ((Width - 1) / 2f) * (p.X / p.W + 1), // Using width - 1 to prevent overflow by -1 and 1 NDC coordinates
+                -((Height - 1) / 2f) * (p.Y / p.W - 1), // Using height - 1 to prevent overflow by -1 and 1 NDC coordinates
                 Depth * p.Z / p.W);
         }
 
-        public void Clear() {
-            Array.Copy(emptyBuffer, Screen, Screen.Length);
-            Array.Copy(emptyZBuffer, zBuffer, zBuffer.Length);
+        public void Clear()
+        {
+            Span<int> screenSpan = Screen;
+            Span<int> facetIdForPixelSpan = facetIdsForPixels;
+            Span<float> zBufferSpan = zBuffer.AsSpan();
+
+            screenSpan.Fill(0);
+            facetIdForPixelSpan.Fill(NoFacet);
+            zBufferSpan.Fill(Depth);
+        }
+
+        private void ReleaseBuffers()
+        {
+            intPool.Return(Screen);
+            floatPool.Return(zBuffer);
         }
 
         // Called to put a pixel on screen at a specific X,Y coordinates
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void PutPixel(int x, int y, int z, ColorRGB color) {
+        public void PutPixel(int x, int y, int color)
+        {
 #if DEBUG
-            if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0) {
+            if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0)
+            {
+                throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}");
+            }
+#endif
+            var index = x + y * Width;
+            
+            stats.DrawnPixelCount++;
+
+            Screen[index] = color;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetFacetIdForPixel(int x, int y, int faId)
+        {
+#if DEBUG
+            if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0)
+            {
+                throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}");
+            }
+#endif
+            var index = x + y * Width;
+            facetIdsForPixels[index] = faId;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetFacetIdForPixel(int x, int y)
+        {
+#if DEBUG
+            if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0)
+            {
+                throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}");
+            }
+#endif
+            var index = x + y * Width;
+            return facetIdsForPixels[index];
+        }
+        
+        // Called to put a pixel on screen at a specific X,Y coordinates
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryUpdateZBuffer(int x, int y, float z)
+        {
+#if DEBUG
+            if(x > Width - 1 || x < 0 || y > Height - 1 || y < 0)
+            {
                 throw new OverflowException($"PutPixel X={x}/{Width}: Y={y}/{Height}, Depth={z}");
             }
 #endif
             var index = x + y * Width;
-            if(z > zBuffer[index]) {
-                RenderContext.Stats.BehindZPixelCount++;
-                return;
+            if(z >= zBuffer[index])
+            {
+                stats.BehindZPixelCount++;
+                return false;
             }
-
-            RenderContext.Stats.DrawnPixelCount++;
 
             zBuffer[index] = z;
 
-            Screen[index] = color.Color;
+            return true;
         }
 
 
         // Bresenham's line algorithm .
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DrawLine3d(Vector3 p0, Vector3 p1, ColorRGB color) {
+        public void DrawLine3d(Vector3 p0, Vector3 p1, ColorRGB color)
+        {
             // Converts the start and end points from floating point to integer coordinates.
             var x1 = (int)p0.X;
             var y1 = (int)p0.Y;
@@ -98,35 +167,34 @@ namespace SoftRenderingApp3D.Buffer {
             // Set up the decision variables.
             x1 = y1 = z1 = dm / 2;
 
+            var colorAsInt = color.Color;
             // Start the infinite drawing loop.
-            while(true) {
+            while(true)
+            {
                 // Draw Current Pixel
-                PutPixel(x2, y2, z2, color);
+                PutPixel(x2, y2, colorAsInt);
 
                 // Break the loop if the end point is reached.
-                if(i-- == 0) {
+                if(i-- == 0)
+                {
                     break;
                 }
 
                 // Update the decision variables and coordinates based on the absolute differences.
                 x2 += dx;
-                if(x2 < 0) {
-                    x2 += dm;
-                    x1 += sx;
-                }
+                if(x2 < 0) { x2 += dm; x1 += sx; }
 
                 y2 += dy;
-                if(y2 < 0) {
-                    y2 += dm;
-                    y1 += sy;
-                }
+                if(y2 < 0) { y2 += dm; y1 += sy; }
 
                 z2 += dz;
-                if(z2 < 0) {
-                    z2 += dm;
-                    z1 += sz;
-                }
+                if(z2 < 0) { z2 += dm; z1 += sz; }
             }
+        }
+
+        public void Dispose()
+        {
+            ReleaseBuffers();
         }
     }
 }
