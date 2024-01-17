@@ -6,11 +6,21 @@ using System.Runtime.CompilerServices;
 
 namespace SoftRenderingApp3D.Rasterizers
 {
-    public static class Rasterizer
+    public class Rasterizer
     {
+        private readonly VertexBuffer vertexBuffer;
+        private readonly ScanLine scanLine;
+        private readonly Stats stats;
+
+        public Rasterizer(VertexBuffer vertexBuffer, FrameBuffer frameBuffer)
+        {
+            this.vertexBuffer = vertexBuffer;
+            scanLine = new ScanLine(vertexBuffer, frameBuffer);
+            this.stats = StatsSingleton.Instance;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static List<Vector3> RasterizeFacet(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, Facet facet,
-            bool backFaceCulling, Stats stats)
+        public List<Vector3> RasterizeFacet(Facet facet, bool backFaceCulling)
         {
             // Discard if behind far plane
             if(facet.IsBehindFarPlane(vertexBuffer))
@@ -39,19 +49,7 @@ namespace SoftRenderingApp3D.Rasterizers
                 return null;
             }
 
-            return GetPixels(vertexBuffer, frameBuffer, facet);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static List<Vector3> GetPixels(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, Facet facet)
-        {
-            var result = new List<Vector3>();
-            
-            var (i0, i1, i2) = PainterUtils.SortIndices(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
-            if(i0 == i1 || i1 == i2 || i2 == i0)
-                return result;
-
-            return ScanLine.ScanLineTriangle(vertexBuffer, frameBuffer, frameBuffer.Height, frameBuffer.Width, i0, i1, i2);
+            return scanLine.ScanLineTriangle(facet);
         }
     }
 }

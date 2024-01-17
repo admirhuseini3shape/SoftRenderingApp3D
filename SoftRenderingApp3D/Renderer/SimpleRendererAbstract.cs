@@ -1,6 +1,7 @@
 ﻿using SoftRenderingApp3D.Buffer;
 using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.Painter;
+using SoftRenderingApp3D.Rasterizers;
 using SoftRenderingApp3D.Utils;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -12,11 +13,13 @@ namespace SoftRenderingApp3D.Renderer
         public VertexBuffer VertexBuffer { get; }
         public FrameBuffer FrameBuffer { get; }
         protected readonly Stats stats;
+        protected readonly Rasterizer rasterizer;
 
         protected SimpleRendererAbstract(VertexBuffer vertexBuffer, FrameBuffer frameBuffer)
         {
             VertexBuffer = vertexBuffer;
             FrameBuffer = frameBuffer;
+            rasterizer = new Rasterizer(vertexBuffer, frameBuffer);
             stats = StatsSingleton.Instance;
         }
 

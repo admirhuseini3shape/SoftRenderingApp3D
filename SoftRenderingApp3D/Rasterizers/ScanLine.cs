@@ -7,12 +7,29 @@ using System.Runtime.CompilerServices;
 
 namespace SoftRenderingApp3D.Rasterizers
 {
-    public static class ScanLine
+    public class ScanLine
     {
+        private readonly VertexBuffer vertexBuffer;
+        private readonly FrameBuffer frameBuffer;
+        private readonly int width;
+        private readonly int height;
+
+        public ScanLine(VertexBuffer vertexBuffer, FrameBuffer frameBuffer)
+        {
+            this.vertexBuffer = vertexBuffer;
+            this.frameBuffer = frameBuffer;
+            width = this.frameBuffer.Width;
+            height = this.frameBuffer.Height;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static List<Vector3> ScanLineTriangle(VertexBuffer vertexBuffer, FrameBuffer frameBuffer, int height, int width, int i0, int i1, int i2)
+        public List<Vector3> ScanLineTriangle(Facet facet)
         {
             var result = new List<Vector3>();
+
+            var (i0, i1, i2) = PainterUtils.SortIndices(vertexBuffer.ScreenPointVertices, facet.I0, facet.I1, facet.I2);
+            if(i0 == i1 || i1 == i2 || i2 == i0)
+                return result;
 
             var p0 = vertexBuffer.ScreenPointVertices[i0];
             var p1 = vertexBuffer.ScreenPointVertices[i1];
@@ -38,8 +55,8 @@ namespace SoftRenderingApp3D.Rasterizers
                 // P0
                 //   P1
                 // P2
-                var fh = ScanLineHalfTriangleBottomFlat(frameBuffer, width, yStart, (int)yMiddle - 1, p0, p1, p2);
-                var sh = ScanLineHalfTriangleTopFlat(frameBuffer, width, (int)yMiddle, yEnd, p2, p1, p0);
+                var fh = ScanLineHalfTriangleBottomFlat(yStart, (int)yMiddle - 1, p0, p1, p2);
+                var sh = ScanLineHalfTriangleTopFlat((int)yMiddle, yEnd, p2, p1, p0);
                 result.AddRange(fh);
                 result.AddRange(sh);
             }
@@ -49,8 +66,8 @@ namespace SoftRenderingApp3D.Rasterizers
                 // P1 
                 //   P2
 
-                var fh = ScanLineHalfTriangleBottomFlat(frameBuffer, width, yStart, (int)yMiddle - 1, p0, p2, p1);
-                var sh = ScanLineHalfTriangleTopFlat(frameBuffer, width, (int)yMiddle, yEnd, p2, p0, p1);
+                var fh = ScanLineHalfTriangleBottomFlat(yStart, (int)yMiddle - 1, p0, p2, p1);
+                var sh = ScanLineHalfTriangleTopFlat((int)yMiddle, yEnd, p2, p0, p1);
                 result.AddRange(fh);
                 result.AddRange(sh);
             }
@@ -64,7 +81,7 @@ namespace SoftRenderingApp3D.Rasterizers
         //   .................P1
         // P2
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Vector3> ScanLineHalfTriangleBottomFlat(FrameBuffer frameBuffer, float frameWidth, int yStart, int yEnd,
+        private List<Vector3> ScanLineHalfTriangleBottomFlat(int yStart, int yEnd, 
             Vector3 anchor, Vector3 vRight, Vector3 vLeft)
         {
             var result = new List<Vector3>();
@@ -86,7 +103,7 @@ namespace SoftRenderingApp3D.Rasterizers
                 start.Y = y;
                 end.Y = y;
 
-                var line = ScanSingleLine(frameBuffer, frameWidth, start, end);
+                var line = ScanSingleLine(start, end);
                 result.AddRange(line);
             }
 
@@ -99,7 +116,7 @@ namespace SoftRenderingApp3D.Rasterizers
         //          .....
         //            P0
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Vector3> ScanLineHalfTriangleTopFlat(FrameBuffer frameBuffer, float frameWidth, int yStart, int yEnd,
+        private List<Vector3> ScanLineHalfTriangleTopFlat(int yStart, int yEnd,
             Vector3 anchor, Vector3 vRight, Vector3 vLeft)
         {
             var result = new List<Vector3>();
@@ -121,7 +138,7 @@ namespace SoftRenderingApp3D.Rasterizers
                 start.Y = y;
                 end.Y = y;
 
-                var line = ScanSingleLine(frameBuffer, frameWidth, start, end);
+                var line = ScanSingleLine(start, end);
                 result.AddRange(line);
             }
 
@@ -131,16 +148,14 @@ namespace SoftRenderingApp3D.Rasterizers
         /// <summary>
         /// Scan line on the x direction
         /// </summary>
-        /// <param name="frameBuffer">Frame buffer</param>
-        /// <param name="frameWidth"></param>
         /// <param name="start">Scan line start</param>
         /// <param name="end">Scan line end</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Vector3> ScanSingleLine(FrameBuffer frameBuffer, float frameWidth, Vector3 start, Vector3 end)
+        private List<Vector3> ScanSingleLine(Vector3 start, Vector3 end)
         {
             var result = new List<Vector3>();
             var minX = Math.Max(start.X, 0);
-            var maxX = Math.Min(end.X, frameWidth);
+            var maxX = Math.Min(end.X, width);
 
             var deltaX = 1 / (end.X - start.X);
 

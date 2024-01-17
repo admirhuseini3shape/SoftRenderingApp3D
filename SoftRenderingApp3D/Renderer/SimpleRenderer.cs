@@ -69,7 +69,7 @@ namespace SoftRenderingApp3D.Renderer
                         //if(facetData.zDepth < 0)
                         //    continue;
                         var facet = drawable.Mesh.Facets[faId];
-                        var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, facet, backFaceCulling, stats);
+                        var pixels = rasterizer.RasterizeFacet(facet, backFaceCulling);
                         if(pixels == null)
                             continue;
                         var perPixelColors = painter.DrawTriangle(VertexBuffer, rendererSettings, pixels, faId);
@@ -118,7 +118,7 @@ namespace SoftRenderingApp3D.Renderer
                 //    continue;
                 var facet = drawable.Mesh.Facets[faId];
                 
-                var pixels = Rasterizer.RasterizeFacet(VertexBuffer, FrameBuffer, facet, backFaceCulling, stats);
+                var pixels = rasterizer.RasterizeFacet(facet, backFaceCulling);
                 if(pixels == null)
                     continue;
                 var perPixelColors = painter.DrawTriangle(VertexBuffer, rendererSettings, pixels, faId);
