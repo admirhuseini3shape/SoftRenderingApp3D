@@ -1,9 +1,7 @@
 ﻿using SoftRenderingApp3D.Buffer;
-using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.Painter;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -51,48 +49,18 @@ namespace SoftRenderingApp3D.Renderer
             : base(vertexBuffer, frameBuffer) { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override void DrawFacets(IPainterProvider painterProvider, IDrawable drawable, RendererSettings rendererSettings)
+        protected override void RasterizeFacets(IReadOnlyList<Facet> facets, RendererSettings rendererSettings)
         {
-            var painter = painterProvider.GetPainter(drawable.Material, VertexBuffer, FrameBuffer, rendererSettings);
-            painter.BarycentricMapper.Clear();
-
             var backFaceCulling = rendererSettings.BackFaceCulling;
-            Parallel.ForEach(Partitioner.Create(0, drawable.Mesh.FacetCount),
+            Parallel.ForEach(Partitioner.Create(0, facets.Count),
                 new ParallelOptions { TaskScheduler = TaskScheduler.Current },
                 range =>
                 {
 
                     for(var faId = range.Item1; faId < range.Item2; faId++)
                     {
-                        //var facetData = zSortedFacets[faId];
-                        //if(facetData.zDepth < 0)
-                        //    continue;
-                        var facet = drawable.Mesh.Facets[faId];
-                        Rasterizer.RasterizeFacet(facet, faId, backFaceCulling);
+                        Rasterizer.RasterizeFacet(facets[faId], faId, backFaceCulling);
                         Stats.DrawnTriangleCount++;
-                    }
-
-                });
-
-            Parallel.ForEach(Partitioner.Create(0, FrameBuffer.Screen.Length),
-                new ParallelOptions { TaskScheduler = TaskScheduler.Current },
-                range =>
-                {
-                    for(var iPixel = range.Item1; iPixel < range.Item2; iPixel++)
-                    {
-                        var faId = FrameBuffer.FacetIdsForPixels[iPixel];
-                        if(faId == FrameBuffer.NoFacet)
-                            continue;
-
-                        painter.UpdateBuffers(faId);
-
-                        //var index = x + y * Width;
-                        var x = iPixel % FrameBuffer.Width;
-                        var y = iPixel / FrameBuffer.Width;
-
-                        var color = painter.DrawPixel(x, y, rendererSettings);
-
-                        FrameBuffer.PutPixel(x, y, color);
                     }
 
                 });
@@ -119,45 +87,14 @@ namespace SoftRenderingApp3D.Renderer
             : base(vertexBuffer, frameBuffer) { }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override void DrawFacets(IPainterProvider painterProvider, IDrawable drawable, RendererSettings rendererSettings)
+        protected override void RasterizeFacets(IReadOnlyList<Facet> facets, RendererSettings rendererSettings)
         {
             var backFaceCulling = rendererSettings.BackFaceCulling;
-            var painter = painterProvider.GetPainter(drawable.Material, VertexBuffer, FrameBuffer, rendererSettings);
 
-            for(var faId = 0; faId < drawable.Mesh.FacetCount; faId++)
+            for(var faId = 0; faId < facets.Count; faId++)
             {
-                //var facetData = zSortedFacets[faId];
-                //if(facetData.zDepth < 0)
-                //    continue;
-                var facet = drawable.Mesh.Facets[faId];
-
-                Rasterizer.RasterizeFacet(facet, faId, backFaceCulling);
-
+                Rasterizer.RasterizeFacet(facets[faId], faId, backFaceCulling);
             }
-
-            painter.ClearBuffers();
-            Parallel.ForEach(Partitioner.Create(0, FrameBuffer.Screen.Length),
-                new ParallelOptions { TaskScheduler = TaskScheduler.Current },
-                range =>
-                {
-                    for(var iPixel = range.Item1; iPixel < range.Item2; iPixel++)
-                    {
-                        var faId = FrameBuffer.FacetIdsForPixels[iPixel];
-                        if(faId == FrameBuffer.NoFacet)
-                            continue;
-
-                        painter.UpdateBuffers(faId);
-
-                        //var index = x + y * Width;
-                        var x = iPixel % FrameBuffer.Width;
-                        var y = iPixel / FrameBuffer.Width;
-
-                        var color = painter.DrawPixel(x, y, rendererSettings);
-
-                        FrameBuffer.PutPixel(x, y, color);
-                    }
-
-                });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

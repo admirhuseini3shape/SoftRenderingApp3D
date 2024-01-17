@@ -1,7 +1,6 @@
 ﻿using SoftRenderingApp3D.Buffer;
 using SoftRenderingApp3D.Utils;
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 

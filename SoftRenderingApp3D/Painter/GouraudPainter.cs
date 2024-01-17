@@ -37,7 +37,7 @@ namespace SoftRenderingApp3D.Painter
         }
     }
 
-    public class GouraudColorPainterBase
+    public class GouraudColorPainterBase : IGouraudPainter
     {
         public VertexBuffer VertexBuffer { get; }
         public FrameBuffer FrameBuffer { get; }
@@ -100,6 +100,11 @@ namespace SoftRenderingApp3D.Painter
             updatedFacetBuffers.Clear();
         }
 
+        public virtual int DrawPixel(int x, int y, RendererSettings rendererSettings)
+        {
+            return 0;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected int DrawPixel(int x, int y, RendererSettings rendererSettings, ColorRGB color)
         {
@@ -129,7 +134,7 @@ namespace SoftRenderingApp3D.Painter
         }
     }
 
-    public class GouraudStandardColorPainter : GouraudColorPainterBase, IPainter<IMaterial>, IGouraudPainter
+    public class GouraudStandardColorPainter : GouraudColorPainterBase, IPainter<IMaterial>
     {
         public IMaterial Material { get; private set; }
 
@@ -153,7 +158,7 @@ namespace SoftRenderingApp3D.Painter
         }
     }
 
-    public class GouraudVertexColorPainter : GouraudColorPainterBase, IPainter<IVertexColorMaterial>, IGouraudPainter
+    public class GouraudVertexColorPainter : GouraudColorPainterBase, IPainter<IVertexColorMaterial>
     {
         public IVertexColorMaterial Material { get; private set; }
 
@@ -184,7 +189,7 @@ namespace SoftRenderingApp3D.Painter
         }
     }
 
-    public class GouraudFacetColorPainter : GouraudColorPainterBase, IPainter<IFacetColorMaterial>, IGouraudPainter
+    public class GouraudFacetColorPainter : GouraudColorPainterBase, IPainter<IFacetColorMaterial>
     {
         public IFacetColorMaterial Material { get; private set; }
 
@@ -210,7 +215,7 @@ namespace SoftRenderingApp3D.Painter
         }
     }
 
-    public class GouraudTexturePainter : GouraudColorPainterBase, IPainter<ITextureMaterial>, IGouraudPainter
+    public class GouraudTexturePainter : GouraudColorPainterBase, IPainter<ITextureMaterial>
     {
         public ITextureMaterial Material { get; }
 

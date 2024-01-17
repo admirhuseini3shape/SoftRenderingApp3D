@@ -1,10 +1,12 @@
 ﻿using SoftRenderingApp3D.Buffer;
-using SoftRenderingApp3D.DataStructures.Drawables;
 using SoftRenderingApp3D.Painter;
 using SoftRenderingApp3D.Rasterizers;
 using SoftRenderingApp3D.Utils;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace SoftRenderingApp3D.Renderer
 {
@@ -24,11 +26,11 @@ namespace SoftRenderingApp3D.Renderer
             Stats = StatsSingleton.Instance;
         }
 
-        public int[] Render(IPainterProvider painter, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings)
+        public int[] Render(IPainterProvider painterProvider, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings)
         {
             FrameBuffer.Clear();
             var drawable = VertexBuffer.Drawable;
-            if(drawable == null || painter == null || rendererSettings == null || drawable.Mesh.FacetCount == 0)
+            if(drawable == null || painterProvider == null || rendererSettings == null || drawable.Mesh.FacetCount == 0)
             {
                 return FrameBuffer.Screen;
             }
@@ -38,20 +40,55 @@ namespace SoftRenderingApp3D.Renderer
             UpdateVertexBuffer(viewMatrix, projectionMatrix);
             Stats.paintSw.Restart();
 
-            //var zSortedFacets = drawable.Mesh.Facets
-            //.Select((fa, i) => new { FaId = i, zDepth = fa.CalculateZAverages(vertexBuffer.ProjectionVertices) })
-            //.ToList();
-            //zSortedFacets.Sort((x, y) => (int)(1000 * x.zDepth - 1000 * y.zDepth));
+            RasterizeFacets(drawable.Mesh.Facets, rendererSettings);
 
-
-            DrawFacets(painter, drawable, rendererSettings);
+            var painter = painterProvider.GetPainter(drawable.Material, VertexBuffer, FrameBuffer, rendererSettings);
+            DrawPixels(painter, rendererSettings);
             Stats.paintSw.Stop();
 
             return FrameBuffer.Screen;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected abstract void DrawFacets(IPainterProvider painterProvider, IDrawable drawable, RendererSettings rendererSettings);
+        protected abstract void RasterizeFacets(IReadOnlyList<Facet> facets, RendererSettings rendererSettings);
+
+        private void DrawPixels(IPainter painter, RendererSettings rendererSettings)
+        {
+            painter.ClearBuffers();
+            var pixelCount = FrameBuffer.Screen.Length;
+            var pixelsToDraw = new List<int>(pixelCount);
+            for(int i = 0; i < pixelCount; i++)
+            {
+                if(FrameBuffer.FacetIdsForPixels[i] == FrameBuffer.NoFacet)
+                    continue;
+                pixelsToDraw.Add(i);
+            }
+            if(pixelsToDraw.Count == 0)
+                return;
+
+            Parallel.ForEach(Partitioner.Create(0, pixelsToDraw.Count),
+                new ParallelOptions { TaskScheduler = TaskScheduler.Current },
+                range =>
+                {
+                    for(var i = range.Item1; i < range.Item2; i++)
+                    {
+                        var iPixel = pixelsToDraw[i];
+                        var faId = FrameBuffer.FacetIdsForPixels[iPixel];
+                        if(faId == FrameBuffer.NoFacet)
+                            continue;
+
+                        painter.UpdateBuffers(faId);
+
+                        //var index = x + y * Width;
+                        var x = iPixel % FrameBuffer.Width;
+                        var y = iPixel / FrameBuffer.Width;
+
+                        var color = painter.DrawPixel(x, y, rendererSettings);
+
+                        FrameBuffer.PutPixel(x, y, color);
+                    }
+                });
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UpdateVertexBuffer(Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix)
