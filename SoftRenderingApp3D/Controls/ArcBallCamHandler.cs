@@ -1,5 +1,6 @@
 ﻿using SoftRenderingApp3D.Camera;
 using SoftRenderingApp3D.Utils;
+using System;
 using System.Drawing;
 using System.Numerics;
 using System.Windows.Forms;
@@ -64,6 +65,14 @@ namespace SoftRenderingApp3D.Controls
             }
         }
 
+        private Point GetPixelLocationOnMouseHover(Point point)
+        {
+            var x = point.X;
+            var y = control.Height - 1 - point.Y; // Do an inversion
+
+            return new Point(x, y);
+        }
+        
         private void control_MouseWheel(object sender, MouseEventArgs e)
         {
             var deltaY = 0.1 * e.Delta;
@@ -95,6 +104,7 @@ namespace SoftRenderingApp3D.Controls
         {
             ControlHelper.getMouseButtons(out left, out right, out middle);
             oldMousePosition = e.Location;
+            Console.WriteLine(@"The location: " + GetPixelLocationOnMouseHover(e.Location));
 
             if(left && right)
             {

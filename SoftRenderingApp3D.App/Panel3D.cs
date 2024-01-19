@@ -186,6 +186,7 @@ namespace SoftRenderingApp3D.App
 
         public int[] Render()
         {
+            Console.WriteLine(renderer.FrameBuffer.FacetIdsForPixels[0]);
             var viewMatrix = Camera.ViewMatrix();
             var projectionMatrix = Projection.ProjectionMatrix(Width, Height);
             return renderer.Render(PainterProvider, viewMatrix, projectionMatrix, RendererSettings);
