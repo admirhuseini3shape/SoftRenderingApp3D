@@ -9,23 +9,27 @@ namespace SoftRenderingApp3D.Controls
 {
     // Must adapt moving
 
-    public class ArcBallCamHandler : MouseControlBase
+     public class ArcBallCamHandler : MouseControlBase
     {
         private ArcBallCam Camera;
-        private Point OldMousePosition;
         private Quaternion OldCameraRotation;
         private Vector3 OldCameraPosition;
+        private Point OldMousePosition;
         private readonly float YCoeff = 10f;
         private bool Left, Right, Middle;
 
-        public ArcBallCamHandler(Control control, ArcBallCam camera)
-            : base(control)
+        public event EventHandler<Point> MouseClicked;
+
+        
+        public ArcBallCamHandler(Control control, ArcBallCam camera) : base(control)
         {
             Camera = camera;
         }
 
         protected override void Control_MouseDown(object sender, MouseEventArgs e)
         {
+            base.Control_MouseDown(sender, e); // Call base to raise MouseClicked event
+
             GetMouseButtons(out Left, out Right, out Middle);
             OldMousePosition = e.Location;
 
@@ -97,5 +101,11 @@ namespace SoftRenderingApp3D.Controls
             right = Control.MouseButtons.HasFlag(MouseButtons.Right);
             middle = Control.MouseButtons.HasFlag(MouseButtons.Middle);
         }
+
+        public override void OnMouseClicked(Point point)
+        {
+            MouseClicked?.Invoke(this, point);
+        }
     }
 }
+

@@ -7,6 +7,7 @@ using SoftRenderingApp3D.Projection;
 using SoftRenderingApp3D.Renderer;
 using SoftRenderingApp3D.Utils;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -28,6 +29,8 @@ namespace SoftRenderingApp3D.App
         private IPainterProvider painterProvider;
         private IProjection projection;
         private IRenderer renderer;
+        private PickingControl pickingControl;
+        private MouseControlBase mouseControlBase;
 
         private readonly StringBuilder sb = new StringBuilder();
         private IDrawable drawable;
@@ -37,11 +40,13 @@ namespace SoftRenderingApp3D.App
             InitializeComponent();
 
             RendererSettings = new RendererSettings { BackFaceCulling = false };
-
+            
             PainterProvider = new GouraudPainterProvider();
             Renderer = new SimpleRenderer(new VertexBuffer(drawable), new FrameBuffer(Width, Height));
             ResizeRedraw = true;
 
+            pickingControl = new PickingControl(this, Renderer.FrameBuffer);
+            
             Layout += Panel3D_Layout;
         }
 
@@ -225,6 +230,8 @@ namespace SoftRenderingApp3D.App
 
             var vertexBuffer = Renderer.VertexBuffer;
             Renderer = new SimpleRenderer(vertexBuffer, new FrameBuffer(Width, Height));
+            var pickingControl = new PickingControl(this, Renderer.FrameBuffer);
+            var selectedFacets = new List<int>(pickingControl.SelectedFacets);
             bmp = new Bitmap(Width, Height, PixelFormat.Format32bppPArgb);
         }
 
