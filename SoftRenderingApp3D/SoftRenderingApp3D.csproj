@@ -64,6 +64,7 @@
     <Compile Include="Clipping\LiangBarskyClipping2D.cs" />
     <Compile Include="Clipping\LiangBarskyClippingHomogeneous.cs" />
     <Compile Include="Controls\ControlHelper.cs" />
+    <Compile Include="Controls\MouseControlBase.cs" />
     <Compile Include="Controls\PropertyChangedHelper.cs" />
     <Compile Include="Controls\Slider.cs">
       <SubType>UserControl</SubType>

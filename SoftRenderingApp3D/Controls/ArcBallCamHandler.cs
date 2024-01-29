@@ -9,143 +9,93 @@ namespace SoftRenderingApp3D.Controls
 {
     // Must adapt moving
 
-    public class ArcBallCamHandler
+    public class ArcBallCamHandler : MouseControlBase
     {
-        private ArcBallCam camera;
-
-        private Control control;
-
-        private Vector3 oldCameraPosition;
-
-        private Quaternion oldCameraRotation;
-
-        private Point oldMousePosition;
-
-        private bool left;
-        private bool right;
-        private bool middle;
-
-        private readonly float yCoeff = 10f;
+        private ArcBallCam Camera;
+        private Point OldMousePosition;
+        private Quaternion OldCameraRotation;
+        private Vector3 OldCameraPosition;
+        private readonly float YCoeff = 10f;
+        private bool Left, Right, Middle;
 
         public ArcBallCamHandler(Control control, ArcBallCam camera)
+            : base(control)
         {
-            Control = control;
             Camera = camera;
         }
 
-        public Control Control
+        protected override void Control_MouseDown(object sender, MouseEventArgs e)
         {
-            get
+            GetMouseButtons(out Left, out Right, out Middle);
+            OldMousePosition = e.Location;
+
+            if (Left && Right)
             {
-                return control;
+                OldCameraPosition = Camera.Position;
+                Control.Cursor = Cursors.SizeNS;
             }
-            set
+            else if (Left)
             {
-                var oldControl = control;
-
-                if(!value.TryUpdateOther(ref control))
-                    return;
-
-
-                if(oldControl != null)
-                {
-                    oldControl.MouseDown -= control_MouseDown;
-                    oldControl.MouseMove -= control_MouseMove;
-                    control.MouseUp -= Control_MouseUp;
-                    control.MouseWheel += control_MouseWheel;
-                }
-
-                if(control != null)
-                {
-                    control.MouseDown += control_MouseDown;
-                    control.MouseMove += control_MouseMove;
-                    control.MouseUp += Control_MouseUp;
-                    control.MouseWheel += control_MouseWheel;
-                }
+                OldCameraRotation = Camera.Rotation;
+                Control.Cursor = Cursors.NoMove2D;
+            }
+            else if (Right || Middle)
+            {
+                OldCameraPosition = Camera.Position;
+                Control.Cursor = Cursors.SizeAll;
             }
         }
 
-        private Point GetPixelLocationOnMouseHover(Point point)
+        protected override void Control_MouseMove(object sender, MouseEventArgs e)
         {
-            var x = point.X;
-            var y = control.Height - 1 - point.Y; // Do an inversion
+            if (Left && Right)
+            {
+                var deltaY = OldMousePosition.Y - e.Location.Y;
+                Camera.Position = OldCameraPosition + new Vector3(0, 0, deltaY / YCoeff);
+            }
+            else if (Left)
+            {
+                var oldNpc = NormalizePointClient(OldMousePosition);
+                var oldVector = Camera.MapToSphere(oldNpc);
 
-            return new Point(x, y);
+                var curNpc = NormalizePointClient(e.Location);
+                var curVector = Camera.MapToSphere(curNpc);
+
+                var deltaRotation = Camera.CalculateQuaternion(oldVector, curVector);
+                Camera.Rotation = deltaRotation * OldCameraRotation;
+            }
+            else if (Right || Middle)
+            {
+                var deltaPosition = new Vector3(e.Location.ToVector2() - OldMousePosition.ToVector2(), 0);
+                Camera.Position = OldCameraPosition + deltaPosition * new Vector3(1, -1, 1) / 100;
+            }
         }
-        
-        private void control_MouseWheel(object sender, MouseEventArgs e)
+
+        protected override void Control_MouseUp(object sender, MouseEventArgs e)
+        {
+            Left = Right = Middle = false;
+            Control.Cursor = Cursors.Default;
+        }
+
+        protected override void Control_MouseWheel(object sender, MouseEventArgs e)
         {
             var deltaY = 0.1 * e.Delta;
-            oldCameraPosition = camera.Position;
-            camera.Position = oldCameraPosition + new Vector3(0, 0, (float)deltaY / yCoeff);
+            OldCameraPosition = Camera.Position;
+            Camera.Position = OldCameraPosition + new Vector3(0, 0, (float)deltaY / YCoeff);
         }
 
-        public ArcBallCam Camera
+        private Vector2 NormalizePointClient(Point point)
         {
-            get
-            {
-                return camera;
-            }
-            set
-            {
-                value.TryUpdateOther(ref camera);
-            }
+            return new Vector2(
+                2.0f * (point.X / (float)Control.Width) - 1.0f,
+                2.0f * (point.Y / (float)Control.Height) - 1.0f);
         }
 
-        private void Control_MouseUp(object sender, MouseEventArgs e)
+        private void GetMouseButtons(out bool left, out bool right, out bool middle)
         {
-            left = false;
-            right = false;
-            middle = false;
-            control.Cursor = Cursors.Default;
-        }
-
-        private void control_MouseDown(object sender, MouseEventArgs e)
-        {
-            ControlHelper.getMouseButtons(out left, out right, out middle);
-            oldMousePosition = e.Location;
-            Console.WriteLine(@"The location: " + GetPixelLocationOnMouseHover(e.Location));
-
-            if(left && right)
-            {
-                oldCameraPosition = camera.Position;
-                control.Cursor = Cursors.SizeNS;
-            }
-            else if(left)
-            {
-                oldCameraRotation = camera.Rotation;
-                control.Cursor = Cursors.NoMove2D;
-            }
-            else if(right || middle)
-            {
-                oldCameraPosition = camera.Position;
-                control.Cursor = Cursors.SizeAll;
-            }
-        }
-
-        private void control_MouseMove(object sender, MouseEventArgs e)
-        {
-            if(left && right)
-            {
-                var deltaY = oldMousePosition.Y - e.Location.Y;
-                camera.Position = oldCameraPosition + new Vector3(0, 0, deltaY / yCoeff);
-            }
-            else if(left)
-            {
-                var oldNpc = control.NormalizePointClient(oldMousePosition);
-                var oldVector = camera.MapToSphere(oldNpc);
-
-                var curNpc = control.NormalizePointClient(e.Location);
-                var curVector = camera.MapToSphere(curNpc);
-
-                var deltaRotation = camera.CalculateQuaternion(oldVector, curVector);
-                camera.Rotation = deltaRotation * oldCameraRotation;
-            }
-            else if(right || middle)
-            {
-                var deltaPosition = new Vector3(e.Location.ToVector2() - oldMousePosition.ToVector2(), 0);
-                camera.Position = oldCameraPosition + deltaPosition * new Vector3(1, -1, 1) / 100;
-            }
+            left = Control.MouseButtons.HasFlag(MouseButtons.Left);
+            right = Control.MouseButtons.HasFlag(MouseButtons.Right);
+            middle = Control.MouseButtons.HasFlag(MouseButtons.Middle);
         }
     }
 }

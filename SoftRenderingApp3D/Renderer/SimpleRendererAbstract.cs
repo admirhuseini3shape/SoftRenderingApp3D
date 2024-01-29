@@ -2,6 +2,7 @@
 using SoftRenderingApp3D.Painter;
 using SoftRenderingApp3D.Rasterizers;
 using SoftRenderingApp3D.Utils;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Numerics;
@@ -16,6 +17,7 @@ namespace SoftRenderingApp3D.Renderer
         public FrameBuffer FrameBuffer { get; }
         protected readonly Stats Stats;
         protected readonly Rasterizer Rasterizer;
+        public bool IsRendering { get; private set; }
 
         protected SimpleRendererAbstract(VertexBuffer vertexBuffer, FrameBuffer frameBuffer)
         {
@@ -28,6 +30,9 @@ namespace SoftRenderingApp3D.Renderer
 
         public int[] Render(IPainterProvider painterProvider, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings)
         {
+            
+            IsRendering = true;
+            
             FrameBuffer.Clear();
             var drawable = VertexBuffer.Drawable;
             if(drawable == null || painterProvider == null || rendererSettings == null || drawable.Mesh.FacetCount == 0)
@@ -45,6 +50,7 @@ namespace SoftRenderingApp3D.Renderer
             var painter = painterProvider.GetPainter(drawable.Material, VertexBuffer, FrameBuffer, rendererSettings);
             DrawPixels(painter, rendererSettings);
             Stats.paintSw.Stop();
+            IsRendering = false;
 
             return FrameBuffer.Screen;
         }
@@ -66,7 +72,11 @@ namespace SoftRenderingApp3D.Renderer
             if(pixelsToDraw.Count == 0)
                 return;
 
-            Parallel.ForEach(Partitioner.Create(0, pixelsToDraw.Count),
+            const int minPixelsPerThread = 20000;
+            
+            var partitioner = Partitioner.Create(0, pixelsToDraw.Count, minPixelsPerThread);
+            
+            Parallel.ForEach(partitioner,
                 new ParallelOptions { TaskScheduler = TaskScheduler.Current },
                 range =>
                 {
