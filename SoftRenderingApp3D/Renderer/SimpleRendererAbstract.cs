@@ -55,6 +55,11 @@ namespace SoftRenderingApp3D.Renderer
             return FrameBuffer.Screen;
         }
 
+        public void SetSelectedFacets(IReadOnlyList<int> selectedFacets)
+        {
+            throw new NotImplementedException();
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected abstract void RasterizeFacets(IReadOnlyList<Facet> facets, RendererSettings rendererSettings);
 

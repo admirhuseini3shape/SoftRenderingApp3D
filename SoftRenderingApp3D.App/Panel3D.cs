@@ -201,6 +201,7 @@ namespace SoftRenderingApp3D.App
             var g = e.Graphics;
 
             BuildFrame();
+            // pickingControl.OnMouseClicked(PointToClient(MousePosition));
             g.DrawImage(bmp, Point.Empty);
             var stats = StatsSingleton.Instance;
             sb.Clear();

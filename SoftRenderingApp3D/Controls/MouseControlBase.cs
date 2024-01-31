@@ -21,31 +21,18 @@ namespace SoftRenderingApp3D.Controls
 
         protected virtual void Control_MouseDown(object sender, MouseEventArgs e)
         {
-            // Raise the MouseClicked event when the left mouse button is clicked
             if (e.Button == MouseButtons.Left)
             {
                 OnMouseClicked(new Point(e.X, e.Y));
             }
         }
 
-        protected virtual void Control_MouseMove(object sender, MouseEventArgs e)
-        {
-            // Handle mouse move events
-        }
+        protected virtual void Control_MouseMove(object sender, MouseEventArgs e) { }
 
-        protected virtual void Control_MouseUp(object sender, MouseEventArgs e)
-        {
-            // Handle mouse up events
-        }
+        protected virtual void Control_MouseUp(object sender, MouseEventArgs e) { }
 
-        protected virtual void Control_MouseWheel(object sender, MouseEventArgs e)
-        {
-            // Handle mouse wheel events
-        }
+        protected virtual void Control_MouseWheel(object sender, MouseEventArgs e) { }
 
-        public virtual void OnMouseClicked(Point point)
-        {
-            throw new NotImplementedException();
-        }
+        protected virtual void OnMouseClicked(Point point) { }
     }
 }

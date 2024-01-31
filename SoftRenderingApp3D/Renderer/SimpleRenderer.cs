@@ -36,6 +36,11 @@ namespace SoftRenderingApp3D.Renderer
             return GetRenderer(drawable.Mesh.FacetCount).Render(painterProvider, viewMatrix, projectionMatrix, rendererSettings);
         }
 
+        public void SetSelectedFacets(IReadOnlyList<int> selectedFacets)
+        {
+            throw new System.NotImplementedException();
+        }
+
         private SimpleRendererAbstract GetRenderer(int facetCount)
         {
             const int minFacetsForParallelization = 10000;

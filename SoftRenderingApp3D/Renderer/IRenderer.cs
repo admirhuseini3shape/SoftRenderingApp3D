@@ -12,6 +12,6 @@ namespace SoftRenderingApp3D.Renderer
 
         int[] Render(IPainterProvider painterProvider, Matrix4x4 viewMatrix, Matrix4x4 projectionMatrix, RendererSettings rendererSettings);
 
-        void setSelectedFacets(IReadOnlyList<int> selectedFacets);
+        void SetSelectedFacets(IReadOnlyList<int> selectedFacets);
     }
 }
