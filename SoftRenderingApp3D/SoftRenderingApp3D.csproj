@@ -96,7 +96,9 @@
     <Compile Include="DataStructures\Materials\VertexColorMaterial.cs" />
     <Compile Include="DataStructures\Meshes\IPointCloud.cs" />
     <Compile Include="DataStructures\Meshes\PointCloud.cs" />
+    <Compile Include="DataStructures\Shapes\Octahedron.cs" />
     <Compile Include="DataStructures\Shapes\Sphere.cs" />
+    <Compile Include="DataStructures\Shapes\Tetrahedron.cs" />
     <Compile Include="DataStructures\TextureReaders\ITextureReader.cs" />
     <Compile Include="DataStructures\Shapes\Cube.cs" />
     <Compile Include="DataStructures\Shapes\TriangleFace.cs" />

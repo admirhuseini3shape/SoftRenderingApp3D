@@ -246,6 +246,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Models\bunny.stl" />
+    <Content Include="Models\dragon.stl" />
     <Content Include="Textures\bone.bmp">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

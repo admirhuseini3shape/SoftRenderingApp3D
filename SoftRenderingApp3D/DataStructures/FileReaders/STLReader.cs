@@ -141,7 +141,7 @@ namespace SoftRenderingApp3D.DataStructures.FileReaders
             var temp = new byte[4];
 
             /* 80 bytes title + 4 byte num of triangles + 50 bytes (1 of triangular mesh)  */
-            if(fileBytes.Length > 120)
+            if(fileBytes.Length > 84)
             {
                 temp[0] = fileBytes[80];
                 temp[1] = fileBytes[81];

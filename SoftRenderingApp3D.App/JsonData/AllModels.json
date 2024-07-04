@@ -28,6 +28,46 @@
         "ReaderType": "StlReader",
         "InitialZoomLevel": -80
     },
+  {
+    "Id": "buddha",
+    "DisplayName": "Happy Buddha",
+    "DisplayModelType": "StlFiles",
+    "InputFileName": "C:\\Users\\Saiti\\RiderProjects\\SoftRenderingApp3D\\SoftRenderingApp3D.App\\Models\\buddha.stl",
+    "ShowTexture": false,
+    "HasTexture": false,
+    "ReaderType": "StlReader",
+    "InitialZoomLevel": -200
+  }, 
+    {
+      "Id": "bunny",
+      "DisplayName": "Bunny",
+      "DisplayModelType": "StlFiles",
+      "InputFileName": "C:\\Users\\Saiti\\RiderProjects\\SoftRenderingApp3D\\SoftRenderingApp3D.App\\Models\\bunny.stl",
+      "ShowTexture": false,
+      "HasTexture": false,
+      "ReaderType": "StlReader",
+      "InitialZoomLevel": -200
+    },
+  {
+    "Id": "david",
+    "DisplayName": "David",
+    "DisplayModelType": "StlFiles",
+    "InputFileName": "C:\\Users\\Saiti\\RiderProjects\\SoftRenderingApp3D\\SoftRenderingApp3D.App\\Models\\David_(Michelangelo).stl",
+    "ShowTexture": false,
+    "HasTexture": false,
+    "ReaderType": "StlReader",
+    "InitialZoomLevel": -475
+  },
+    {
+    "Id": "dragon",
+    "DisplayName": "Dragon",
+    "DisplayModelType": "StlFiles",
+    "InputFileName": "C:\\Users\\Saiti\\RiderProjects\\SoftRenderingApp3D\\SoftRenderingApp3D.App\\Models\\dragon.stl",
+    "ShowTexture": false,
+    "HasTexture": false,
+    "ReaderType": "StlReader",
+    "InitialZoomLevel": -200
+    },
 	{
         "Id": "gearToy",
         "DisplayName": "Gear Toy",
@@ -74,6 +114,42 @@
     "HasTexture": false,
     "GeneratingFunctionName": "CreateBigTown",
     "InitialZoomLevel": -425
+  },
+  {
+    "Id": "tetrahedron",
+    "DisplayName": "Tetrahedron",
+    "DisplayModelType": "GeneratingFunction",
+    "ShowTexture": false,
+    "HasTexture": false,
+    "GeneratingFunctionName": "CreateTetrahedron",
+    "InitialZoomLevel": -10
+  },
+  {
+    "Id": "octahedron",
+    "DisplayName": "Octahedron",
+    "DisplayModelType": "GeneratingFunction",
+    "ShowTexture": false,
+    "HasTexture": false,
+    "GeneratingFunctionName": "CreateOctahedron",
+    "InitialZoomLevel": -10
+  },
+  {
+    "Id": "honeycomb",
+    "DisplayName": "Honeycomb",
+    "DisplayModelType": "GeneratingFunction",
+    "ShowTexture": false,
+    "HasTexture": false,
+    "GeneratingFunctionName": "CreateTetrahedralOctahedralHoneycomb",
+    "InitialZoomLevel": -10
+  },
+  {
+    "Id": "recursivehoneycomb",
+    "DisplayName": "Recursive Honeycomb",
+    "DisplayModelType": "GeneratingFunction",
+    "ShowTexture": false,
+    "HasTexture": false,
+    "GeneratingFunctionName": "CreateRecursiveHoneycomb",
+    "InitialZoomLevel": -10
   },
   {
     "Id": "cube",

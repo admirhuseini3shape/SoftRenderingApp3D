@@ -26,8 +26,13 @@ namespace SoftRenderingApp3D.App.DisplayModels
             { Constants.GeneratingFunctions.CreateCubes, ShapeGenerator.CreateCubes},
             { Constants.GeneratingFunctions.CreateSphere, ShapeGenerator.CreateSpheres},
             { Constants.GeneratingFunctions.CreateCube, ShapeGenerator.CreateCube},
+            { Constants.GeneratingFunctions.CreateBigTown, ShapeGenerator.CreateBigTown},
             { Constants.GeneratingFunctions.CreateBigCube, ShapeGenerator.CreateBigCube},
-            { Constants.GeneratingFunctions.CreateBigTown, ShapeGenerator.CreateBigTown}
+            { Constants.GeneratingFunctions.CreateTetrahedron, ShapeGenerator.CreateTetrahedron},
+            { Constants.GeneratingFunctions.CreateTetrahedralOctahedralHoneycomb, ShapeGenerator.CreateTetrahedralOctahedralHoneycomb},
+            { Constants.GeneratingFunctions.CreateOctahedron, ShapeGenerator.CreateOctahedron},
+            { Constants.GeneratingFunctions.CreateRecursiveHoneycomb, ShapeGenerator.CreateRecursiveHoneycomb}
+            
         };
 
         public static IDrawable GetDrawable(DisplayModelData data)

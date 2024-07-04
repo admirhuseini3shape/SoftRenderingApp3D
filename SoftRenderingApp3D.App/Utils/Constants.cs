@@ -14,6 +14,10 @@
             public const string CreateSphere = "CreateSpheres";
             public const string CreateLittleTown = "CreateLittleTown";
             public const string CreateBigTown = "CreateBigTown";
+            public const string CreateTetrahedralOctahedralHoneycomb = "CreateTetrahedralOctahedralHoneycomb";
+            public const string CreateTetrahedron = "CreateTetrahedron";
+            public const string CreateOctahedron = "CreateOctahedron";
+            public const string CreateRecursiveHoneycomb = "CreateRecursiveHoneycomb";
 
         }
 
