@@ -32,7 +32,7 @@
     "Id": "buddha",
     "DisplayName": "Happy Buddha",
     "DisplayModelType": "StlFiles",
-    "InputFileName": "C:\\Users\\Saiti\\RiderProjects\\SoftRenderingApp3D\\SoftRenderingApp3D.App\\Models\\buddha.stl",
+    "InputFileName": "models\buddha.stl",
     "ShowTexture": false,
     "HasTexture": false,
     "ReaderType": "StlReader",
@@ -42,7 +42,7 @@
       "Id": "bunny",
       "DisplayName": "Bunny",
       "DisplayModelType": "StlFiles",
-      "InputFileName": "C:\\Users\\Saiti\\RiderProjects\\SoftRenderingApp3D\\SoftRenderingApp3D.App\\Models\\bunny.stl",
+      "InputFileName": "models\bunny.stl",
       "ShowTexture": false,
       "HasTexture": false,
       "ReaderType": "StlReader",
@@ -52,7 +52,7 @@
     "Id": "david",
     "DisplayName": "David",
     "DisplayModelType": "StlFiles",
-    "InputFileName": "C:\\Users\\Saiti\\RiderProjects\\SoftRenderingApp3D\\SoftRenderingApp3D.App\\Models\\David_(Michelangelo).stl",
+    "InputFileName": "models\David_(Michelangelo).stl",
     "ShowTexture": false,
     "HasTexture": false,
     "ReaderType": "StlReader",
@@ -62,7 +62,7 @@
     "Id": "dragon",
     "DisplayName": "Dragon",
     "DisplayModelType": "StlFiles",
-    "InputFileName": "C:\\Users\\Saiti\\RiderProjects\\SoftRenderingApp3D\\SoftRenderingApp3D.App\\Models\\dragon.stl",
+    "InputFileName": "models\dragon.stl",
     "ShowTexture": false,
     "HasTexture": false,
     "ReaderType": "StlReader",
@@ -178,6 +178,26 @@
     "GeneratingFunctionName": "CreateCubes",
     "InitialZoomLevel": -25
   },
+  {
+    "Id": "truncated",
+    "DisplayName": "Truncated",
+    "DisplayModelType": "GeneratingFunction",
+    "ShowTexture": false,
+    "HasTexture": false,
+    "GeneratingFunctionName": "CreateTruncatedOctahedron",
+    "InitialZoomLevel": -25
+  },
+  {
+    "Id": "recursive-truncated",
+    "DisplayName": "Recursive Truncated",
+    "DisplayModelType": "GeneratingFunction",
+    "ShowTexture": false,
+    "HasTexture": false,
+    "GeneratingFunctionName": "CreateRecursiveTruncated",
+    "InitialZoomLevel": -25
+  },
+  
+  
   {
     "Id": "sphere",
     "DisplayName": "Spheres",

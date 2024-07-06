@@ -18,6 +18,8 @@
             public const string CreateTetrahedron = "CreateTetrahedron";
             public const string CreateOctahedron = "CreateOctahedron";
             public const string CreateRecursiveHoneycomb = "CreateRecursiveHoneycomb";
+            public const string CreateTruncatedOctahedron = "CreateTruncatedOctahedron";
+            public const string CreateRecursiveTruncated = "CreateRecursiveTruncated";
 
         }
 

@@ -216,6 +216,11 @@ namespace SoftRenderingApp3D.App.DisplayModels
             return new Drawable(resultMesh, resultMaterial);
         }
 
+        public static IDrawable CreateTruncatedOctahedron()
+        {
+            return TruncatedOctahedron.GetDrawable();
+        }
+        
         public static IDrawable CreateTetrahedralOctahedralHoneycomb()
         {
             const float radius = 1.0f;
@@ -333,7 +338,7 @@ namespace SoftRenderingApp3D.App.DisplayModels
 
             // Create a honeycomb at the current position
             var honeycomb = CreateTetrahedralOctahedralHoneycomb();
-            ApplyTransformation(honeycomb, position, r);
+            ApplyTransformation(honeycomb, position, scale);
             meshes.Add(honeycomb.Mesh);
             materials.Add(honeycomb.Material);
 
@@ -356,19 +361,58 @@ namespace SoftRenderingApp3D.App.DisplayModels
             }
         }
         
-        private static void ApplyTransformation(IDrawable drawable, Vector3 position, Random r)
+        public static IDrawable CreateRecursiveTruncated()
         {
-            var rotation = new Rotation3D(
-                    r.Next(-15, 15),
-                    r.Next(-15, 15),
-                    r.Next(-15, 15))
-                .ToRad();
-            var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(
-                rotation.YYaw, rotation.XPitch, rotation.ZRoll);
-            var matrix = Matrix4x4.CreateTranslation(position);
-            drawable.Mesh.Transform(matrix);
+            int depth = 2;
+            float spacing = 2f;
+            float scale = 1f;
+            var meshes = new List<IMesh>();
+            var materials = new List<IMaterial>();
+
+            RecursiveTruncated(depth, spacing, scale, Vector3.Zero, meshes, materials);
+
+            var resultMesh = new Mesh();
+            var resultMaterial = new MaterialBase();
+            var (vertexMappings, facetMappings) = resultMesh.Append(meshes);
+            resultMaterial.Append(materials, vertexMappings, facetMappings);
+            return new Drawable(resultMesh, resultMaterial);
         }
         
+        private static void RecursiveTruncated(int depth, float spacing, float scale, Vector3 position, List<IMesh> meshes, List<IMaterial> materials)
+        {
+            
+           Vector3[] offsets = {
+                           new Vector3(1, 0, 0),new Vector3(2, 0, 0), new Vector3(-1, 0, 0), new Vector3(-2, 0, 0),
+                   
+                           // new Vector3(2, 0, 0), new Vector3(-2, 0, 0)
+                       }; 
+            
+            if (depth <= 0) return;
+
+            var truncatedOctahedron = CreateTruncatedOctahedron();
+            ApplyTransformation(truncatedOctahedron, position, scale);
+            meshes.Add(truncatedOctahedron.Mesh);
+            materials.Add(truncatedOctahedron.Material);
+            
+            Console.WriteLine($"Added honeycomb at position ({position.X}, {position.Y}, {position.Z})");
+
+
+            // Positions for neighboring truncated octahedra
+            
+
+            foreach (var offset in offsets)
+            {
+                Vector3 newPosition = position + offset * spacing;
+                RecursiveTruncated(depth - 1, spacing, scale, newPosition, meshes, materials);
+            }
+        } 
+        
+        private static void ApplyTransformation(IDrawable drawable, Vector3 position, float scale)
+        {
+            var translateMatrix = Matrix4x4.CreateTranslation(position);
+            var rotateMatrix = Matrix4x4.CreateRotationX((float)Math.PI);
+            drawable.Mesh.Transform(translateMatrix * rotateMatrix);
+        }
     }
 }
 

@@ -31,7 +31,9 @@ namespace SoftRenderingApp3D.App.DisplayModels
             { Constants.GeneratingFunctions.CreateTetrahedron, ShapeGenerator.CreateTetrahedron},
             { Constants.GeneratingFunctions.CreateTetrahedralOctahedralHoneycomb, ShapeGenerator.CreateTetrahedralOctahedralHoneycomb},
             { Constants.GeneratingFunctions.CreateOctahedron, ShapeGenerator.CreateOctahedron},
-            { Constants.GeneratingFunctions.CreateRecursiveHoneycomb, ShapeGenerator.CreateRecursiveHoneycomb}
+            { Constants.GeneratingFunctions.CreateRecursiveHoneycomb, ShapeGenerator.CreateRecursiveHoneycomb},
+            { Constants.GeneratingFunctions.CreateTruncatedOctahedron, ShapeGenerator.CreateTruncatedOctahedron},
+            { Constants.GeneratingFunctions.CreateRecursiveTruncated, ShapeGenerator.CreateRecursiveTruncated}
             
         };
 
