@@ -36,9 +36,10 @@ namespace SoftRenderingApp3D.DataStructures.Shapes
         };
 
         private static readonly ColorRGB[] _triangleColors = {
-            ColorRGB.Blue, ColorRGB.LightBlue, ColorRGB.Blue,
-            ColorRGB.LightBlue, ColorRGB.Blue, ColorRGB.LightBlue,
-            ColorRGB.Blue, ColorRGB.LightBlue
+            new ColorRGB(255,255,255), new ColorRGB(240,240,240),
+            new ColorRGB(224, 224,224), new ColorRGB(208, 208,208),
+            new ColorRGB(255,255,255), new ColorRGB(240,240,240),
+            new ColorRGB(224, 224,224), new ColorRGB(208, 208,208)
         };
         
         

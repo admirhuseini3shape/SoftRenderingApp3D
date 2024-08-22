@@ -50,9 +50,12 @@ namespace SoftRenderingApp3D.App.DisplayModels
                     return drawable;
 
                 var textureReader = new TextureReaderBMP();
-                var texture = textureReader.ReadImage(@"textures\bone.bmp");
+                //var texture = textureReader.ReadImage(@"textures\bone.bmp");
                 //var texture = textureReader.ReadImage(@"textures\glass_effect.bmp");
                 //var texture = textureReader.ReadImage(@"textures\bone_high.bmp");
+                var texture = textureReader.ReadImage(
+                    @"C:\Users\Admir Huseini\Downloads\Pattern5.bmp");
+                
                 drawable = new Drawable(drawable.Mesh, new TextureMaterial(texture));
 
                 return drawable;

@@ -123,7 +123,8 @@ namespace SoftRenderingApp3D.Painter
             var gamma = barycentric.Z;
             var normLight = FacetNormalLightContributions[faId];
             var lightContribution = (alpha * normLight.X + beta * normLight.Y + gamma * normLight.Z).Clamp();
-
+            if(lightContribution < 0.6)
+                lightContribution = 0.6f;
             // interpolate
             var r = (byte)(alpha * color0.R + beta * color1.R + gamma * color2.R); //.Clamp(0, maxR);
             var g = (byte)(alpha * color0.G + beta * color1.G + gamma * color2.G); //.Clamp(0, maxG);

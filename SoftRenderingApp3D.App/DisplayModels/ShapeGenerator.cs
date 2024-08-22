@@ -48,24 +48,24 @@ namespace SoftRenderingApp3D.App.DisplayModels
             var materials = new List<IFacetColorMaterial>(capacity);
 
             for(var x = -d; x <= d; x += s)
-            for(var y = -d; y <= d; y += s)
-            for(var z = -d; z <= d; z += s)
-            {
-                var cube = Cube.GetDrawable();
+                for(var y = -d; y <= d; y += s)
+                    for(var z = -d; z <= d; z += s)
+                    {
+                        var cube = Cube.GetDrawable();
 
-                var rotation = new Rotation3D(
-                        r.Next(-maxAngle, maxAngle),
-                        r.Next(-maxAngle, maxAngle),
-                        r.Next(-maxAngle, maxAngle))
-                    .ToRad();
-                var position = new Vector3(x, y, z);
-                var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(
-                    rotation.YYaw, rotation.XPitch, rotation.ZRoll);
-                var matrix = rotationMatrix * Matrix4x4.CreateTranslation(position);
-                cube.Mesh.Transform(matrix);
-                meshes.Add(cube.Mesh);
-                materials.Add((IFacetColorMaterial)cube.Material);
-            }
+                        var rotation = new Rotation3D(
+                                r.Next(-maxAngle, maxAngle),
+                                r.Next(-maxAngle, maxAngle),
+                                r.Next(-maxAngle, maxAngle))
+                            .ToRad();
+                        var position = new Vector3(x, y, z);
+                        var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(
+                            rotation.YYaw, rotation.XPitch, rotation.ZRoll);
+                        var matrix = rotationMatrix * Matrix4x4.CreateTranslation(position);
+                        cube.Mesh.Transform(matrix);
+                        meshes.Add(cube.Mesh);
+                        materials.Add((IFacetColorMaterial)cube.Material);
+                    }
 
             var resultMesh = new Mesh();
             var resultMaterial = new FacetColorMaterial();
@@ -87,19 +87,19 @@ namespace SoftRenderingApp3D.App.DisplayModels
             var materials = new List<IFacetColorMaterial>(capacity);
 
             for(var x = -d; x <= d; x += s)
-            for(var z = -d; z <= d; z += s)
-            {
-                var cube = Cube.GetDrawable();
+                for(var z = -d; z <= d; z += s)
+                {
+                    var cube = Cube.GetDrawable();
 
-                var position = new Vector3(x, 0, z);
-                var scaling = new Vector3(1, random.Next(1, 10), 1);
-                var matrix = Matrix4x4.CreateTranslation(translateToOriginY) *
-                             Matrix4x4.CreateScale(scaling) *
-                             Matrix4x4.CreateTranslation(position);
-                cube.Mesh.Transform(matrix);
-                meshes.Add(cube.Mesh);
-                materials.Add((IFacetColorMaterial)cube.Material);
-            }
+                    var position = new Vector3(x, 0, z);
+                    var scaling = new Vector3(1, random.Next(1, 10), 1);
+                    var matrix = Matrix4x4.CreateTranslation(translateToOriginY) *
+                                 Matrix4x4.CreateScale(scaling) *
+                                 Matrix4x4.CreateTranslation(position);
+                    cube.Mesh.Transform(matrix);
+                    meshes.Add(cube.Mesh);
+                    materials.Add((IFacetColorMaterial)cube.Material);
+                }
 
             var resultMesh = new Mesh();
             var resultMaterial = new FacetColorMaterial();
@@ -122,19 +122,19 @@ namespace SoftRenderingApp3D.App.DisplayModels
             var materials = new List<IFacetColorMaterial>(capacity);
 
             for(var x = -d; x <= d; x += s)
-            for(var z = -d; z <= d; z += s)
-            {
-                var cube = Cube.GetDrawable();
-                var position = new Vector3(x, 0, z);
-                var scaling = new Vector3(1, random.Next(1, 10), 1);
+                for(var z = -d; z <= d; z += s)
+                {
+                    var cube = Cube.GetDrawable();
+                    var position = new Vector3(x, 0, z);
+                    var scaling = new Vector3(1, random.Next(1, 10), 1);
 
-                var matrix = Matrix4x4.CreateTranslation(translateToOriginY) *
-                             Matrix4x4.CreateScale(scaling) *
-                             Matrix4x4.CreateTranslation(position);
-                cube.Mesh.Transform(matrix);
-                meshes.Add(cube.Mesh);
-                materials.Add((IFacetColorMaterial)cube.Material);
-            }
+                    var matrix = Matrix4x4.CreateTranslation(translateToOriginY) *
+                                 Matrix4x4.CreateScale(scaling) *
+                                 Matrix4x4.CreateTranslation(position);
+                    cube.Mesh.Transform(matrix);
+                    meshes.Add(cube.Mesh);
+                    materials.Add((IFacetColorMaterial)cube.Material);
+                }
 
             var resultMesh = new Mesh();
             var resultMaterial = new FacetColorMaterial();
@@ -157,18 +157,18 @@ namespace SoftRenderingApp3D.App.DisplayModels
             var materials = new List<IFacetColorMaterial>(capacity);
 
             for(var x = -d; x <= d; x += s)
-            for(var z = -d; z <= d; z += s)
-            {
-                var cube = Cube.GetDrawable();
-                var position = new Vector3(x, 0, z);
-                var scaling = new Vector3(1, random.Next(1, 10), 1);
-                var matrix = Matrix4x4.CreateTranslation(translateToOriginY) *
-                             Matrix4x4.CreateScale(scaling) *
-                             Matrix4x4.CreateTranslation(position);
-                cube.Mesh.Transform(matrix);
-                meshes.Add(cube.Mesh);
-                materials.Add((IFacetColorMaterial)cube.Material);
-            }
+                for(var z = -d; z <= d; z += s)
+                {
+                    var cube = Cube.GetDrawable();
+                    var position = new Vector3(x, 0, z);
+                    var scaling = new Vector3(1, random.Next(1, 10), 1);
+                    var matrix = Matrix4x4.CreateTranslation(translateToOriginY) *
+                                 Matrix4x4.CreateScale(scaling) *
+                                 Matrix4x4.CreateTranslation(position);
+                    cube.Mesh.Transform(matrix);
+                    meshes.Add(cube.Mesh);
+                    materials.Add((IFacetColorMaterial)cube.Material);
+                }
 
             var resultMesh = new Mesh();
             var resultMaterial = new FacetColorMaterial();
@@ -189,25 +189,25 @@ namespace SoftRenderingApp3D.App.DisplayModels
             var materials = new List<IMaterial>(capacity);
 
             for(var x = -d; x <= d; x += s)
-            for(var y = -d; y <= d; y += s)
-            for(var z = -d; z <= d; z += s)
-            {
-                var sphere = Sphere.GetDrawable(0.7f, 2);
-                var rotation = new Rotation3D(
-                        r.Next(-90, 90),
-                        r.Next(-90, 90),
-                        r.Next(-90, 90))
-                    .ToRad();
-                var position = new Vector3(x, y, z);
-                var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(
-                    rotation.YYaw, rotation.XPitch, rotation.ZRoll);
-                var matrix = rotationMatrix * Matrix4x4.CreateTranslation(position);
-                sphere.Mesh.Transform(matrix);
-                meshes.Add(sphere.Mesh);
-                materials.Add(sphere.Material);
-                
-                Console.WriteLine($"Added shape at position ({x}, {y}, {z})");
-            }
+                for(var y = -d; y <= d; y += s)
+                    for(var z = -d; z <= d; z += s)
+                    {
+                        var sphere = Sphere.GetDrawable(0.7f, 2);
+                        var rotation = new Rotation3D(
+                                r.Next(-90, 90),
+                                r.Next(-90, 90),
+                                r.Next(-90, 90))
+                            .ToRad();
+                        var position = new Vector3(x, y, z);
+                        var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(
+                            rotation.YYaw, rotation.XPitch, rotation.ZRoll);
+                        var matrix = rotationMatrix * Matrix4x4.CreateTranslation(position);
+                        sphere.Mesh.Transform(matrix);
+                        meshes.Add(sphere.Mesh);
+                        materials.Add(sphere.Material);
+
+                        Console.WriteLine($"Added shape at position ({x}, {y}, {z})");
+                    }
 
             var resultMesh = new Mesh();
             var resultMaterial = new MaterialBase();
@@ -221,6 +221,7 @@ namespace SoftRenderingApp3D.App.DisplayModels
             return TruncatedOctahedron.GetDrawable();
         }
         
+        private const float Rescaling = 0.8f;
         public static IDrawable CreateTetrahedralOctahedralHoneycomb()
         {
             const float radius = 1.0f;
@@ -239,7 +240,7 @@ namespace SoftRenderingApp3D.App.DisplayModels
                 new Vector3( 0,  0, -1)
             };
 
-            foreach (var pos in octaPositions)
+            foreach(var pos in octaPositions)
             {
                 AddShape(meshes, materials, pos * spacing, Octahedron.GetDrawable(), radius);
             }
@@ -256,7 +257,7 @@ namespace SoftRenderingApp3D.App.DisplayModels
                 new Vector3(-0.5f, -0.5f, -0.5f)
             };
 
-            foreach (var pos in tetraPositions)
+            foreach(var pos in tetraPositions)
             {
                 AddTetrahedron(meshes, materials, pos, radius / 2, NeedsAdjustment(pos));
             }
@@ -267,13 +268,13 @@ namespace SoftRenderingApp3D.App.DisplayModels
             resultMaterial.Append(materials, vertexMappings, facetMappings);
             return new Drawable(resultMesh, resultMaterial);
         }
-        
+
         private static void AddShape(List<IMesh> meshes, List<IMaterial> materials, Vector3 position, IDrawable shape, float radius)
         {
             var mesh = shape.Mesh;
-            shape.Mesh.Transform(Matrix4x4.CreateScale(radius));
+            shape.Mesh.Transform(Matrix4x4.CreateScale(Rescaling * radius));
             shape.Mesh.Transform(Matrix4x4.CreateTranslation(position));
-            
+
             meshes.Add(shape.Mesh);
             materials.Add(shape.Material);
         }
@@ -285,9 +286,9 @@ namespace SoftRenderingApp3D.App.DisplayModels
             var mesh = tetrahedron.Mesh;
 
             // Scale the tetrahedron
-            mesh.Transform(Matrix4x4.CreateScale(radius));
+            mesh.Transform(Matrix4x4.CreateScale(Rescaling * radius));
 
-            if (needsAdjustment)
+            if(needsAdjustment)
             {
                 // Apply a 180-degree rotation around the X-axis for misaligned tetrahedra
                 mesh.Transform(Matrix4x4.CreateRotationX((float)Math.PI / 2));
@@ -295,25 +296,25 @@ namespace SoftRenderingApp3D.App.DisplayModels
             }
             else
             {
-                mesh.Transform(Matrix4x4.CreateTranslation(position + new Vector3(0.25f, 0.25f, 0.25f))); 
+                mesh.Transform(Matrix4x4.CreateTranslation(position + new Vector3(0.25f, 0.25f, 0.25f)));
             }
-           
-            
+
+
             meshes.Add(mesh);
             materials.Add(tetrahedron.Material);
         }
-        
+
         private static bool NeedsAdjustment(Vector3 position)
         {
             // Count the number of negative coordinates
-            int negativeCount = (position.X < 0 ? 1 : 0) + 
-                                (position.Y < 0 ? 1 : 0) + 
+            int negativeCount = (position.X < 0 ? 1 : 0) +
+                                (position.Y < 0 ? 1 : 0) +
                                 (position.Z < 0 ? 1 : 0);
-    
+
             // Return true if the number of negative coordinates is odd
             return negativeCount % 2 == 0;
         }
-        
+
         public static IDrawable CreateRecursiveHoneycomb()
         {
             int depth = 2;
@@ -334,7 +335,7 @@ namespace SoftRenderingApp3D.App.DisplayModels
 
         private static void RecursiveHoneycomb(int depth, float spacing, float scale, Vector3 position, List<IMesh> meshes, List<IMaterial> materials, Random r)
         {
-            if (depth <= 0) return;
+            if(depth <= 0) return;
 
             // Create a honeycomb at the current position
             var honeycomb = CreateTetrahedralOctahedralHoneycomb();
@@ -345,13 +346,13 @@ namespace SoftRenderingApp3D.App.DisplayModels
             Console.WriteLine($"Added honeycomb at position ({position.X}, {position.Y}, {position.Z})");
 
             // Recursive calls for surrounding positions
-            for (int x = -depth; x <= depth; x++)
+            for(int x = -depth; x <= depth; x++)
             {
-                for (int y = -depth; y <= depth; y++)
+                for(int y = -depth; y <= depth; y++)
                 {
-                    for (int z = -depth; z <= depth; z++)
+                    for(int z = -depth; z <= depth; z++)
                     {
-                        if (Math.Abs(x) + Math.Abs(y) + Math.Abs(z) == depth)
+                        if(Math.Abs(x) + Math.Abs(y) + Math.Abs(z) == depth)
                         {
                             Vector3 newPosition = position + new Vector3(x, y, z) * spacing;
                             RecursiveHoneycomb(depth - 1, spacing, scale * 0.9f, newPosition, meshes, materials, r);
@@ -413,8 +414,22 @@ namespace SoftRenderingApp3D.App.DisplayModels
             var rotateMatrix = Matrix4x4.CreateRotationX((float)Math.PI);
             drawable.Mesh.Transform(translateMatrix * rotateMatrix);
         }
+
+        private static void ApplyTransformation(IDrawable drawable, Vector3 position, Random r)
+        {
+            var rotation = new Rotation3D(
+                    r.Next(-15, 15),
+                    r.Next(-15, 15),
+                    r.Next(-15, 15))
+                .ToRad();
+            var rotationMatrix = Matrix4x4.CreateFromYawPitchRoll(
+                rotation.YYaw, rotation.XPitch, rotation.ZRoll);
+            var matrix = Matrix4x4.CreateTranslation(position);
+            drawable.Mesh.Transform(matrix);
+        }
+
     }
 }
 
 
-            // mesh.Transform(Matrix4x4.CreateScale(scaling));
+// mesh.Transform(Matrix4x4.CreateScale(scaling));

@@ -28,8 +28,8 @@ namespace SoftRenderingApp3D.DataStructures.Shapes
         };
 
         private static readonly ColorRGB[] _triangleColors = {
-            ColorRGB.Red, ColorRGB.Purple,
-            ColorRGB.Red, ColorRGB.Purple
+            new ColorRGB(255,192,192), new ColorRGB(255,128,128),
+            new ColorRGB(255,64,64), new ColorRGB(255,0, 0)
         };
 
         public static IDrawable GetDrawable()
