@@ -218,7 +218,7 @@ namespace SoftRenderingApp3D.App.DisplayModels
 
         public static IDrawable CreateTruncatedOctahedron()
         {
-            return TruncatedOctahedron.GetDrawable();
+            return Octahedron.GetDrawable();
         }
         
         private const float Rescaling = 0.8f;
